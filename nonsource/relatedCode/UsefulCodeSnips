@@ -1,0 +1,58 @@
+One more thing - here's some code to generate dynamic networks from a series
+of network snapshots (i.e., a list of network objects).  Discrete time only,
+obviously, and so far no vertex set dynamics.
+
+-Carter
+
+buildint.networkDynamic<-function(nets,verbose=TRUE){
+  require(networkDynamic)
+  n<-network.size(nets[[1]])
+  intlist<-NULL
+  intcnt<-0
+  if(verbose)
+    cat("Network size is ",n,", ",length(nets)," time points.\n",sep="")
+  #Find the intervals
+  if(verbose)
+    cat("Hunting intervals...\n")
+  for(i in 1:n){
+    if(verbose)
+      cat("\tStarting row ",i,", ",intcnt," intervals so far
+found.\n",sep="")
+    for(j in (1:n)[-i]){
+      evec<-which(sapply(nets,function(z){is.adjacent(z,i,j)})) #Get history
+      while(length(evec)>0){  #Find spells
+        start<-evec[1]
+        stop<-start
+        pos<-1
+        while((length(evec)>pos)&&(evec[pos+1]-evec[pos]==1)) #Find terminus
+          pos<-pos+1
+        stop<-evec[pos]
+        evec<-evec[-(1:pos)]  #Shorten string
+        intlist<-list(i,j,start,stop,intlist)  #Push interval to stack
+        intcnt<-intcnt+1
+      }
+    }
+  }
+  #Convert from stack to matrix form
+  if(verbose)
+    cat("Converting",intcnt,"intervals from stack to matrix form.\n")
+  intmat<-matrix(nr=intcnt,nc=4)
+  for(i in 1:intcnt){
+    intmat[i,1]<-intlist[[1]]
+    intmat[i,2]<-intlist[[2]]
+    intmat[i,3]<-intlist[[3]]
+    intmat[i,4]<-intlist[[4]]
+    intlist<-intlist[[5]]            #Pop!
+  }
+  #Now, build the network
+  if(verbose)
+    cat("Building dynamic network from interval information.\n")
+  net<-network.initialize(n)                    #Create empty network
+  em<-unique(intmat[,1:2])                      #Add the edges
+  net<-add.edges(net,tail=em[,1],head=em[,2])
+  for(i in 1:NROW(intmat)){                     #Activate edges
+    net<-activate.edges(net,onset=intmat[i,3],terminus=intmat[i,4],
+e=get.edgeIDs(net,intmat[i,1],alter=intmat[i,2]))
+  }
+  net
+}

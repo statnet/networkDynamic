@@ -1,0 +1,15 @@
+General networkDynamic TODO List
+
+1. Introduce semantics for startswithin/endswithin interval queries.
+
+  a. Spell (i,j) startswithin [g,h) iff (i>=g)&(i<h) for g!=h; following our point event semantics, if g==h, then the condition is i==g.  Likewise, for endswithin, the corresponding conditions are (j>=g)&(j<h) or j==g.
+  
+2. Implement temporally extended attribute methods.
+
+3. Implement dynamic reachability functions.  (This seems to be an sna crossover, since that is non-network functionality.  The post-sna rationalization is really needed here...)
+  
+4. Adjust package help to further clarify interval semantics.  (Current version is reasonable, but not good enough.)  In particular, the interval [a,b) refers to all numbers c such that a<=c<b for a!=b and a finite; if a==b and a is finite, then [a,b) refers to all numbers c such that c==a; if a and b are both (positively) infinite, then [a,b) is the "null interval," to which no number c belongs; if a==-inf and b is finite or (positively) infinite, [a,b) admits all c<b (and all c if b is infinite); otherwise, the interval is undefined.
+
+5. Extend network.dynamic.check to incorporate TEAs.
+
+6. testing if trac commit hooks are working

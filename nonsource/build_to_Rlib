@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+pkg=${1:-.}
+pkg='networkDynamic'
+
+if [ -d "$pkg/.svn" ]
+then
+echo "Updating version information."
+./update_DESCRIPTION "$pkg"
+else
+echo "Not a working copy: just building."
+fi
+env MAKE='make -j4' PKG_CFLAGS='-Wall -D_REENTRANT' R CMD INSTALL "$pkg"
+cp networkDynamic/vignettes/networkDynamic.pdf networkDynamic/inst/doc/
+
