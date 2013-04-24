@@ -1,0 +1,43 @@
+IMPORTANT NOTES FOR networkDynamic DEVELOPERS---------------------------------
+
+
+Where things go in the networkDynamic archive:
+
+ - The package TODO file remains in the trunk root.
+
+ - Specifications and other developer documentation resides in the
+   docs.und.specifications directory.
+
+ - The package itself sits in its usual spot.
+
+ - If there are other important addons (e.g., testing code, data for
+   tests, etc.), then these should be added in appropriate subdirectories from
+   the trunk root.  (If need be, these may get moved later.)
+
+Some additional reminders:
+
+ - networkDynamic should be considered FOUNDATIONAL CODE.  That means that
+   changes may break existing data objects, programs, etc., making you the
+   enemy of all who live.  Resist the urge to go all cowboy and whatnot.
+ 
+ - Please read the specifications and man pages before doing anything that
+   might change behavior, including adding new functions or options.  Always
+   write to spec - if the spec needs to be changed, propose edits there
+   first.  If the spec is not currently documented, please document the
+   missing portion.  Etc.
+
+ - Anything that can reasonably/easily be done at the user level, and/or that
+   is not highly generic in functionality, should probably not be in this 
+   package.  The goal is to provide a quorum of highly reliable, reasonably
+   efficient low-level tools from which users and other developers can 
+   construct more elaborate applications.  Adding lots of new features can
+   seem like a good idea at first, but leads to maintenance and compatibility
+   nightmares down the road.  (You and others may have to live with this code
+   for 10+ years, if you are lucky.  Don't get fancy.)
+
+
+Thanks to all!
+
+-CTB
+ 04/21/10
+
