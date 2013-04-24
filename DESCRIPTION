@@ -1,0 +1,22 @@
+Package: networkDynamic
+Version: 0.3.1
+Date: 2012-10-15
+Title: Dynamic Extensions for Network Objects
+Type: Package
+Depends: network
+Enhances: network
+Authors@R:c(
+    person("Carter T.", "Butts", role=c("aut"), email="buttsc@uci.edu"),
+		person("Ayn", "Leslie-Cook", role=c("aut"), email="aynlc3@uw.edu"),
+		person("Pavel N.", "Krivitsky", role=c("aut"), email="krivitsky@stat.psu.edu"),
+		person("Skye", "Bender-deMoll", role=c("aut","cre"), email="skyebend@uw.edu"),
+    person("Zack", "Almquist", role=c("ctb"), email="almquist@uci.edu"),
+    person("David R.", "Hunter", role=c("ctb"), email="dhunter@stat.psu.edu"),
+    person("Li","Wang",role=c("ctb"),email="lxwang@gmail.com"),
+    person("Kirk","Li",role=c("ctb"),email="kirkli@uw.edu"),
+    person("Steven M.","Goodreau",role=c("ctb"),email="goodreau@uw.edu"),
+  	person("Martina", "Morris", role=c("ctb"), email="morrism@u.washington.edu"))
+Description: Simple interface routines to facilitate the handling of network objects with complex intertemporal data. "networkDynamic" is a part of the "statnet" suite of packages for network analysis.
+License: GPL-3
+LazyLoad: yes
+URL: http://statnet.org
