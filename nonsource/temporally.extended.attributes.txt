@@ -1,0 +1,131 @@
+Draft Specification for Temporally Extended Attributes
+
+Compiled by Carter Butts, w/extensive input from Skye Bender-deMoll, Martina Morris, Pavel Krivitsky, and others
+
+v0.1, last modified 01/10/10
+
+Definition: A "temporally extended attribute" (TEA) is a standard edge, vertex, or network attribute that (1) has a name ending in ".active" and (2) carries meta-data regarding its state over time.
+
+
+General Requirements:
+
+  1. TEAs must be compatible with the existing network class specification.
+
+  2. All operations involving TEAs must be implementable within the existing network class API.
+
+  3. TEAs must allow for the same time/state semantics as other elements of the networkDynamic extended class.
+
+  4. TEA methods should allow the following operations:
+
+    a. Cross-section queries (selection of attributes at an instant in time).
+
+      i. Return types must include attribute values or activity tables.
+
+      ii. Inactive attributes should return NA.
+
+    b. Interval queries (all values taken by selected active attribute(s) over an arbitrary continuous interval).
+
+      i. As above, return values must include attribute values or activity table information.
+    
+    c. Next event/previous event queries (find next or previous state change given query time).
+
+      i. Return NA if no event.
+      
+      ii. Should be able to return transitional state, time, or both.
+
+    d. "apply" function semantics for interval or cross-sectional queries.
+
+    e. Activity table queries (i.e., return spell list), using (a) or (b) query semantics.
+    
+    f. List TEA attributes.
+
+  5. TEA methods should exhibit reasonable default behavior when called against non-TEA attributes:
+
+    a. During attribute seek ("get"), failure to find *.active should default to a seek for * (unless selected otherwise).
+
+    b. Non-TEA attributes found by failover seek should be treated as universally active/inactive in accord with is.active semantics (see man page for is.active).
+
+  6. TEA local activity is independent of the entity to which it is attached.
+  
+    a. Where feasible, however, functions should allow optional "filtering" behavior by activity of the underlying entity.
+  
+
+Acceptable Limitations (?):
+
+  1. The current networkDynamic implementation is subject to R vector allocation limits, and as such can record on the order of ten million spells per entity on a 64-bit machine.  It is assumed that this is acceptable (otherwise, implementation becomes substantially more difficult).
+  
+  2. Creation/deletion of spells can be quadratic in number of spells on the entity in question.
+  
+  3. Standard network class overhead (e.g., linear search cost in number of attributes per object) is acceptable.
+  
+  4. Although non-extended network class methods must be able to handle TEAs without producing errors, they need not return results that are immediately useful (w/out post-processing).
+  
+  5. Activity consistency across elements is not dynamically verified.  (I.e., it is up to the user to ensure that an inactive vertex doesn't have an active attribute.)
+  
+
+Attribute Standard
+
+  A temporally extended attribute is an edge, vertex, or network attribute satisfying the following properties:
+  
+  1. Its name consists of an arbitrary prefix, together with the suffix ".active".
+
+  2. Its value consists of a two-element list, whose respective contents must be maintained in order as follows:
+
+    a. A list of value entries, such that the ith list element is the value of the attribute for the ith spell in the associated activity matrix.  An attribute not active at any given point in time is defined as having a value of NA (but the reverse is not true -- an active attribute can also take a value of NA).
+
+    b. A two-column numeric matrix, conforming to the specifications for activity attributes in the networkDynamic package.  Every active spell indicated in the activity matrix must correspond to exactly one entry of the associated value list, and these must be maintained in order (i.e., the value of the attribute for the ith active spell is the ith element in the value list).
+
+
+Default Methods
+
+  Since TEAs are standard network attributes, they can be manipulated directly via the existing network attribute methods (either via R or the C-level API).  Likewise, existing summary and other methods in the base class will simply interpret TEAs as they would any other list-valued attributes.  Thus, TEA-extended network objects are backward compatible (as required).
+  
+
+Extended Attribute Methods
+
+  Several special-purpose methods may be created to facilitate interaction with TEAs.  The following are initial proposals of this type (briefly described):
+
+  activate/deactivate.*.attribute
+
+    The activate.*.attribute methods act as a cross between the new activate.* and the old set.*.attribute methods.  They are used to activate an attribute for a given spell, and in so doing set a value for that spell.  The corresponding deactivate methods are more straightforward, deactivating the attribute over a set interval (and removing any spells/values as needed).
+  
+    activate.edge.attribute(x, prefix, value, onset=-Inf, terminus=NULL, e=1:length(x$mel), dynamic.only=FALSE)
+    activate.edge.value(x, prefix, value, onset=-Inf, terminus=NULL, e=1:length(x$mel), dynamic.only=FALSE)
+    activate.network.attribute(x, prefix, value, onset=-Inf, terminus=NULL, dynamic.only=FALSE)
+    activate.vertex.attribute(x, prefix, value, onset=-Inf, terminus=NULL, v=1:network.size(x), dynamic.only=FALSE)
+    deactivate.edge.attribute(x, prefix, onset=-Inf, terminus=NULL, e=1:length(x$mel), dynamic.only=FALSE)
+    deactivate.edge.value(x, prefix, onset=-Inf, terminus=NULL, e=1:length(x$mel), dynamic.only=FALSE)
+    deactivate.network.attribute(x, prefix, onset=-Inf, terminus=NULL, dynamic.only=FALSE)
+    deactivate.vertex.attribute(x, prefix, onset=-Inf, terminus=NULL, v=1:network.size(x), dynamic.only=FALSE)
+ 
+    Behavior sketch: For the activate methods, query the selected entities for a TEA with the specified prefix.  If no such TEA exists and dynamic.only==FALSE, perform a secondary seek with an attribute such that attrname==prefix; if such an attribute is found, convert it to a TEA, and otherwise (or if no such TEA exists and dynamic.only==TRUE) create a TEA with the appropriate prefix.  Once the appropriate TEA is found/created, modify the TEA's spell table to make the attribute active for the specified period, and set the value of the corresponding spell to the contents of the value argument.  (This process is repeated for every element whose attribute is set in this fashion, with semantics corresponding to set.*.attribute.)
+    For the deactivate methods, query the selected entities for a TEA with the specified prefix; if no such TEA exists and dynamic.only=FALSE, perform a secondary seek for an attribute with attrname==prefix.  If no acceptable attribute is found, exit.  Otherwise, modify the spell table of the attribute in question to force deactivation over the specified interval (converting the attribute to a TEA if necessary), adjusting the associated value list as necessary.
+
+  get.*.attribute.active
+
+    The get.*.attribute.active methods function much like the corresponding conventional functions, but filter information in various ways based on the activity of the underlying attributes.  Usage is as follows:
+    
+    get.edge.attribute.active(el, prefix, onset, terminus=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+    get.edge.value.active(x, prefix, onset, terminus=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+    get.network.attribute.active(x, prefix, onset, terminus=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+    get.vertex.attribute.active(x, prefix, onset, terminus=NULL, na.omit = FALSE, null.na = TRUE, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+    
+    Behavior sketch: For the entities in question, seek a TEA with the indicated name prefix (failing over to regular attributes with attrname==prefix if dynamic.only=FALSE).  Given such a TEA, return the dynamic value information corresponding to the query interval (with all query parameters interpreted as per is.active).  By default, the activity of the underlying entity is ignored; if require.active==TRUE, attributes are considered inactive when the entity to which they are attached is inactive (w/active.default being used where necessary to impute activity).  Return values are in TEA form, specifically a list containing a value list along with a spell list.  
+
+  list.*.attribute.active
+  
+    The list.*.attribute.active methods act like their normal counterparts, but implement basic temporal query logic on top of their standard functionality.  Usage is as follows:
+
+    list.network.attributes.active(x, onset, terminus=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+    list.edge.attributes.active(x, onset, terminus=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+    list.vertex.attributes.active(x, onset, terminus=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE)
+  
+    Behavior sketch:  For the entity type in question, search the (onset,terminus) interval using the specified query rule for all active attributes, returning their names.  Query arguments correspond to is.active.  If dynamic.only==TRUE, only TEAs are considered; otherwise, non-TEA attributes are also employed (with activity as defined by active.default).  By default, no check is made to ensure that the underlying entity is active during the query interval; if require.active==TRUE, then, attributes are regarded as inactive when the entities to which they are attached are inactive (using active.default to determine this as needed).
+      
+
+New Methods
+
+  In addition to extensions of standard methods, it may be useful to create more complex custom query methods for dynamic attributes.  Among these, some generalization of the "apply" function seems most useful; however, I am not yet sure how best to do this without creating a long list of methods.  This is an area that might be deferred until more experience with the basic functionality has been obtained.
+  
+  
+  

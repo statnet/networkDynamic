@@ -1,0 +1,11 @@
+Change Log:
+
+v0.1-1 - Internal Bugfix Release, w/Minor New Function
+  New Functions:
+    - network.dynamic.check: Check dynamic consistency of network elements.
+  Bug Fixes:
+    - Removed tracer statements.  [Submitted by PNK]
+    - is.active could fail if passed no edges to check.  [Submitted by PNK]
+    - is.active could fail if passed infinite arguments in some cases.
+
+v0.1 - Initial Internal Release

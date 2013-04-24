@@ -1,0 +1,11 @@
+Package: networkDynamic
+Type: Package
+Title: Dynamic Extensions for Network Objects
+Version: 0.1-1
+Date: 2009-04-18
+Depends: network
+Author: Carter T. Butts <buttsc@uci.edu>
+Maintainer: Carter T. Butts <buttsc@uci.edu>
+Description: Simple interface routines to facilitate the handling of network objects with complex intertemporal data.
+License: GPL-2 or later
+LazyLoad: yes
