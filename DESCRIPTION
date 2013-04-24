@@ -1,0 +1,11 @@
+Package: networkDynamic
+Type: Package
+Title: Dynamic Extensions for Network Objects
+Version: 0.2-1409-1410-2012.02.26-16.43.01
+Date: 2012-02-26
+Depends: network
+Author: Ayn Leslie-Cook, Zack Almquist, Skye Bender-deMoll, Martina Morris, Carter T. Butts 
+Maintainer: Ayn Leslie-Cook <aynlc3@uw.edu>
+Description: Simple interface routines to facilitate the handling of network objects with complex intertemporal data.
+License: GPL-3
+LazyLoad: yes

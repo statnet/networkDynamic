@@ -1,0 +1,25 @@
+Change Log:
+v0.1-0 - Lots of rebuilding
+    - added namespaces
+    - moved duration.matrix script from ergm code, added some C code
+    - update to package loading
+    - renamed network.crossection to network.extract
+    - ndConverter functions for translating various forms of relational information into networkDynamic format
+    - addition of 'at' and 'length' arguments for most temporal methods
+    - rebuilt code with increased argument checking for most spell related methods
+    - added test cases for most methods
+    - some changes in spec for spell handling
+    - bug fixes in spell handling for interval queries
+    - bug fix to network.dynamic.check
+    - added dynamic network datasets of Newcomb's fraternities, Lin Freeman's Windsurfers and McFarland's classroom networks
+    - filename of build now includes version information
+
+v0.1-1 - Internal Bugfix Release, w/Minor New Function
+  New Functions:
+    - network.dynamic.check: Check dynamic consistency of network elements.
+  Bug Fixes:
+    - Removed tracer statements.  [Submitted by PNK]
+    - is.active could fail if passed no edges to check.  [Submitted by PNK]
+    - is.active could fail if passed infinite arguments in some cases.
+
+v0.1 - Initial Internal Release

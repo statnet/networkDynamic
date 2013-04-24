@@ -1,0 +1,99 @@
+﻿
+Goals overview
+
+Extend the "network" package data structures to be able to store and access in a reasonably efficient way:
+* Networks with nodes with "activity" or "existence" status changes over time (they enter or leave the network)
+* Edges which appear and disappear over time
+* Arbitrary attribute values attached to nodes and edges that change over time
+* Meta-level attributes of the network which change over time
+* Both continuous and discrete time models are supported, and it is possible to effectively blend multiple representations in the same object. 
+
+Outline of Structure
+
+The networkDynamic package provides support for a simple family of dynamic extensions to the network class; these are currently accomplished via the standard network attribute functionality (and hence the resulting objects are still compatible with all conventional routines), but greatly facilitate the practical storage and utilization of dynamic network data.
+
+Currently, each edge and vertex in a dynamically extended network is presumed to be in one of two states (“active” or “inactive”) at any given point in time. The state of a network element (i.e., edge or vertex) is governed by an attribute with the name “active”, which is considered a reserved term for purposes of this package.
+
+Definition of Activity Spell
+
+The activity attribute consists of a two-column numeric matrix, each row of which contains an activity spell, and the two columns of which encode onset and terminus times (respectively). Elements are presumed inactive until the onset of their first activity spell, and are likewise presumed inactive after the termination of their last spell; spells must be consecutive and strictly non-overlapping, and are taken to span the period from the onset (inclusive) to the terminus (exclusive). The onset value for each spell must always be less then or equal to the terminus. As long as this constraint is met, any numeric values may be used for spell timing, including Inf and -Inf. (The latter are used to create spells which are open-ended.)
+
+Elements which are strictly inactive (i.e., with no valid activity spells) may be denoted by a matrix considering only of the special “null” spell, c(Inf,Inf). Functions using this package extensions should interpret this spell to indicate complete inactivity. This spell is likewise incompatible with other spells, and should be replaced whenever an activation enters the element's event history.
+
+Although various special functions are provided to aid access to the active attribute, they are not strictly necessary: any standard network methods (e.g., get.edge.attribute) may be used to get or set this information. Care should be taken, however, to preserve the mandatory two-column structure when setting or modifying activity attributes.
+
+Inserting / Setting Spells
+Insertion of spells that intersect other spells. New spells should overwrite old, and any remaining time should be accounted for with new spells
+
+
+Modifying Spells
+
+
+
+Comparing and matching spells
+
+Many of the operations involving dynamic networks or attributes require comparisons of spells in order to determine inclusion or exclusion of elements of the network. When a function permits inclusion of "onset" and "terminus" values, the function is implemented to assume that the "query interval" is the spell from onset (inclusive) to terminus (exclusive). When two spells have identical values for onset and terminus, they are considered as matching. When comparisons are made involving the (nearly) zero-length query spell where onset=terminus, they will be performed as "point comparisons" where only the onset (inclusive) is compared to target spells when evaluating a match.  
+
+Matching Rules For Spells
+
+When working with continuous time data or non-unit length query spells it is highly likely that vertex and edge activity spells will not exactly line up with with the query spell used to ascertain their activity. For example, a node may toggle on and off multiple times within a time period, or may be deactivated partway through the time period. Methods which determine the activity of elements must include a parameter to give the appropriate rule for resolving the ambiguous cases. The minimal set of supported rules is: 
+	"any": include a an element if it is active at any time during the query spell
+	"all": only include elements that are active for the entire duration of a query spell
+	(SEE IMPLEMENTATION DRAFT SPEC FOR MORE RULE PROPOSALS)
+	
+
+Infinite values in spells
+
+Regarding queries with infinite values, elements are defined to be active at negative infinity if the activity spells of these elements are of the form \code{c(-Inf, x)}, where x is a finite number or \code{Inf}. Likewise, elements are defined to be active at positive infinity for activity spells of the form \code{c(x, Inf)}, where x is finite or \code{-Inf}. Elements are defined as inactive at all time points for those with activity spells = \code{c(Inf, Inf)}.
+
+Note that there are a lot of complications here surrounding Inf values.  If an activity spell starts at time Inf, it can never match anything (including query onsets of Inf) because it starts after all possible spells.  If an activity spell starts at finite time and ends at Inf, however, it _does_ match an onset/terminus of Inf.  By turns, a spell which begins at time -Inf should match -Inf onset times.  
+
+
+
+Defining the behaviour of a network over time. 
+
+2. When new members join the network, they should be added with add.vertices (as usual).  When old members exit, however, they are _not_ deleted -- instead, they are simply deactivated.  Thus, one modifies the existing 
+network in place, and does not produce a network for every time step.
+
+3. Activation/deactivation is time stamped (continuous time, but you can use it discretely), and an edge or vertex can be activated or deactivated any number of times.  An edge must be added the first time that the (i,j) pair 
+occurs, but thereafter its activity can simply be modified to represent switching off/on.
+
+4. There are various ways to query the resulting network object regarding the status of vertices, edges, etc.  Among other things, one can simply extract a cross-section (as a reduced-form network) if one needs it.  All queries can be executed either as point intersection queries or as interval queries, as needs warrant.
+
+
+
+
+A few notes and potential pitfalls:
+
+1. Do not cannibalize vertices (re-use vertex ids) unless you know what you are doing. The network should gradually accumulate as new individuals are added; old ones are deactivated, but their IDs remain the same.
+
+2. The system does not currently enforce consistency between vertex and edge activation -- it is up to you to ensure that you update both elements appropriately.  Inconsistencies could produce surprising results.
+
+3. Remember to initialize vertices and edges with their initial activation states after adding them.  Otherwise, more surprising results may ensue.
+
+4. The new routines are all R-only, and hence may be slow in some cases. Hopefully, they will be fast enough for your application without backending them.  Where your application allows standard network functions to be used, do so (they are potentially faster); this mostly applies to gratuitous use of the "extended" network class methods, which should be avoided when not specifically necessary.
+
+5. Because many decimal numbers do not have exact binary equivalents (ex: 1.0-0.9-0.1 = -2.775558e-17 ) problems can occur when comparing spells where spells that seem like they logically should match in fact don't.  For example according to the rules of floating point math, 3.6125 != (289*0.0125).
+
+
+
+Extracting a cross-section of a network
+
+Aggregation rules for collapsing networks 
+	- provide ability to include a function to sum, avg, max, etc edge weights
+	- option to return set of values?
+
+
+
+Conversion of discrete to continuous time. 
+
+The underlying data representation of the package is a continuous time, but most discrete time time models can be expressed with care. The preferred representation is to store each discrete time step as an interval of unity duration [1,2).  In some situations (usually continuous-time representations of instantaneous measurements) it may be appropriate to use spells in which the onset and termination times are equal.  These should be thought of not as having a duration of zero, but as having a vanishingly small duration or one that is shorter than our ability to measure.
+
+When converting from a discrete time model (panel data) to a continuous time representation there can be ambiguity about how the spells should be constructed. Functions performing these activities should permit both an "instant" model (wave 2 becomes the spell [2,2) ) and the "interval" model (wave 2 becomes the spell [2,3) ) with the interval model as the default to encourage consistency throughout the package. 
+
+
+
+
+
+
+

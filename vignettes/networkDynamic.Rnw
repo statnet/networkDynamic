@@ -1,0 +1,344 @@
+
+\documentclass{article}
+\usepackage{natbib} %for easy biblo
+\usepackage{hyperref} %for url links
+%\VignetteIndexEntry{networkDynamic Example}
+
+\begin{document}
+
+<<foo,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+foo <- packageDescription("networkDynamic")
+@
+
+\title{Package examples for \Sexpr{foo$Package}: \Sexpr{foo$Title} (Version \Sexpr{foo$Version})}  
+\author{Ayn Leslie-Cook, Zack Almquist, Skye Bender-deMoll,\\ Martina Morris, Carter T. Butts}
+\maketitle
+
+THIS IS A DRAFT. Not all authors have approved, and in some situations the package gives incorrect results.
+
+\tableofcontents
+
+\section{Introduction}
+The \verb@networkDynamic@ package provides support for a simple family of dynamic extensions to the \verb@network@ \citep*{network} class; these are currently accomplished via the standard \verb@network@ attribute functionality (and hence the resulting objects are still compatible with all conventional routines), but greatly facilitate the practical storage and utilization of dynamic network data. The dynamic extensions are motivated in part by the need to have a consistent data format for exchanging data, storing the inputs and outputs to relational event models, statistical estimation and simulation tools such as \verb@ergm@ \citep*{ergm}and \verb@stergm@, and dynamic visualizations. 
+
+The key features of the package provide basic utilities for working with networks in which:
+\begin{itemize}
+\item Vertices have `activity' or `existence' status that changes over time (they enter or leave the network)
+\item Edges which appear and disappear over time
+\item Arbitrary attribute values attached to vertices and edges that change over time
+\item Meta-level attributes of the network which change over time
+\item Both continuous and discrete time models are supported, and it is possible to effectively blend multiple temporal representations in the same object
+\end{itemize}
+
+In addition, the package is primarily oriented towards handling the dynamic network data inputs and outputs to network statistical estimation and simulation tools like \verb@statnet@ and \verb@stergm@. This document will provide a quick overview and use demonstrations for some of the key features. We assume that the reader is already familiar with the use and features of the \verb@network@ package. 
+
+Note: Although \verb@networkDynamic@ shares some of the goals (and authors) of the experimental and quite confusable \verb@dynamicNetwork@ package \citep*{dynamicNetwork}, they are are incompatible.
+
+\section{How to start and end relationships easily}
+A very quick condensed example of starting and ending edges to show why it is useful and some of the alternate syntax options.
+\subsection{Activating edges}
+The standard assumption in the \verb@network@ package and most sociomatrix representations of networks is that an edge between two vertices is either present or absent.  However, many of the phenomena that we wish to describe with networks are dynamic rather than static processes, having a set of edges which change over time.  In some situations the edge connecting a dyad may break and reform multiple times as a relationship is ended and re-established.  The \verb@networkDynamic@ package adds the concept of `activation spells' for each element of a \verb@network@ object. Edges are considered to be present in a network when they are active, and treated as absent during periods of inactivity.  After a relationship has been defined using the normal syntax or network conversion utilities, it can be explicitly activated for a specific time period using the \verb@activate.edges@ methods.
+
+<<trivial_triangle,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+library(networkDynamic)          # load the dynamic extensions
+triangle <- network.initialize(3)  # create a toy network
+add.edge(triangle,1,2)    # add an edge between vertices 1 and 2
+add.edge(triangle,2,3)               # add a more edges
+add.edge(triangle,3,1)
+activate.edges(triangle,at=1) # turn on all edges at time 1 only
+activate.edges(triangle,onset=2, terminus=3, 
+               e=get.edgeIDs(triangle,v=1,alter=2))
+activate.edges(triangle,onset=4, length=2, 
+               e=get.edgeIDs(triangle,v=2,alter=3)) 
+@
+
+The \verb@onset@ and \verb@terminus@ parameters giving the starting and ending point for the activation period (more on this and the \verb@at@ syntax later). Notice that the method refers to the relationship using the \verb@e@ argument to specify the ids of the edges to activate. To be safe, we are looking up the ids using the \verb@get.edgeIDs@ method with the \verb@v@ and \verb@alter@ arguments indicating the ids of the vertices involved in the edge. After the activity spells have been defined for a network, it is possible to extract views of the network at arbitrary points in time using the \verb@network.extract@ function in order to calculate traditional graph statistics. 
+
+
+\subsection{Extracting a network}
+
+<<triangle_degree,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+require(sna)          # load graph stats package
+degree(triangle)  # degree of each vertex, ignoring time
+degree(network.extract(triangle,at=0)) 
+degree(network.extract(triangle,at=1)) # just look at t=1
+degree(network.extract(triangle,at=2))
+degree(network.extract(triangle,at=5))
+degree(network.extract(triangle,at=10))
+@
+
+At time 1, the vertex degrees match what would be expected for the `timeless' network, but for the other time points the degrees are quite different. When the network was sampled outside of the defined time range (at 0 and 10) it returned degrees of 0, suggesting that no edges are present at all. It may be helpful to plot the networks to help understand what is going on. Figure~\ref{fig:fig1} (page~\pageref{fig:fig1}) shows the result of the standard plot command (plot.network.default) for the triangle, as well as plots of the network at specific time points.
+<<label=fig1,include=FALSE>>=
+par(mfrow=c(2,2))   #show multiple plots
+plot(triangle,main='ignoring dynamics',displaylabels=T)  
+plot(network.extract(
+  triangle,onset=1,terminus=2),main='at time 1',displaylabels=T)
+plot(network.extract(
+  triangle,onset=2,terminus=3),main='at time 2',displaylabels=T)
+plot(network.extract(
+  triangle,onset=5,terminus=6),main='at time 5',displaylabels=T)
+@
+\begin{figure}
+\begin{center}
+<<label=fig1,fig=TRUE,echo=FALSE>>=
+<<fig1>>
+@
+\end{center}
+\caption{Network plot of our trivial triangle network}
+\label{fig:fig1}
+\end{figure}
+
+
+
+\section{Birth, Death, Reincarnation and other ways for vertices to enter and leave networks}
+\subsection{Activating vertices}
+Many network models need the ability to specify activity spells for vertices in order to account for changes in the population due to `vital dynamics' (births and deaths) or other types of entrances and exists from the sample population. In \verb@networkDynamc@ activity spells for a vertex can be specified using the \verb@activate.vertices@ methods. Like edges, vertices can have multiple spells of activity. If we build on the triangle example:
+
+<<triangle_vert_activate,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+activate.vertices(triangle,onset=1,terminus=5,v=1) 
+activate.vertices(triangle,onset=1,terminus=10,v=2)
+activate.vertices(triangle,onset=4,terminus=10,v=3)
+network.size(network.extract(triangle,at=1)) # how big is it?
+network.size(network.extract(triangle,at=4))
+network.size(network.extract(triangle,at=5))
+@
+Using the \verb@network.size@ function on extracted networks shows us that specifying the activity ranges has effectively changed the sizes (and corresponding vertex indices, more on that later) of the network.  Notice also that we've created contradictions in the definition of this hand-made network, for example stating that vertex 3 isn't active until time 4 when earlier we said that there were ties between all nodes at time 1.  The package does not prohibit these kinds of paradoxes, but it does provide a utility to check for them.
+
+<<triangle_check,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+network.dynamic.check(triangle)
+@
+\subsection{Deactivating elements}
+In this case, we can resolve the contradictions by explicitly deactivating the edges involving vertex 3:
+<<triangle_deactivate,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+deactivate.edges(triangle,onset=1,terminus=4,
+          e=get.edgeIDs(triangle,v=3,neighborhood="combined"))
+network.dynamic.check(triangle)
+@
+The deactivation methods for vertices,\verb@deactivate.vertices@, works the same way, but it accepts a \verb@v=@ parameter to indicate which vertices should be modified instead of the \verb@e=@ parameter. 
+
+\section{`Spells': the magic under the hood}
+In which we provide a brief glimpse into the underlying data structures.
+
+There are many possible ways of representing change in an edgeset over time. Several of the most commonly used are:
+\begin{itemize}
+  \item A series of networks or network matrices representing the state of the network at sequential time points
+  \item An initial network and a list of edge toggles representing changes to the network at specific time points
+  \item A collection of `spell' intervals giving the onset and termination times of each element in the network
+\end{itemize}
+
+This package uses the spell representation, and stores the spells as perfectly normal but specially named \verb@active@ attributes on the network. These attributes are a 2-column spell matrix in which the first column gives the onset, the second the terminus, and each row defines an additional activity spell for the network element. For more information, \verb@?activity.attribute@. As an example, to peek at the spells defined for the vertices:
+
+<<triangle_get_times,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+get.vertex.attribute(triangle,'active',unlist=F) # vertex spells
+get.edge.attribute(triangle$mel,'active',unlist=F) # edge spells
+@
+
+Notice that the first edge has a 2-spell matrix where the first spell extends from time 1 to time 1 (a zero-duration or instantaneous spell), and the second from time 2 to time 3 (a `unit length` spell. More on this below). The third edge has the interesting special spell \verb@c(Inf,Inf)@ defined to mean `never active` which was produced when we deleted the activity associated with the 3rd edge.   
+
+Within this package, spells are assumed to be `right-open' intervals, meaning that the spell includes its lower bound but not its upper bound. For example, the spell [2,3) covers the range between t>=2 and t<3. Another way of thinking of it is that terminus=`until', the spell ranges from 2 until 3, but does not include 3.
+
+Although it would certainly be possible to directly modify the spells stored in the \verb@active@ attributes, it is much safer to use the various \verb@activate.@ and \verb@deactivate@ methods to ensure that the spell matrix remains in a correctly defined state. The goal of this package is to make it so that it rarely necessary to work with spells, or even worry very much about the underlying data structures. It should be possible to use the provided utilities to convert between the various representations of dynamic networks. However, even if the details of data structure can be ignored, it is still important to be very clear about the underlying temporal model of the network you are working with. 
+
+
+\section{Differences between Discrete and Continuous data}
+Its 2 am on Tuesday.  Do you know what your temporal model is?  Does 2am mean 2:00 am, or from 2:00 to 2:59:59?  And other existential questions.  The differences between at and onset, terminus syntax.
+
+There are two different approaches to representing time when measuring something. 
+\subsection{You might be discrete if...}
+The `discrete' model thinks of time as equal chunks, ticks, discrete steps, or panels. To measure something we count up the value of interest for that chunk. Time is a series of integers. We can refer to the 1st step, the 365th step, but there is no concept of ordering of events within steps and we can't have fractional steps. A discrete time simulation can never move its clock forward by half-a-tick. As long as the steps can be assumed to be the same duration, there is no need to worry about what the duration actually is. This model is very common in the traditional social networks world. Egocentric survey data may aggregated into a set of weekly network `panels', each of which is though of as a discrete time step in the evolution of the network. We ignore the exact timing of what minute each survey was completed, so that we can compare the week-to-week dynamics. 
+\subsection{You might be continuous if...}
+In a `continuous' model, measurements are thought of as taking place and an instantaneous point in time (as precisely as can be reasonably measured). Events can have specific durations, but they will almost never be integers. Instead of being present in week 1 and absent in week 2 a relationship starts on Tuesday at 7:45pm and ends on Friday at 10:01am. Continuous time models are useful when the the ordering of events is important.  It still may be useful to represent observations in panels, but we must assume that the state of the network could have changed between our observation at  noon on Friday of week 1 and noon on Friday of week 2. 
+
+Although underlying data model for the \verb@networkDynamic@ package is continuous time, discrete time models can easily be represented. But it is important to be clear about what model you are using when interpreting measurements. For example, the \verb@activate.vertex@ methods can be called using an \verb@onset=t@ and \verb@terminus=t+1@ style, or an \verb@at=t@ style (which converts internally to \verb@onset=t@ , terminus=t). Here are several ways of representing the similar time information for an edge lasting two time steps which give different results:
+
+<<discrete_vs_cont,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+
+disc <- network.initialize(2)
+disc[1,2]<-1
+activate.edges(disc,onset=4,terminus=6) # terminus = t+1
+is.active(disc,at=4,e=1)
+is.active(disc,at=5,e=1)
+is.active(disc,at=6,e=1)
+
+cont <- network.initialize(2)
+cont[1,2]<-1
+activate.edges(cont,onset=4,terminus=5)
+is.active(cont,at=4,e=1)
+is.active(cont,at=5,e=1)
+
+cont <- network.initialize(2)
+cont[1,2]<-1
+activate.edges(cont,onset=3.0,terminus=5.0001)
+is.active(cont,at=4,e=1)
+is.active(cont,at=5,e=1)
+
+point <- network.initialize(2) # continuous waves
+point[1,2]<-1
+activate.edges(point,at=4)
+activate.edges(point,at=5)
+is.active(point,at=4,e=1)
+is.active(point,at=4.5,e=1) # this doesn't makes sense
+is.active(point,at=5,e=1)
+@
+
+\section{Show me how it was: extracting static views of dynamic networks }
+Working with spells correctly can be complex, so the package provides utility methods for dynamic versions of common network operations. View the help page at \verb@?network.extensions@ for full details and arguments.
+\subsection{Testing for activity}
+As is probably already apparent, the activity range of a vertex, set of vertices, edge, or set of edges can be tested using the \verb@is.active@ method.
+<<is_active,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+is.active(triangle, onset=1, length=1,v=2:3)
+is.active(triangle, onset=1, length=1,e=get.edgeIDs(triangle,v=1))
+@
+
+\subsection{Listing active elements}
+Depending on the end use,  a more convenient way to express these queries might by to use utility functions to retrieve the ids of the network elements of interest that are active for that time range.
+<<get_active,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+get.edgeIDs.active(triangle, onset=2, length=1,v=1)
+get.neighborhood.active(triangle, onset=2, length=1,v=1)
+is.adjacent.active(triangle,vi=1,vj=2,onset=2,length=1)
+@
+These methods of course accept the same additional arguments as their \verb@network@ counterparts.
+
+\subsection{Differences between `any' and `all' aggregation rules}
+In addition to the point-based (\verb@at@ syntax) or unit interval (\verb@length=1@) activity tests and extraction operations used in most examples so far, the methods also support the idea of a `query spell' specified using the same onset and terminus syntax. So it is also possible (assuming it makes sense for the network being studied) to use \verb@length=27.52@ or \verb@onset=0, terminus=256@ Querying with a time range does raise an issue: how should we handle situations where edges or vertices have spells that begin or end part way through the query spell? Although other potential rules have been proposed, the methods currently include a \verb@rule@ argument that can take the values of \verb@any@ (the default) or \verb@all@. The former returns elements if they are active for any part of the query spell, and the later only returns elements if they are active for the entire range of the query spell.  
+
+<<any_all,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+query <- network.initialize(2)
+query[1,2] <-1
+activate.edges(query, onset=1, terminus=2)
+is.active(query,onset=1,terminus=2,e=1)
+is.active(query,onset=1,terminus=3,rule='all',e=1)
+is.active(query,onset=1,terminus=3,rule='any',e=1)
+@
+
+
+
+\section{But my data are panels of network matrices...}
+How to get there from here. Some handy conversion tools for common representations of dynamics.
+
+\subsection{Converting from a list of networks}
+Researchers frequently have network data in the form of network panels or `stacks' of network matrices. The \verb@networkDynamic@ package includes one such classic dynamic network dataset in this format: Newcomb's Fraternity Networks. The data are 14 panel observations of friendship preference rankings among fraternity members in a 1956 sociology study. For more details, run  \verb@?newcomb@. This network is a useful example because it has edge weights that change over time and the \verb@newcomb.rank@ version has asymetric rank choice ties. Since this release of the \verb@networkDynamic@ package doesn't yet support dynamic edge attributes, we can't demonstrate use of the rank choice attribute over time.
+<<newcomb,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+require(networkDynamic)
+data(newcomb)             # load the data
+names(newcomb)            # its some kind of named list object
+length(newcomb$networks)   # how many networks?
+is.network(newcomb$networks[[1]]) # is it really a network?
+as.sociomatrix(newcomb$networks[[1]]) # peek at sociomatrix       
+newcombDyn <- ndConverter(newcomb$networks)  # make dynamic  
+# check that it is the same
+identical(as.sociomatrix(newcomb$networks[[1]]),
+          as.sociomatrix(network.extract(newcombDyn,onset=0,terminus=1)))
+@
+When converting panel data in this form, \verb@ndConverter@ assumes that the panels should be assigned times of unit intervals, so the first panel is given the spell [0,1), the second [1,2), etc. 
+
+\subsection{Converting from a data.frame of spells}
+The \verb@ndConverter@ function can create network dynamic objects from data.frames. It assumes that the first two columns correspond to the network indices of the ego and alter vertices, and the third and forth columns give the onset and terminus of a spell for that dyad. Multiple spells per dyad are expressed by multiple rows. In the following example, we read some tabular data describing arc relationships out of an example text file. (The text file is in the .son format, \verb@?read.son@ for information on importing the entire file.)
+<<file_spells,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+spellData <-read.table(system.file('extdata/cls33_10_16_96.son', 
+            package='networkDynamic'),skip=22,header=T)
+spellData[1:5,] # peek
+classDyn <- ndConverter(spellData[,1:4]) #just grab 4 cols
+@
+
+ 
+\subsection{Converting from initial network and array of toggle times}
+WAITING FOR CONVERTER IMPLEMENTATION
+
+\subsection{Converting a dynamic network to timed edge spell list}
+<<newcomb,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+newcombEdgeSpells<-ndConverter(newcombDyn,format='edgelist')
+dim(newcombEdgeSpells) # how big is it?
+newcombEdgeSpells[1:5,] # peek at the beginning
+@
+The first two columns of the spell matrix gives the network indices of the vertices involved in the edge, and the next two give the onset and terminus for the spell.  The \verb@Noncensored@ column indicates if a statistical estimation process using this spell list should assume that the the entire duration of the edge's activity is included or if it was partially censored by the observation.  The \verb@duration@ column gives the total duration for the specific spell of the edge, not the entire edge duration. 
+
+\subsection{Converting a dynamic network to a list of networks (or sociomatrices)}
+Although there is not yet a utility function for this operation, here is an example of converting the previously imported classroom edgelist network into a series of networks, each of which aggregates 5 minutes of streaming interactions. We do this by creating a list of times, and then using the \verb@lapply@ function to apply \verb@network.extract@ for each of those times.
+
+<<classroom_binning,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+startTimes <-seq(from=0,to=40,by=5) # make a list of times 
+classNets <- lapply(startTimes, function(t){ 
+  network.extract(classDyn,onset=t,terminus=t+5)})
+classMats <- lapply(classNets,as.sociomatrix) # make into matrices
+classDensity <- sapply(classNets, network.density) 
+plot(classDensity,type='l',xlab='network slice #',ylab='density')
+@
+
+
+\section{Some example datasets} 
+\subsection{Lin Freeman's Windsurfers}
+See Zack and Carter's paper. 
+<<windsurfers,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+data(windsurfers)    # let's go to the beach!
+days <- c(1,7,14,21)
+sapply(days,function(t){ # how many people in net each week?
+  network.size.active(windsurfers,onset=t,length=7)})
+@
+
+\subsection{Stergm Example}
+WAITING FOR EXAMPLE 
+
+\subsection{McFarland's Classrooms}
+Classrooms: continuous time streams of relational information
+<<classroom,include=TRUE,echo=TRUE>>=options(keep.source = TRUE, width = 60)
+data(McFarland_cls33_10_16_96) # goin' back to school
+
+@
+
+<<label=fig2,include=FALSE>>=
+par(mfrow=c(2,2))   # show multiple plots
+plot(network.extract(
+  cls33_10_16_96,onset=0,length=40,rule="any"),
+  main='entire 40 min class period',displaylabels=T)
+plot(network.extract(
+  cls33_10_16_96,onset=0,length=5,rule="any"),
+  main='a 5 min chunk',displaylabels=T)
+plot(network.extract(
+  cls33_10_16_96,onset=0,length=2.5,rule="any"),
+  main='a 2.5 min chunk',displaylabels=T)
+plot(network.extract(
+  cls33_10_16_96,onset=0,length=.1,rule="any"),
+  main='a single conversation turn',displaylabels=T)
+@
+\begin{figure}
+\begin{center}
+<<label=fig2,fig=TRUE,echo=FALSE>>=
+<<fig2>>
+@
+\end{center}
+\caption{Network plot of classroom interactions with various aggregation timescales}
+\label{fig:fig2}
+\end{figure}
+\section{Dynamic attributes: the next frontier}
+Clearly an essential feature of dynamic networks is the ability to express time-varying attributes for networks, vertices (changing properties) and edges (changing weights). The authors of this package have completed a specification and draft implementation of dynamic attributes, and will include dynamic attribute features and utility methods in an upcoming release of \verb@networkDynamic@.
+
+\section{Other Coming Attractions}
+ndtv: Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. Provides the tools developed in \citep*{dynamicNetwork} but with R methods for building, controling, and rendering out animations. 
+
+
+\begin{thebibliography}{}
+
+\bibitem[Bender-deMoll et al.(2008)]{dynamicNetwork}
+Bender-deMoll, S., Morris, M. and Moody, J. (2008)
+\newblock Prototype Packages for Managing and Animating Longitudinal Network Data: dynamicnetwork and rSoNIA
+\newblock \emph{Journal of Statistical Software} 24:7.
+
+\bibitem[Newcomb(1961)]{newcomb} 
+Newcomb T. (1961)
+\emph{The acquaintance process} New York: Holt, Reinhard and Winston.
+
+\bibitem[Hunter et al.(2008b)]{ergm}
+Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b). 
+\newblock ergm: A Package to Fit, Simulate and Diagnose Exponential-Family Models for Networks. 
+\newblock \emph{Journal of Statistical Software}, 24(3). \url{http://www.jstatsoft.org/v24/i03/}. 
+
+\bibitem[Butts(2008)]{network}
+Butts CT (2008). 
+\newblock network: A Package for Managing Relational Data in R. 
+\newblock \emph{Journal of Statistical Software}, 24(2). \url{http://www.jstatsoft.org/v24/i02/}. 
+
+\end{thebibliography}
+
+\end{document}
