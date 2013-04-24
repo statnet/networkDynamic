@@ -1,6 +1,6 @@
 Package: networkDynamic
 Version: 0.5
-Date: 2013-03-05
+Date: 2013-04-23
 Title: Dynamic Extensions for Network Objects
 Type: Package
 Depends: network (>= 1.7.2), statnet.common
