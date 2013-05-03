@@ -1,4 +1,8 @@
 Change Log:
+v0.4.1 - bug fixes
+  - fixed problem in delete spell function that would give errors on some deactivate.vertices calls
+  - fixed bug in get.vertex.activity(as.spellList=TRUE) when spell activity had been deleted or removed
+  - fixed bug in get.change.times that prevented it from checking changes times of TEAs
 v0.4 - new functionality and bug fixes
   - networkDynamic() function supports conversion from various tabular schemas (spell-edgelists, toggles, lists of networks)
   - added ability to attach Temporally Extended Attributes (TEAs) to network elements to store and manipulate changing attributes of vertices, edges and networks.
