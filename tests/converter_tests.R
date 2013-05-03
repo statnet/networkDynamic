@@ -332,32 +332,39 @@ dynBeach<-networkDynamic(network.list=beach, vertex.pid="vertex.names")
 #data level node indicies are stored as the vertex names
 expect_equal(get.network.attribute(dynBeach,'vertex.pid'),'vertex.names',info='check vertex.pid name set correctly')
 
+# TEMPORARILY DISABLED BECAUSE INVOLVES HELD-BACK PID FUNCTIONS
 #check if the neighborhood is the same for both.
-for (i in 1:length(beach)) {
-  if (!identical(beach[[i]], NA)) {
-    beach[[i]]<-set.network.attribute(beach[[i]],'vertex.pid','vertex.names')
-    for (j in network.vertex.names(beach[[i]])) {
-      ng1 <-get.neighborhood(beach[[i]], v=get.vertex.id(beach[[i]], j))
-      ng2 <- get.neighborhood.active(dynBeach, onset=i-1, terminus=i, v=get.vertex.id(dynBeach, j))
-      # the following line is much much slower
-      #ng2 <-get.neighborhood(network.extract(dynBeach,onset=i-1,terminus=i,retain.all.vertices=T),v=get.vertex.id(dynBeach, j))
-      # need to check the vertex names, not the ids which are changed when converting to a networkDynamic object
-      names1 <- sort(network.vertex.names(beach[[i]])[ng1])
-      names2 <- sort(network.vertex.names(dynBeach)[ng2])
-      # print these if necessary
-      # print(paste('============ ', i, '=========='))
-      # print(names1)
-      # print(names2)
-      if (!identical(names1, names2)) {
-        print(paste("FAIL: networkDynamic(): neigborhoods do not match for variable sized network list example (windsurfers)",
-                   " at time", i, 'vertex', j))
-        print(names1)
-        print(names2)
-      }
-    }
-    
-  }
-}
+# for (i in 1:length(beach)) {
+#   if (!identical(beach[[i]], NA)) {
+#     beach[[i]]<-set.network.attribute(beach[[i]],'vertex.pid','vertex.names')
+#     for (j in network.vertex.names(beach[[i]])) {
+#   
+#       ng1 <-get.neighborhood(beach[[i]], v=get.vertex.id(beach[[i]], j))
+#       ng2 <- get.neighborhood.active(dynBeach, onset=i-1, terminus=i, v=get.vertex.id(dynBeach, j))
+#       # the following line is much much slower
+#       #ng2 <-get.neighborhood(network.extract(dynBeach,onset=i-1,terminus=i,retain.all.vertices=T),v=get.vertex.id(dynBeach, j))
+#       # need to check the vertex names, not the ids which are changed when converting to a networkDynamic object
+#       names1 <- sort(network.vertex.names(beach[[i]])[ng1])
+#       names2 <- sort(network.vertex.names(dynBeach)[ng2])
+#       # print these if necessary
+#       # print(paste('============ ', i, '=========='))
+#       # print(names1)
+#       # print(names2)
+#       if (!identical(names1, names2)) {
+#         print(paste("FAIL: networkDynamic(): neigborhoods do not match for variable sized network list example (windsurfers)",
+#                    " at time", i, 'vertex', j))
+#         print(names1)
+#         print(names2)
+#       }
+#     }
+#     
+#   }
+# }
+
+expect_equal(sort(network.vertex.names(beach[[5]])),sort(network.vertex.names(network.extract(dynBeach,at=4))))
+
+
+
 
 # try a better representation that preserves edge times
 

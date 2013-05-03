@@ -798,16 +798,16 @@ activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
 activate.edge.attribute(test,'weight',3,onset=4,terminus=5,e=1:2)
 
 
-list <- get.slices.networkDynamic(test,onset=0, terminus=5)
+#list <- get.slices.networkDynamic(test,onset=0, terminus=5)
 
-if(!all(unlist(lapply(list,network.size))==5))
-  stop("network list encounter errors")
+#if(!all(unlist(lapply(list,network.size))==5))
+#  stop("network list encounter errors")
 
-if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
-  stop("network list encounter errors")
-lapply(list,function(x)list.vertex.attributes(x))
-lapply(list,function(x)list.edge.attributes(x))
-lapply(list,function(x)get.edge.value(x,"weight"))
+#if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
+#  stop("network list encounter errors")
+#lapply(list,function(x)list.vertex.attributes(x))
+#lapply(list,function(x)list.edge.attributes(x))
+#lapply(list,function(x)get.edge.value(x,"weight"))
 #NULL: the edge is not activate at that slice
 #NA: the attribute is not activate at that slice, but the edge is activate
 #Numerical Value: both the edge and the attribute are activate at that slice.
@@ -820,16 +820,16 @@ activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
 activate.edge.attribute(test,'weight',3,onset=4,terminus=5,e=1:2)
 
 
-list <- get.slices.networkDynamic(test,onset=0, terminus=5)
+#list <- get.slices.networkDynamic(test,onset=0, terminus=5)
 
-if(!all(unlist(lapply(list,network.size))==5))
-  stop("network list encounter errors")
+#if(!all(unlist(lapply(list,network.size))==5))
+#  stop("network list encounter errors")
 
-if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
-  stop("network list encounter errors")
-lapply(list,function(x)list.vertex.attributes(x))
-lapply(list,function(x)list.edge.attributes(x))
-lapply(list,function(x)get.edge.value(x,"weight"))
+#if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
+#  stop("network list encounter errors")
+#lapply(list,function(x)list.vertex.attributes(x))
+#lapply(list,function(x)list.edge.attributes(x))
+#lapply(list,function(x)get.edge.value(x,"weight"))
 
 
 cat("ok\n")
