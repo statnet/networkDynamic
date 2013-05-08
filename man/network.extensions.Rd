@@ -42,8 +42,8 @@ network.edgecount.active(x, onset = NULL, terminus = NULL, length = NULL, at = N
     rule = c("any", "all"), na.omit = TRUE, active.default = TRUE)
 network.naedgecount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
     rule = c("any", "all"), active.default = TRUE)
-network.size.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, rule = c("any", "all"),
-    active.default = TRUE)
+network.size.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
+    rule = c("any", "all"), active.default = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

@@ -79,9 +79,11 @@ When \code{retain.all.vertices=TRUE}
 
 triangle <- network.initialize(3)    # create a toy network
 
-# add edges with activity 
-add.edges.active(triangle,onset=0,terminus=10,tail=1,head=2)               # add an edge between vertices 1 and 2
-add.edges.active(triangle,onset=0,length=4,tail=2,head=3)               # add a more edges
+# add edges with activity
+# first add an edge between vertices 1 and 2
+add.edges.active(triangle,onset=0,terminus=10,tail=1,head=2)
+# add a more edges
+add.edges.active(triangle,onset=0,length=4,tail=2,head=3)      
 add.edges.active(triangle,at=4.5,tail=3,head=1)
 
 # specify some vertex activity
