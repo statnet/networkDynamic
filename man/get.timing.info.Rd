@@ -23,8 +23,9 @@
 \usage{
 get.change.times(x, vertex.activity=TRUE, edge.activity=TRUE, ignore.inf=TRUE,
              vertex.attribute.activity = TRUE, edge.attribute.activity = TRUE,
-            network.attribute.activity = TRUE)
-get.vertex.activity(x, v=seq_len(network.size(x)), as.spellList=FALSE, active.default=TRUE)
+             network.attribute.activity = TRUE)
+get.vertex.activity(x, v=seq_len(network.size(x)), 
+                   as.spellList=FALSE, active.default=TRUE)
 get.edge.activity(x, e=seq_along(x$mel), as.spellList=FALSE, active.default=TRUE)
 }
 \arguments{
