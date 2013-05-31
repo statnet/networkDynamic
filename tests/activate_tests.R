@@ -529,6 +529,12 @@ if(any(!f.results)){
 # no edges, so should do nothing (but not crash)
 expect_equal(network.edgecount(activate.edges(network.initialize(0))),0)
 
+# test activate multiple spells for same edge
+test<-network.initialize(3)
+test[1,2]<-1
+activate.edges(test,onset=c(1,2),terminus=c(2,3),e=c(1,1))
+expect_equal(as.numeric(as.data.frame(test)[,1:4]),c(1,3,1,2),info='test that activate edges merges spells if e includes repeated ids')
+
 cat("ok\n")
 
 

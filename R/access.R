@@ -103,13 +103,15 @@ activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
     }
     if(length(e)==0)  return(invisible(set.nD.class(x)))
 
+    uniqueE<-unique(e)
     # get current active matrices and insert spells
-    active <- lapply(lapply(x$mel[e], "[[", "atl"), "[[", "active")
-    for(i in 1:length(active)){
-      if(!(identical(active[[i]], matrix(c(-Inf,Inf),1,2))))
-        active[[i]] <- insert.spell(active[[i]], onset[i], terminus[i])
+    active <- lapply(lapply(x$mel[uniqueE], "[[", "atl"), "[[", "active")
+    for(i in seq_len(length(e))){
+      eIndex<-which(uniqueE==e[i])
+      if(!(identical(active[[eIndex]], matrix(c(-Inf,Inf),1,2))))
+        active[[eIndex]] <- insert.spell(active[[eIndex]], onset[i], terminus[i])
     }
-    set.edge.attribute(x, "active", active, e)
+    set.edge.attribute(x, "active", active, e=uniqueE)
   }
   
   set.nD.class(x)
