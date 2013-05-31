@@ -483,34 +483,47 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       
       # initialize
       #if (is.null(edge.spells)) activate.edges(base.net, onset=-Inf, terminus=Inf)
-      # assume edges in base.net to be active initially
-      if (!is.null(edge.toggles)) activate.edges(base.net, onset=-Inf, terminus=Inf)
       
-      for (i in seq_len(nrow(edge.data))) {
-        t <- edge.data[i,'tail'] 
-        h <- edge.data[i,'head']
-        e <- get.edgeIDs(base.net, t, h)
-        # add edge if not present in the base.net (as inactive?)
-        # TODO: problem here with directed vs undirected networks?
-        # TODO: how to handle multiplex/duplicate edge case?
-        if (length(e) == 0) {
-          add.edge(base.net, t, h)
-          e <- get.edgeIDs(base.net, t, h)
-          if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
+      #if we are in the spells case, and no edges exist yet we can avoid actually looping
+      if (!is.null(edge.spells)){
+        dyads<-unique(edge.data[,3:4,drop=FALSE])
+        tails<-as.list(dyads[,1])
+        heads<-as.list(dyads[,2])
+        add.edges(base.net,tail=tails,head=heads)
+        eids<-sapply(seq_len(nrow(edge.data)),function(i){get.edgeIDs(base.net,v=edge.data[i,3],alter=edge.data[i,4])})
+        if (length(eids)>0){
+          activate.edges(base.net,onset=edge.data[,1],terminus=edge.data[,2],e=eids)
         }
-        
-        if (!is.null(edge.spells)) {
-          activate.edges(base.net, e=e, onset=edge.data[i,'onset'], terminus=edge.data[i,'terminus'])
-        } else {
-          at <- edge.data[i,'time']
-          change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
-          if (change.activate) {
-            activate.edges(base.net, e=e, onset=at, terminus=Inf)
+  
+      } else {  # changes or toggles, so have to loop to avoid hurting our heads
+        # assume edges in base.net to be active initially
+        if (!is.null(edge.toggles)) activate.edges(base.net, onset=-Inf, terminus=Inf)
+        for (i in seq_len(nrow(edge.data))) {
+          t <- edge.data[i,2] 
+          h <- edge.data[i,3]
+          e <- get.edgeIDs(base.net, t, h)
+          # add edge if not present in the base.net (as inactive?)
+          # TODO: problem here with directed vs undirected networks?
+          # TODO: how to handle multiplex/duplicate edge case?
+          if (length(e) == 0) {
+            add.edge(base.net, t, h)
+            e <- get.edgeIDs(base.net, t, h)
+            if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
+          }
+          
+          if (!is.null(edge.spells)) {
+            activate.edges(base.net, e=e, onset=edge.data[i,'onset'], terminus=edge.data[i,'terminus'])
           } else {
-            deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
+            at <- edge.data[i,'time']
+            change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
+            if (change.activate) {
+              activate.edges(base.net, e=e, onset=at, terminus=Inf)
+            } else {
+              deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
+            }
           }
         }
-      }
+      } # end of non-spell edge creation
     } # end edge data
     
   } # end non-network.list part

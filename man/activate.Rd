@@ -36,7 +36,7 @@ deactivate.vertices(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
   \item{terminus}{ an optional vector of timepoints that specifies the ends of the interval(s). This must be accompanied by one of \code{onset} or \code{length}. }
   \item{length}{ an optional vector of interval lengths for the interval(s). This must be accompanied by one of \code{onset} or \code{terminus}. }
   \item{at}{ optional, one or more time points to be activated. }
-  \item{e}{ optional, one or more IDs indicating edges to be modified.}
+  \item{e}{ optional, one or more IDs indicating edges to be modified. Ids can be repeated to indicate multiple time values per element.}
   \item{v}{ optional, one or more IDs indicating vertices to be modified. }
   \item{deactivate.edges}{optional, TRUE setting will automatically deactivate all the edges associated with the vertex being deactivated}
 }
@@ -140,11 +140,14 @@ is.active(triangle, at=2, e=1:3)
 # this activates edges 2 and 3 at time 5
 activate.edges(triangle, e=2:3, at=5)
 
-# this doesn't do what you think; multiple spells for a single element is not allowed
-activate.edges(triangle, e=1, at=6:8)
+# this activates edge 1 at multiple times;
+deactivate.edges(triangle)
+activate.edges(triangle, e=c(1,1,1), at=6:8)
 is.active(triangle, at=6, e=1:3)
 is.active(triangle, at=7, e=1:3)
 is.active(triangle, at=8, e=1:3)
+
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
