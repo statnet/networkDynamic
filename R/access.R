@@ -106,9 +106,10 @@ activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
     uniqueE<-unique(e)
     # get current active matrices and insert spells
     active <- lapply(lapply(x$mel[uniqueE], "[[", "atl"), "[[", "active")
+    infMat<-matrix(c(-Inf,Inf),1,2) # declare here to speed comparisons
     for(i in seq_len(length(e))){
       eIndex<-which(uniqueE==e[i])
-      if(!(identical(active[[eIndex]], matrix(c(-Inf,Inf),1,2))))
+      if(!(identical(active[[eIndex]], infMat)))
         active[[eIndex]] <- insert.spell(active[[eIndex]], onset[i], terminus[i])
     }
     set.edge.attribute(x, "active", active, e=uniqueE)
@@ -187,12 +188,15 @@ activate.vertices <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL
   if(length(v) > 0) {
 
     # get current active matrices and insert spells
-    active <- lapply(x$val[v], "[[", "active")
-    for(i in 1:length(active)){
-      if(!(identical(active[[i]], matrix(c(-Inf,Inf),1,2))))
-        active[[i]] <- insert.spell(active[[i]], onset[i], terminus[i])
+    uniqueV<-unique(v)
+    active <- lapply(x$val[uniqueV], "[[", "active")
+    infMat<-matrix(c(-Inf,Inf),1,2)
+    for(i in 1:length(v)){
+      index<-which(uniqueV==v[i])
+      if(!(identical(active[[index]], infMat)))
+        active[[index]] <- insert.spell(active[[index]], onset[i], terminus[i])
     }
-    set.vertex.attribute(x, "active", active, v)
+    set.vertex.attribute(x, "active", active, uniqueV)
   }
 
   set.nD.class(x)

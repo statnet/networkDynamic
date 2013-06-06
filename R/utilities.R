@@ -510,18 +510,14 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
             e <- get.edgeIDs(base.net, t, h)
             if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
           }
-          
-          if (!is.null(edge.spells)) {
-            activate.edges(base.net, e=e, onset=edge.data[i,'onset'], terminus=edge.data[i,'terminus'])
+          at <- edge.data[i,'time']
+          change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
+          if (change.activate) {
+            activate.edges(base.net, e=e, onset=at, terminus=Inf)
           } else {
-            at <- edge.data[i,'time']
-            change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
-            if (change.activate) {
-              activate.edges(base.net, e=e, onset=at, terminus=Inf)
-            } else {
-              deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
-            }
+            deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
           }
+          
         }
       } # end of non-spell edge creation
     } # end edge data

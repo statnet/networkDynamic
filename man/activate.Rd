@@ -37,7 +37,7 @@ deactivate.vertices(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
   \item{length}{ an optional vector of interval lengths for the interval(s). This must be accompanied by one of \code{onset} or \code{terminus}. }
   \item{at}{ optional, one or more time points to be activated. }
   \item{e}{ optional, one or more IDs indicating edges to be modified. Ids can be repeated to indicate multiple time values per element.}
-  \item{v}{ optional, one or more IDs indicating vertices to be modified. }
+  \item{v}{ optional, one or more IDs indicating vertices to be modified. Ids can be repeated to indicate multiple time values per element.}
   \item{deactivate.edges}{optional, TRUE setting will automatically deactivate all the edges associated with the vertex being deactivated}
 }
 \details{
@@ -146,6 +146,11 @@ activate.edges(triangle, e=c(1,1,1), at=6:8)
 is.active(triangle, at=6, e=1:3)
 is.active(triangle, at=7, e=1:3)
 is.active(triangle, at=8, e=1:3)
+
+# this activates vertex 1 for two spells, (0,1) and (3,4)
+test <- network.initialize(3)
+activate.vertices(test,onset=0:3,terminus=1:4,v=c(1,2,3,1))
+get.vertex.activity(test, as.spellList=TRUE)
 
 
 }
