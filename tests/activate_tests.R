@@ -1053,6 +1053,11 @@ if(any(!f.results)){
 # should do nothing, since no verts to activate
 expect_equal(is.active(activate.vertices(network.initialize(0),at=1),at=1),logical(0))
 
+# test activating multiple spells per vertex
+test <- network.initialize(3)
+activate.vertices(test,onset=0:3,terminus=1:4,v=c(1,2,3,1))
+expect_equal(get.vertex.activity(test, as.spellList=TRUE)[,1:3],as.data.frame(matrix(c(0,1,1, 3,4,1, 1,2,2, 2,3,3),byrow=TRUE,ncol=3)),check.attributes=FALSE, info="check activating multiple spells on a single vertex")
+
 
 cat("ok\n")
 
