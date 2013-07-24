@@ -796,7 +796,6 @@ is.networkDynamic <- function(x){
 }
 
 as.networkDynamic <- function(object,...){
-  .Deprecated("networkDynamic()",old="as.networkDynamic.network",msg="networkDynamic converter and data merge functions have been refactored to avoid `as.networkDynamic.*' methods and S3 calls.  See networkDynamic function instead. The function as.networkDynamic.network will only set a networkDynamic class on its argument.")
   UseMethod("as.networkDynamic")
 }
 
