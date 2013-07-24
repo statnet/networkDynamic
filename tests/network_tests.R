@@ -483,6 +483,13 @@ if(any(!b.results)){
              bad.tests))
 }
 
+# a network with edge activity spells, some of which are missing
+net7<-network(flo)
+deactivate.edges(net7)
+activate.edges(net7, 10,20, e=3:7)
+delete.edges(net7,eid=1)
+expect_equal(network.edgecount.active(net7,at=10),5)
+
 expect_equal(network.edgecount(network.initialize(0)),0)
 
 cat("ok\n")
@@ -513,6 +520,11 @@ net5$mel[[2]] <- NULL
 net6 <- net3
 net6$mel[[1]] <- NULL
 net6$mel[[2]] <- NULL
+
+# a network with edge activity spells, missing edge,  and some deleted edges
+net7<-net3
+delete.edges(net7,eid=1)
+expect_equal(network.naedgecount.active(net7,at=10),3)
 
 b1=(network.naedgecount.active(net3, 5,15)==3)     # a positive count
 b2=(network.naedgecount.active(net6, 5,15)==2)     # a positive count
