@@ -59,7 +59,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
   net$gal<-as.list(x$gal)
   net%n%"n"<-n
   net%n%"mnext"<-1
-  if(net%n%"bipartite">0)
+  if(is.bipartite(net))
     net%n%"bipartite"<-newVid[net%n%"bipartite"]
   # Set vertex-level attributes
   if(n>0){
