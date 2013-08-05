@@ -661,6 +661,10 @@ if(any(!b.results)){
 
 expect_equal(network.dyadcount.active(network.initialize(0)),0)
 
+# check for case when first mode of bipartite = 0
+test<-network.initialize(3,bipartite=0)
+network.dyadcount.active(test,at=1)
+
 cat("ok\n")
 
 # ------ network.collapse ----

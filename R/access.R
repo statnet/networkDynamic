@@ -722,7 +722,7 @@ network.dyadcount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, a
 
   if (is.bipartite(x)) {
     bip = x%n%"bipartite"
-    nactor <- ifelse(bip > 0,sum(is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
+    nactor <- ifelse(bip >= 0,sum(is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
                                            v=seq_len(bip),rule=rule, active.default=active.default)),
                      0)
     nevent <- ifelse(x%n%"n">0 && bip<x%n%"n",sum(is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
