@@ -59,9 +59,11 @@ There are some special behaviors associated with the arguments  \code{Inf} and \
 Thus [onset, terminus) will be interpreted as [onset, terminus] when terminus = \code{Inf}.
 	\item Queries for intervals specified by \code{c(Inf, Inf)} or \code{c(-Inf, -Inf)} are ignored.
 	}
+  
+ If the \code{e} argument includes edge ids corresponding to deleted edges, a warning will be generated because the length of the output vector will not match the vector of edge ids.  In this case it is a good idea to use \code{\link{valid.eids}} to determine the edge ids.
 }
 \value{
-  A logical vector indicating the activity states.
+  A logical vector indicating the activity states of vertices or edges.  In the case of vertices, the elements of the vector correspond to the vertex ids provided via the \code{v} paramter.  In the edges case, if the network has deleted edges, they will be omited from the result so the elements of the vector may not correspond to the eids provided via the \code{e} parameter.
 }
 %\references{ ~put references to the literature/web site here ~ }
 \author{ Ayn Leslie-Cook \email{aynlc3@uw.edu}, Carter T. Butts \email{buttsc@uci.edu} }
@@ -69,7 +71,7 @@ Thus [onset, terminus) will be interpreted as [onset, terminus] when terminus = 
 %
 % ~Make other sections like Warning with \section{Warning }{....} ~
 %}
-\seealso{ \code{\link{activity.attribute}}, \code{\link{activate}} }
+\seealso{ \code{\link{activity.attribute}}, \code{\link{activate}}, \code{\link{valid.eids}} }
 \examples{
 triangle <- network.initialize(3)  # create a toy network
 add.edge(triangle,1,2)    # add an edge between vertices 1 and 2
@@ -87,10 +89,15 @@ activate.edges(triangle,onset=4, length=2,
 
 # are the edges active at a particular time?
 is.active(triangle, at=1, e=1:3)
-is.active(triangle, at=4, e=1:3)
+is.active(triangle, at=4, e=seq_along(triangle$mel))
+
+# delete an edge
+delete.edges(triangle,e=2)
+is.active(triangle, at=4, e=seq_along(triangle$mel))
+# gives warning, and only two values returned, which edges are they?
+# much safer to use
+is.active(triangle, at=4, e=valid.eids(triangle))
+
+
 
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

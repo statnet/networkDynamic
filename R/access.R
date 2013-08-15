@@ -636,10 +636,16 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
   }
 
   # vertices or edges?
-  if(length(e))
+  if(length(e)){
+    origelen<-length(e)
     e <- e[!sapply(x$mel[e], is.null)]  # filter out non-edges
+    # if e were ommited due to null edges, give warning
+    if (length(e)< origelen){
+      warning("Some edge IDs in the e argument correspond to deleted edges and will be ignored. Indices of values returned will not correspond to elements of e.")
+    }
+  }
   if(length(v))
-    v <- v[!sapply(x$val[v], is.null)]  # filter out non-vertices
+    v <- v[!sapply(x$val[v], is.null)]  # filter out non-vertices TODO: can this happen?
   if(length(e)+length(v)==0)
     return(logical(0))
   if(length(e)){
