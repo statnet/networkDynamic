@@ -307,6 +307,13 @@ if(any(g.results)){
 
 expect_equal(is.active(network.initialize(0),at=1),logical(0))
 
+# check for warning when eid specified for deleted edge
+test<-network.initialize(3)
+add.edges(test,1:3,c(2,3,1))
+delete.edges(test,eid=2)
+expect_warning(is.active(test,e=1:3,onset=-Inf,terminus=Inf),'correspond to deleted edges')
+expect_equal(suppressWarnings(is.active(test,e=1:3,onset=-Inf,terminus=Inf)),c(TRUE,TRUE))
+
 cat("ok\n")
 
 
