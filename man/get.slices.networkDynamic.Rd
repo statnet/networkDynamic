@@ -15,9 +15,7 @@
   Given a specified time point (or interval), return a list of network extracted from networkDynamic object
 }
 \usage{
-  get.slices.networkDynamic(dnet, onset=NULL, terminus=NULL, at=NULL, length=NULL, 
-  rule=c("any","all"), active.default=TRUE,
-  retain.all.vertices=TRUE,...)
+  get.slices.networkDynamic(dnet, onset=NULL, terminus=NULL, at=NULL, length=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,10 +30,7 @@ A \code{networkDynamic} object with possible vertex, edge, network, and attribut
   \item{length}{ optionally, the length of the specified interval. This must be  accompanied by one of \code{onset} or \code{terminus}.
   }
   \item{at}{ optionally, a single time point.}
-  \item{rule}{ a text string for defining \dQuote{active} for this call:  \code{any} if elements active at any time during the interval are to be used, or \code{all} if elements must be active over the entire interval. }
-  \item{active.default}{ logical; should elements without an activity attribute be regarded as active by default?}
-  \item{retain.all.vertices}{ logical; should the extracted network retain all vertices, ignoring the vertex activity spells of x in order to ensure that the network returned has the same size as dnet?}
-  \item{\dots}{ Possible additional arguments (not yet invented) to handle aggregation of attributes. }
+\item{\dots}{ Additional arguments to \code{\link{network.collapse}} (such as \code{rule},\code{active.default},\code{retain.all.vertices}) }
 }
 
 

@@ -28,6 +28,7 @@
 #TODO: rewrite this using get.inducedSubgraph?
 network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
                                rule=c("any","all"),active.default=TRUE,retain.all.vertices=FALSE,trim.spells=FALSE){
+  rule<-match.arg(rule)
   # determine which nodes/edges are active
   # nodes activity is straight forward
   # edge activity depends on the activity of the edge, but
@@ -38,7 +39,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
   activeE=logical(0)
   if(length(x$mel)){
     activeE<-is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
-                       e=seq_along(x$mel),v=NULL, rule=rule, active.default=active.default)
+                       e=valid.eids(x),v=NULL, rule=rule, active.default=active.default)
     nullE <- sapply(x$mel, is.null)
     inV = sapply(x$mel[!nullE], "[[", "inl")  # in nodes of edges
     outV = sapply(x$mel[!nullE], "[[", "outl")  # out nodes of edges
@@ -126,7 +127,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
       deactivate.vertices(net,v=which(!activeV))
     }
     
-    # if there are edges, flatten edge attributes 
+    # if there are edges, trim edge attributes to range
     if (network.edgecount(net)>0){
       active.edge.attrs <-gsub(".active","",grep(".active",list.edge.attributes(net),value=TRUE))
       if(length(active.edge.attrs)>0){
@@ -148,7 +149,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
         }
       }
     }
-    # flatten vertex attributes
+    # trim vertex attributes to range
     active.vertex.attrs <-gsub(".active","",grep(".active",list.vertex.attributes(net),value=TRUE))
     if(length (active.vertex.attrs)>0){
       for(attr in active.vertex.attrs){
@@ -166,7 +167,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
        }
       }
     }
-    # flatten network attributes
+    # trim network attributes to range
     active.net.attrs <-gsub(".active","",grep(".active",list.network.attributes(net),value=TRUE))
     if(length(active.net.attrs)>0){
       for(attr in active.net.attrs){
@@ -184,7 +185,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
         }
       }
     }
-  }
+  } # end tripm.spells bock
   # todo: update net.obs.period censoring info
   set.nD.class(net)
 
@@ -417,7 +418,7 @@ network.dynamic.check<-function(x,verbose=TRUE, complete=TRUE){
 }
 
 # execute a network crossection, and then an attribute crossection. 
-network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL,rule=c("any","all"),active.default=TRUE,retain.all.vertices=FALSE,...){
+network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL,rule=c("any","all","earliest","latest"),active.default=TRUE,retain.all.vertices=FALSE,...){
   # check args
   if(missing(dnet) || !is.networkDynamic(dnet)){
     stop("network.collapse requires that the first argument be a networkDynamic object")
@@ -464,8 +465,11 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
   if(onset>terminus){
     stop("Onset times must precede terminus times in network.collapse\n")
   }
+  rule<-match.arg(rule)
+  exRule<-'any'  # network extract doesn't support the 'earliest' and 'latest' rules
+  if(rule=='all') exRule<-'all'
   
-  net <- network.extract(dnet,onset=onset,terminus=terminus,rule=rule,active.default=active.default, trim.spells=TRUE,retain.all.vertices=retain.all.vertices)
+  net <- network.extract(dnet,onset=onset,terminus=terminus,rule=exRule,active.default=active.default, trim.spells=TRUE,retain.all.vertices=retain.all.vertices)
     # collapse network level attributes
     knownNAttrs<-list.network.attributes(net)
     activeAttrs <- knownNAttrs[grep(".active",knownNAttrs)]
@@ -552,7 +556,7 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
 
 
 
-get.slices.networkDynamic <- function(dnet, onset=NULL, terminus=NULL, at=NULL, length=NULL, rule=c("any","all"), active.default=TRUE,retain.all.vertices=TRUE,...){
+get.slices.networkDynamic <- function(dnet, onset=NULL, terminus=NULL, at=NULL, length=NULL,...){
   
   # check args
   if(missing(dnet) || !is.networkDynamic(dnet)){
@@ -607,7 +611,7 @@ get.slices.networkDynamic <- function(dnet, onset=NULL, terminus=NULL, at=NULL, 
   }
   
   net.list <- lapply(time.slice, function(x){
-    net.list.i <- network.collapse(dnet,at=x,rule=rule,active.default=active.default, retain.all.vertices=retain.all.vertices)
+    net.list.i <- network.collapse(dnet,at=x,...)
     # set retain.all.vertices=TRUE in order to have fixed size networks in the list.
     net.list.i %n% "timestep" <- x
     net.list.i

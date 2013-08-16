@@ -238,6 +238,7 @@ deactivate.vertices(nd,onset=-1,terminus=2,v=2:4)
 n2<-network.extract(nd,at=0)
 expect_equal(network.vertex.names(n2),c("E","A"))
 
+
 cat("ok\n")
 
 
@@ -667,7 +668,7 @@ network.dyadcount.active(test,at=1)
 
 cat("ok\n")
 
-# ------ network.collapse ----
+# ------ network.collapse tests----
 cat("testing network.collapse ...")
 test<-network.initialize(5)
 add.edges.active(test, tail=c(1,2,3), head=c(2,3,4),onset=0,terminus=1)
@@ -846,6 +847,25 @@ if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
 lapply(list,function(x)list.vertex.attributes(x))
 lapply(list,function(x)list.edge.attributes(x))
 lapply(list,function(x)get.edge.value(x,"weight"))
+
+
+# check that the earliest and latest rules work
+testD<-network.initialize(4)
+testD[1,2:4]<-1
+activate.vertex.attribute(testD,'color','red',onset=0,terminus=1)
+activate.vertex.attribute(testD,'color','green',onset=1,terminus=2)
+activate.vertex.attribute(testD,'color','blue',onset=2,terminus=3)
+activate.edge.attribute(testD,'letter',"a",onset=0,terminus=1)
+activate.edge.attribute(testD,'letter',"b",onset=1,terminus=2)
+activate.edge.attribute(testD,'letter',"c",onset=2,terminus=3)
+
+testEarly<-network.collapse(testD,rule='earliest')
+expect_equal(testEarly%v%'color',rep('red',4))
+expect_equal(testEarly%e%'letter',rep('a',3))
+
+testLate<-network.collapse(testD,rule='latest')
+expect_equal(testLate%v%'color',rep('blue',4))
+expect_equal(testLate%e%'letter',rep('c',3))
 
 
 cat("ok\n")

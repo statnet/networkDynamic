@@ -674,11 +674,9 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
     stop("Onset times must precede terminus times in is.active.\n")
   act<-rep(FALSE,length(active))  
   if(match.arg(rule)=="all")
-    int.query.true <- function(x,y,z){y >= x[1] && z <= x[2]}
+    int.query.true <- match.rule.all  # use the match rule defined in tea_utils.R
   else
-    int.query.true <- function(x,y,z){(y >= x[1] && y <  x[2]) ||
-                                      (z >  x[1] && z <= x[2]) ||
-                                      (y <= x[1] && z >= x[2] && !(x[2]==x[1] && terminus==x[2]))}
+    int.query.true <- match.rule.any
 
   # main loop  
   for(i in seq_along(active)){

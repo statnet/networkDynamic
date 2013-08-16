@@ -1127,4 +1127,27 @@ if(!all(nd$gal$test.active[[1]][[1]] == "a",
 }
 
 
+# ---- test 'earliest' and 'latest' attribute aggregation rules ----
+test<-network.initialize(1)
+activate.vertex.attribute(test,'letter',"a",onset=0,terminus=1)
+activate.vertex.attribute(test,'letter',"b",onset=1,terminus=2)
+activate.vertex.attribute(test,'letter',"c",onset=2,terminus=3)
+expect_equal(get.vertex.attribute.active(test,'letter',onset=0,terminus=4,rule='earliest'),'a')
+expect_equal(get.vertex.attribute.active(test,'letter',onset=0,terminus=4,rule='latest'),'c')
+
+test<-network.initialize(2)
+test[1,2]<-1
+activate.edge.attribute(test,'letter',"a",onset=0,terminus=1)
+activate.edge.attribute(test,'letter',"b",onset=1,terminus=2)
+activate.edge.attribute(test,'letter',"c",onset=2,terminus=3)
+expect_equal(get.edge.attribute.active(test,'letter',onset=0,terminus=4,rule='earliest'),'a')
+expect_equal(get.edge.attribute.active(test,'letter',onset=0,terminus=4,rule='latest'),'c')
+
+
+test<-network.initialize(1)
+activate.network.attribute(test,'letter',"a",onset=0,terminus=1)
+activate.network.attribute(test,'letter',"b",onset=1,terminus=2)
+activate.network.attribute(test,'letter',"c",onset=2,terminus=3)
+expect_equal(get.network.attribute.active(test,'letter',onset=0,terminus=4,rule='earliest'),'a')
+expect_equal(get.network.attribute.active(test,'letter',onset=0,terminus=4,rule='latest'),'c')
 
