@@ -95,7 +95,7 @@ activate.network.attribute <- function (x, prefix, value, onset=NULL, terminus=N
 }
 
 #Only returns first value, since aggregation rules are not specified
-get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all"), dynamic.only=FALSE, return.tea=FALSE,unlist=TRUE){
+get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), dynamic.only=FALSE, return.tea=FALSE,unlist=TRUE){
   # checks for proper inputs
   if(!is.network(x)) 
     stop("get.network.attribute.active requires an argument of class network.\n")
@@ -190,14 +190,14 @@ get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,le
 }
 
 
-get.edge.attribute.active<-function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
+get.edge.attribute.active<-function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
   if (!is.network(x)){
     stop("The first argument for get.edge.attribute.active must be a network object. (This version does not yet support using a list of edges)")
   }
   get.edge.value.active(x,prefix,onset,terminus,length,at,rule,active.default,dynamic.only,require.active,return.tea,unlist)
 }
 
-get.edge.value.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
+get.edge.value.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
   # validate inputs
   
   #check for common error of calling get.edge.attribute instead of get.edge.value
@@ -545,7 +545,7 @@ activate.edge.attribute <-function(x, prefix, value, onset=NULL, terminus=NULL,l
 }
 
 
-get.vertex.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all"), na.omit = FALSE, null.na = TRUE, active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
+get.vertex.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), na.omit = FALSE, null.na = TRUE, active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
   
   # validate inputs
   if(!is.network(x)) 
@@ -768,11 +768,15 @@ insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
       list(new.values, new.spells)
 }
 
-# define functions to use as match rules
+# define functions to use as match rules. These are interval comparison functions 
+# x = a spell [onset,terminus]
+# y = onset to be compared for match
+# z = terminus to be compared for match
 match.rule.all <-function(x,y,z){y >= x[1] && z <= x[2]}
 match.rule.any <-function(x,y,z){(y >= x[1] && y <  x[2]) ||
                               (z >  x[1] && z <= x[2]) ||
                 (y <= x[1] && z >= x[2] && !(x[2]==x[1] && z==x[2]))}
+
 
 # internal function to get a set of values from value and spell list using query params
 # active is a list of activity attributes, each of which list where first is list of values, and 2nd is spell matrix
@@ -782,15 +786,16 @@ match.rule.any <-function(x,y,z){(y >= x[1] && y <  x[2]) ||
 # or just move the entire function into C
 # or parallelize with package "parallel" and parLapply
 getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                             rule=c("any","all"),return.tea=FALSE){
+                             rule=c("any","all","earliest","latest"),return.tea=FALSE){
   
   #since this is not a user functin assumes inputs verified by calling functio
   # query rule
   # x is matrix row, y is onset, z is terminus
-  if(match.arg(rule)=="all")
+  if(match.arg(rule)=="all"){
     int.query.true <- match.rule.all
-  else
+  } else {
     int.query.true <- match.rule.any
+  }
   
   
   # default values of NA
@@ -834,6 +839,12 @@ getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NUL
       #this seems to be slow..
       splindex <- sort(which(apply(active[[i]][[2]], 1, int.query.true, onset[i], terminus[i])))
       if (length(splindex)>0){
+        # evaluate the earliest or latest rule
+        if(rule=='earliest'){
+          splindex<-splindex[1] # choose the earliest value
+        } else if (rule=='latest'){
+          splindex<-splindex[length(splindex)] # choose the latest value
+        }
         if (return.tea){
           vals[[i]]<-list(active[[i]][[1]][splindex],active[[i]][[2]][splindex,])
         } else {
@@ -1265,7 +1276,7 @@ list.vertex.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NUL
   if((min(v,Inf) < 1) || (max(v,-Inf) > network.size(x))){  # combinatorial breakage:
     stop("Illegal vertex id specified in v in activate.edge.attribute.\n")
   }
-
+    rule<-match.arg(rule)
     attributes <- list.vertex.attributes(x)
     attributes.active <- grep(".active",attributes,value=TRUE) 
     currently.active <- sapply(gsub(".active","",attributes.active),function(attr){
@@ -1319,7 +1330,7 @@ list.edge.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL,
         stop("Query intervals must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
     }
   }
-  
+  rule<-match.arg(rule)
   # work around bug in network for 0 edges
   if (network.edgecount(x)>0)
   {
@@ -1393,6 +1404,7 @@ list.network.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NU
         stop("Query intervals must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
     }
   }
+    rule<-match.arg(rule)
     attributes <- list.network.attributes(x)
     active.attributes <-grep(".active",attributes,value=T)
     currently.active <- sapply(gsub(".active","",active.attributes),function(attr){

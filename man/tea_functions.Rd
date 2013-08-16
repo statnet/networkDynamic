@@ -7,11 +7,11 @@
 %  Copyright 2013 the statnet development team
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{attribute.activity.functions}
+\alias{attribute.activity.functions}
 \alias{activate.vertex.attribute}
 \alias{get.vertex.attribute.active}
 \alias{activate.edge.attribute}
 \alias{activate.edge.value}
-% \alias{get.edge.attribute.active}
 \alias{get.edge.value.active}
 \alias{get.edge.attribute.active}
 \alias{activate.network.attribute}
@@ -42,19 +42,19 @@ activate.network.attribute(x, prefix, value, onset = NULL, terminus = NULL,
     length = NULL, at = NULL, dynamic.only = FALSE)    
     
 get.vertex.attribute.active(x, prefix, onset = NULL, terminus = NULL, 
-          length = NULL, at = NULL, rule = c("any", "all"), na.omit =
-                 FALSE, null.na = TRUE, active.default = TRUE,
-                 dynamic.only = FALSE, require.active = FALSE,
-                 return.tea = FALSE, unlist = TRUE)   
+          length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
+          na.omit = FALSE, null.na = TRUE, active.default = TRUE,
+          dynamic.only = FALSE, require.active = FALSE,
+          return.tea = FALSE, unlist = TRUE)   
  
 get.edge.value.active(x, prefix, onset = NULL, terminus = NULL,
-          length = NULL, at = NULL, rule = c("any", "all"), active.default = TRUE, 
-          dynamic.only = FALSE, require.active = FALSE, return.tea = FALSE,
-          unlist = TRUE) 
+          length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
+          active.default = TRUE, dynamic.only = FALSE, require.active = FALSE, 
+          return.tea = FALSE, unlist = TRUE) 
 
 get.network.attribute.active(x, prefix, onset = NULL, terminus = NULL,length = NULL, 
-                at = NULL, rule = c("any", "all"), dynamic.only = FALSE, 
-                return.tea=FALSE,unlist=TRUE) 
+                at = NULL, rule = c("any", "all","earliest","latest"), 
+                dynamic.only = FALSE, return.tea=FALSE,unlist=TRUE) 
                 
 deactivate.vertex.attribute (x, prefix, onset=NULL, terminus=NULL,
           length = NULL, at = NULL, v = seq_len(network.size(x)), dynamic.only = FALSE)
@@ -133,11 +133,18 @@ optional, one or more IDs indicating which vertices should have the TEA attribut
  }
  
  \item{rule}{
-   a character string indicating the definition of "active" for this query: \code{any} (default) to define active as any active attribute spell during the query interval, or \code{all} to define active as being active over the entire interval.
+   a character string indicating how the attribute activity spells should be matched against the query spell for this query: 
+   \itemize{
+     \item \code{any} (default) match attribute values if they overlap with any part of the query interval.  
+     \item \code{all} match an attribute value only if it overlaps with the entire query interval, 
+     \item \code{earliest} match a single value corresponding to the earliest attribute overlaping any part of the query spell, 
+     \item \code{latest} match a single value corresponding to the earliest attribute overlaping any part of the query spell.
+   }
+   
  }
  
  \item{return.tea}{
-   logical; if \code{return.tea=TRUE}, will return an (appropriately truncated) activity attribute- a list with the first element a list of values and the second element the spell matrix of corresponding spells matching according to \code{rule}. Also sets \code{unlist=FALSE} and \code{dynamic.only=TRUE}. If \code{return.tea=FALSE}(default) will return a single matching value. If multiple values match, will return earliest and give warning. 
+   logical; if \code{return.tea=TRUE}, will return an (appropriately truncated) activity attribute- a list with the first element a list of values and the second element the spell matrix of corresponding spell(s) matching according to \code{rule}. Also sets \code{unlist=FALSE} and \code{dynamic.only=TRUE}. 
  }
  
  \item{unlist}{
@@ -152,6 +159,7 @@ These functions provide easy ways to work with temporally extended attributes, m
 The activate.*.attribute methods act as a cross between  activate.*  set.*.attribute methods.  They are used to activate an attribute for a given spell, and in so doing set a value for that spell.  The corresponding deactivate methods are more straightforward, deactivating the attribute over a set interval (and removing any spells/values as needed).
 
 A dynamic or Temporally Extended Attribute (TEA) is an edge, vertex, or network attribute satisfying the following properties:
+
 \enumerate{
  \item Its name consists of an arbitrary prefix, together with the suffix ".active".
  \item Its value consists of a two-element list, whose respective contents must be maintained in order as follows:
@@ -159,7 +167,8 @@ A dynamic or Temporally Extended Attribute (TEA) is an edge, vertex, or network 
 	    \item a. A list of value entries, such that the ith list element is the value of the attribute for the ith spell in the associated activity matrix.  An attribute not active at any given point in time is defined as having a value of NA (but the reverse is not true -- an active attribute can also take a value of NA).
 	    \item b. A two-column numeric matrix, conforming to the specifications for activity attributes in the networkDynamic package.  Every active spell indicated in the activity matrix must correspond to exactly one entry of the associated value list, and these must be maintained in order (i.e., the value of the attribute for the ith active spell is the ith element in the value list).
       }
-}      
+}
+
 There are several ways to specify the activity spell, and the general syntax rules are described at \code{\link{activity.attribute}}.  Activity can be set for a single time point, using either \code{at}, or by setting onset=terminus.  Activity can be set for an interval [onset,terminus), using a valid combination of the \code{onset}, \code{terminus} and \code{length} attributes. 
 
   
@@ -171,12 +180,16 @@ This allows for a wide range of options when specifying spells, but a correct sp
   terminus and length
 }
 
-If the \code{set} and \code{deactivate} functions are provided with no timing information, the element is activated/deactivated from \code{-Inf} to \code{Inf}. The specified interval spans the period from the onset (inclusive) to the terminus (exclusive), so [onset,terminus). For more details, see \code{\link{activate}} The \code{get} query functions will give an error if no timing information is provided. 
+If the \code{set} and \code{deactivate} functions are provided with no timing information, the element is activated/deactivated from \code{-Inf} to \code{Inf}. The specified interval spans the period from the onset (inclusive) to the terminus (exclusive), so \code{[onset,terminus)}. For more details, see \code{\link{activate}} The \code{get} query functions will give an error if no timing information is provided. 
+
 
 When the activity arguments have a length greater than 1, the elements are assumed to correspond to the vertex or edge ids that should have that activity specified, not to the elements of \code{value}. In other words, it is possible to use one function call to activate multiple values on multiple vertices with a different activity time on each vertex, but it is not possible to activate multiple values at multiple times on a single vertex with one call. 
 
+
 \code{activate.edge.value} is a wrapper for \code{activate.edge.attribute}. 
 
+
+When the attribute query has a non-zero duration (i.e. \code{length} > 0, or \code{onset!=terminus}) it is possible that the query spell will match against multiple attribute values for each network element. If multiple values match and \code{return.tea=FALSE}, a warning will be generated and only the earliest value will be returned. To avoid the warning, this behavior (or its opposite) can be specified by setting \code{rule='earliest'} or \code{rule='latest'}.
      
 }
 \value{
@@ -259,6 +272,17 @@ activate.vertex.attribute(test,"letters",c("a","b","c"),onset=c(0,1,2),terminus=
 
 # peek at TEA structure using non-TEA attribute query
 get.vertex.attribute(test,"letters.active",unlist=FALSE)
+
+# compare different 'rules'
+test<-network.initialize(1)
+activate.vertex.attribute(test,'color','red',onset=0,terminus=1)
+activate.vertex.attribute(test,'color','green',onset=1,terminus=2)
+activate.vertex.attribute(test,'color','blue',onset=2,terminus=3)
+
+get.vertex.attribute.active(test,'color',onset=0,terminus=3)
+get.vertex.attribute.active(test,'color',onset=0,terminus=3,return.tea=TRUE)
+get.vertex.attribute.active(test,'color',onset=0,terminus=3,rule='earliest')
+get.vertex.attribute.active(test,'color',onset=0,terminus=3,rule='latest')
 
 }
 

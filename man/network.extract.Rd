@@ -13,8 +13,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{ Temporal Extracts/Cross-sections of Dynamically Extended Network Objects }
 \description{
-  Given a specified time point (or interval), return a reduced network
-  at the given point or over the given interval.
+  Given a networkDynamic and a specified time point (or interval), return a reduced networkDynamic  that only contains the vertices and edges active at the given point or over the given interval.
 }
 \usage{
 network.extract(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
@@ -58,23 +57,22 @@ When \code{retain.all.vertices=TRUE}
   \code{\%t\%} (the temporal cross-section operator) is  a
   simplified (and less flexible) wrapper for \code{network.extract} that
   returns the network of active vertices and edges at a given time point.
+  
 }
 \value{
-  A \code{networkDynamic} object containing the active edges and vertices for the specified spell, when \code{retain.all.vertices=FALSE}, otherwise the network object containing all vertices, and only those edges
-  active for the specified spell.
+  A \code{networkDynamic} object containing the active edges and vertices for the specified spell, when \code{retain.all.vertices=FALSE}, otherwise the network object containing all vertices, and only those edges active for the specified spell. 
 }
 
 \note{
- Note that only active vertices are included by default (\code{retain.all.vertices=FALSE}).  As a result, the size of
-  the extracted network may be smaller than the original. Vertex and edge ids will be translated, but may not correspond to their original values.
+ Note that only active vertices are included by default (\code{retain.all.vertices=FALSE}).  As a result, the size of the extracted network may be smaller than the original. Vertex and edge ids will be translated, but may not correspond to their original values. If it is necessary to maintain the identities of vertices, see \code{\link{persistent.ids}}. 
 }
 %\references{ ~put references to the literature/web site here ~ }
-\author{ Carter T. Butts \email{buttsc@uci.edu}}
+\author{ Carter T. Butts \email{buttsc@uci.edu}, skyebend}
 %\note{ ~~further notes~~ 
 %
 % ~Make other sections like Warning with \section{Warning }{....} ~
 %}
-\seealso{ \code{\link{is.active}}, \code{\link{activity.attribute}}, \code{\link{network.extensions}}, and \code{\link[network:get.inducedSubgraph]{get.inducedSubgraph}} for a related non-temporal version}
+\seealso{ \code{\link{is.active}}, \code{\link{activity.attribute}}, \code{\link{network.extensions}}, and \code{\link[network:get.inducedSubgraph]{get.inducedSubgraph}} for a related non-temporal version, \code{\link{network.collapse}} to squish a \code{networkDynamic} object into a static \code{network}}
 \examples{
 
 triangle <- network.initialize(3)    # create a toy network
