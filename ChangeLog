@@ -1,4 +1,17 @@
 Change Log:
+v0.5 - Features & bug fixes
+ New Features:
+  - added functions to support defining optional 'persistent ids' attributes for vertices and edges that will remain invariant through network extractions: get.vertex.id, get.vertex.pid, for translating between normal (positional) vertex ids and vertex pids, get.edge.id, get.edge.pid do the same for edges, vertex.pid.check, edge.pid.check to verify pid uniqueness, and initialize.pids provides some options for defining the pids.  Overrides add.edges, add.edge, add vertices from network package to allow passing in new ids when creating new network elements.
+  - support for bipartite networks with size-zero first partition (bipartite=0)
+  - implemented 'earliest' and 'latest' aggregation rules for processing attribute queries that might return multiple values
+  - added ability to activate multiple spells per vertex by adding duplicate elements to the v elment of activate.vertices
+  - added ability for activate.edges to activate multiple spells per edge by repeating values of e argument
+  - modified is.active function to give warning if an eid is specified that corresponds to a deleted edge, meaning that the indicies returned will not correspond to indices of the e parameter and valid.eids should be used
+  
+ Bugs fixed:
+  - dramatic speed improvements to spell list importing via the networkDynamic() function
+  - fixed bug in network.edgecount.active and network.naedgecount.active when network has deleted edges (such as ergm sim output). 
+
 v0.4.1 - bug fixes
   - fixed problem in delete spell function that would give errors on some deactivate.vertices calls
   - fixed bug in get.vertex.activity(as.spellList=TRUE) when spell activity had been deleted or removed

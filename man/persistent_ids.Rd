@@ -75,11 +75,13 @@ The persistent id functionality is an optional feature of \code{networkDynamic} 
 
 Some existing network code uses the \code{vertex.names} attributes of networks as a persistent id without checking that it is unique. It is possible to indicate that \code{vertex.names} can safely be used as a vertex.pid by setting \code{vertex.pid} to \code{'vertex.names'}
 
-The function \code{initialize.pids} can be used to create a set of pids on all existing vertices (named \code{vertex.pid} and edges named \code{edge.pid}). The pids are currently initialized with pseudo-random hex strings using the \code{\link{tempfile}} function (something like . It is especially useful if called after a network object as been constructed and before any extractions are performed. 
+The function \code{initialize.pids} can be used to create a set of pids on all existing vertices (named \code{vertex.pid} and edges named \code{edge.pid}). The pids are currently initialized with pseudo-random hex strings using the \code{\link{tempfile}} function (something like \code{'4ad912252bc2'}). It is especially useful if called after a network object as been constructed and before any extractions are performed. 
 
 The element addition functions (\code{add.vertices}) override their network-package counterparts in order to permit assigning pids to newly-added elements if the pid is defined.  They can be defined by the user with the \code{vertex.pids} argument, or, if not specified, a unique random id will be generated. (Note that any new values added by default to a \code{vertex.names} pid will not be numeric.)
 
 Some of the import/conversion methods may set pids. See \code{\link{network}}.
+
+User-specified pids are checked for uniqueness. The the current auto-generated pid implementation produces ids that are unique within the current network.  They are also \emph{almost} certain to be unique within an R session (so that vertices will have a unique id if added and removed) and quite likely across sessions, but we need more details on the \code{tempfile}'s implementation.
 
 With the exception of the "check" utilities, all of these functions modify their network argument in place. 
 }
@@ -101,7 +103,7 @@ Each of the above return \code{NA} values where no match is found.
 Element addition methods:
 \itemize{
   \item{\code{add.verticies} (invisibly) returns a reference to the network with the new vertices added. Pids will be added/created if a \code{vertex.pid} attribute is set.}
-  \item{EDGE VERSIONS NOT YET IMPLEMENTED, SO ADDING EDGE AFTER INITIALZING PID WILL BREAK PIDS}
+  \item{\code{add.edge} and \code{add.edges} (invisibly) return a reference to the network with the new vertices added. Pids will be added/created if a \code{vertex.pid} attribute is set.}
 }
 }
 \references{
@@ -111,7 +113,7 @@ A specification document: \url{https://statnet.csde.washington.edu/trac/wiki/Per
 lxwang, skyebend, the statnet team
 }
 \note{
-User-specified pids are checked for uniqueness. The the current auto-generated pid implementation produces ids that are unique within the current network.  They are also \emph{almost} certain to be unique within an R session (so that vertices will have a unique id if added and removed) and quite likely across sessions, but we need more details on the \code{tempfile}'s implementation. 
+  Adding edges via the extraction/replacement operators \code{[,]} bypasses the pid code and will break the edge pids defined for the network. Similarly, \code{\link{add.vertices.active}} and \code{\link{add.edges.active}} do not yet support including pids. 
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
