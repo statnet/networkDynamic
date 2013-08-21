@@ -277,7 +277,7 @@ network.edgecount(notflat) # did we lose edge2?
 get.change.times(notflat)
 @
 
-By default, the \verb@network.extract@ function returns the subset of edges in the original network that are active during the query period. The \verb@trim.spells@ parameter tells it to take the more computationally expensive step of actually modifying the activity spells in all of the network elements to trim them to the specified range. 
+By default, the \verb@network.extract@ function returns a \verb@networkDynamic@ object with the subset of edges in the original network that are active during the query period. The \verb@trim.spells@ parameter tells it to take the more computationally expensive step of actually modifying the activity spells in all of the network elements to trim them to the specified range. 
 
 There is also a \verb@network.collapse@ function which extracts the appropriate range and returns a static \verb@network@ object with the timing information removed.
 
@@ -460,8 +460,6 @@ set.vertex.attribute(classDyn,"sex",as.character(vertexData$sex))
 set.vertex.attribute(classDyn,"role",as.character(vertexData$role))
 @
 
-
-
 To run standard network measures we will need to first ``bin'' or ``slice'' the network up into static networks. Although there is not yet a utility function for this operation, we will convert the classroom data into series of networks, each of which aggregates 5 minutes of streaming interactions. We do this by creating a list of times, and then using the \verb@lapply@ function to apply \verb@network.extract@ for each of those times.
 
 <<classroom_binning>>=
@@ -490,6 +488,70 @@ plot(network.extract(
   classDyn,onset=0,length=.1,rule="any"),
   main='a single conversation turn',displaylabels=T)
 @
+
+\section{Persistent IDs}
+
+As has already been mentioned, the standard vertex and edge ids used in the network package are indices, so they must change when the network size changes during an extraction operation \footnote{In the case of vertex ids, they may also change during vertex deletions, or additions to the first mode of a bipartite network}.  So how can we follow a specific network element through a series of slicing and dicing operations?  Since v0.5, the networkDynamic package supports defining an (optional) ``persistent id'' (pid) for edges and vertices.  
+
+Once a persistent id has been defined, the functions \verb@get.vertex.id()@ and \verb@get.vertex.pid@ can be used to translate between the normal ids and the pids.  For edges, the functions are named \verb@get.edge.id@ and \verb@get.edge.pid@. Lets look at an example where we find the original vertices corresponding to vertices in smaller extracted net.
+
+<<pids1>>==
+haystack<-network.initialize(30)
+activate.vertices(haystack,v=10:20)
+@
+Now hide some needles in the haystack...
+<<pids2>>==
+set.vertex.attribute(haystack,'needle',TRUE,v=sample(10:20,2))
+@
+... make up an id for the vertices, and define that it will be our persistent id.
+<<pids3>>=
+set.vertex.attribute(haystack,'hayId',paste('straw',1:30,sep=''))
+set.network.attribute(haystack,'vertex.pid','hayId')
+@
+Lets find the needles in the new stack after some hay has been removed over time
+<<pids4>>=
+newstack<-network.extract(haystack,at=100,active.default=FALSE)
+network.size(newstack)
+needleIds <-which(get.vertex.attribute(newstack,'needle'))
+needleIds
+@
+
+What are the pids of vertices with needles? Which vertices are the corresponding ones in the original haystack?
+<<pids5>>==
+get.vertex.pid(newstack,needleIds)
+get.vertex.id(haystack,get.vertex.pid(newstack,needleIds))
+@
+In the example above, we made up a new id, but if the data set already had some type of unique identifier for vertices, we could have used it instead. In some cases it might be tempting to use the \verb@vertex.names@ attributes of networks as a persistent id without checking that it is unique. This can cause problems if vertices are added or deleted.
+
+<<nonpid_delete_example>>=
+net<-network.initialize(3)
+add.vertices(net,1)
+delete.vertices(net,2)
+# notice the NA value
+as.matrix(net)
+@
+
+To make life easier, we can just indicate that a unique set of \verb@vertex.names@ can safely be used as a vertex.pid by setting \verb@vertex.pid@ to \verb@'vertex.names'.@ This has the advantage of not adding an extra attribute that needs to be carried around, and the pids will appear as the labels.
+<<pid_delete_example>>=
+net<-network.initialize(3)
+set.network.attribute(net,'vertex.pid','vertex.names')
+add.vertices(net,1,vertex.pid='4')
+add.vertices(net,1)
+delete.vertices(net,2)
+as.matrix(net)
+@
+Notice that when we added vertices in the first case we explicitly included in a vertex pid for the new vertex. In the second case, we didn't specify a pid, so it made up a messy one to make sure they stayed unique. 
+
+The function initialize.pids can also be used to create a set of pids on all existing vertices (named vertex.pid) and edges (named edge.pid). The pids are currently initialized with meaningless but unique pseudo-random hex strings using the \verb@tempfile@ function (something like \verb@'4ad912252bc2'@)  These are also the types of new pids that will be created if add.vertices is called in a network with a vertex.pid defined, as in the example above. It is a good idea to define pids after a network object as been constructed and before any extractions are performed.
+<<initialize.pids>>==
+net<-network.initialize(3)
+add.edges(net,tail=1:2,head=2:3)
+initialize.pids(net)
+net%v%'vertex.pid'
+net%e%'edge.pid'
+@
+
+The edge pids can be useful in looking up edges if vertex deletions cause the ids of the edge's vertices to be permuted. 
 
 \section{Transforming networkDynamic objects to other representations}
 Great, I got all my data into your magic format, now how do I get it out again?
@@ -578,6 +640,18 @@ In get.vertex.attribute.active(net, "happiness", onset = 2.5,
     terminus = 4.5) : Multiple attribute values matched query 
     spell  for some vertices, only earliest value used')
 @
+If we know that this behavior (returning the earliest attribute value that intersects with the query spell) is what is desired, we can suppress the warnings by specifying \verb@rule='earliest'@.
+
+<<tea3.1>>=
+get.vertex.attribute.active(net,"happiness",onset=2.5,terminus=4.5,rule='earliest')
+@
+As might be expected, \verb@rule='latest'@ also works, but it returns the latest (most recent, largest time value) attribute intersecting with the query spell.
+
+<<tea3.2>>=
+get.vertex.attribute.active(net,"happiness",onset=2.5,terminus=4.5,rule='latest')
+@
+
+
 In many cases the user might want to aggregate the values together in some way, but that there is no way for the query function know what the correct aggregation method would be--especially if the attributes have categorical rather than numeric values. Should the results be a sum? An average? A time-weighted average? A value sampled at random? In order to handle these cases correctly, code must be designed to explicitly handle the multiple values. To facilitate this the query functions have an argument \verb@return.tea=TRUE@ which can be set so that they will return the (appropriately trimmed) TEA structure to be evaluated. 
 <<tea4>>=
 get.vertex.attribute.active(net,"happiness",onset=2.5,terminus=4.5,
@@ -792,10 +866,6 @@ The statnet team is releasing several packages that work closely with the \verb@
 \item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format. 
 \end{itemize}
 
-\section{Missing bits for this document}
-Missing data example?
-Persistent ids. 
-
 \section{Citing networkDynamic}
 You can use R's built in citation function to give the citation for the package.
 <<citation>>=
@@ -817,6 +887,7 @@ This is a list of terms and common function arguments giving their special meani
 \item [onset-censored] when elements of a dynamic network are known to be active before start of the defined observation period, even if the onset of the spell is not known.
 \item [terminus-censored] when elements of a dynamic network are known to be active after the end of the defined observation period, even if the terminus of the spell is not known.
 \item [TEA] Temporally Extended Attribute: structure for storing dynamic attribute data on vertices, edges, and networks.
+\item [pid] A ``Persistent ID'' for a vertex or edge that will remain the same despite extraction and deletion operations. 
 \end{description}
 
 \section{Complete package function listing}
