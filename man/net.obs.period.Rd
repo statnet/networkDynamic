@@ -19,7 +19,7 @@ Network attribute describing the observation properties of a networkDynamic obje
   If the attribute is present, it is required to have a specific structure.  It is a 4-element \code{list} with named values.
 \itemize{
   \item the \code{observations} element is a list of two-elment spell vectors that give the onset and terminus of the time period(s) during which the network was observed or simulated
-  \item A string indicating the temporal model of the network: either \code{discrete} or \code{continuous}
+  \item \code{mode} A string indicating the temporal model of the network: either \code{discrete} or \code{continuous}
   \item \code{time.increment} is an indicator of the `natural' time unit for iterating over the network (primarily useful for discrete time models)
   \item \code{time.unit} is the name of the unit used by all of the spells in the object: often set to \code{step} for discrete simulations. 
 

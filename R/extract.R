@@ -555,8 +555,8 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
 }
 
 
-
-get.slices.networkDynamic <- function(dnet, onset=NULL, terminus=NULL, at=NULL, length=NULL,...){
+# a function to return multiple static network arguments corresponding to collapsed slices
+get.networks <- function(dnet, start=NULL, end=NULL, time.increment=NULL, onsets=NULL, termini=NULL,...){
   
   # check args
   if(missing(dnet) || !is.networkDynamic(dnet)){
@@ -564,57 +564,65 @@ get.slices.networkDynamic <- function(dnet, onset=NULL, terminus=NULL, at=NULL, 
   }
   
   
-  if(!is.null(at)) {
-    if(!is.numeric(at))
-      stop("Activation times must be numeric in get.slices.networkDynamic.\n")
-    if(!(is.null(onset) && is.null(terminus) && is.null(length)))
-      stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
-  } else {
-    if(!is.null(onset) && (!is.vector(onset) || !is.numeric(onset)))
-      stop("Onset times must be numeric in get.slices.networkDynamic.\n")
-    if(!is.null(terminus) && (!is.vector(terminus) || !is.numeric(terminus)))
-      stop("Terminus times must be a numeric value in get.slices.networkDynamic.\n")
-    if(!is.null(length) && (!is.vector(length) || !is.numeric(length) || any(length < 0)))
-      stop("Interval length must be a non-negative numeric value in get.slices.networkDynamic.\n")
-    if(!is.null(onset)) {
-      if(!xor(is.null(terminus),is.null(length)))
-        stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
-    } else {
-      if(xor(is.null(terminus),is.null(length)))
-        stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
-    }
-  }
-  
-  # figure out onset and terminus from at and length if necessary
-  if(!is.null(at)) {
-    onset <- terminus <- at
-  } else if (!is.null(onset)) {
+
+    if(!is.null(onsets) && (!is.vector(onsets) || !is.numeric(onsets)))
+      stop("Onset times must be a numeric vector \n")
+    if(!is.null(termini) && (!is.vector(termini) || !is.numeric(termini)))
+      stop("Terminus times must be a numeric vector \n")
+    if(!is.null(time.increment) && !is.numeric(time.increment))
+      stop("time.increment must be a non-negative numeric value\n")
     
-    if (!is.null(length))
-      terminus <- onset + length
-  } else {
-    if (is.null(terminus)) {
-      onset <- -Inf
-      terminus <- Inf
-    } else {
-      onset <- terminus - length
+  
+  
+  # arguments are null, try to guess from net.obs.period
+  net.obs.period<-dnet%n%'net.obs.period'
+  if (!is.null(net.obs.period)){
+    if (is.null(start)){
+      start<-min(unlist(net.obs.period$observations))
+    }
+    if (is.null(end)){
+      end<-max(unlist(net.obs.period$observations))
+    }
+    if (is.null(time.increment)){
+      time.increment<-net.obs.period$time.increment
     }
   }
-  if(onset>terminus){
-    stop("Onset times must precede terminus times in get.slices.networkDynamic\n")
+  
+  # if time increment is still missing, default to 1
+  if (is.null(time.increment)){
+    time.increment<-1
   }
   
-  if(terminus-onset==Inf){  
-    stop("error: infinite number of time slices due to onset=-Inf and/or terminus=Inf")
+  
+  
+  # create the lists of onsets and termini to slice by
+  # check that either onsets and termini OR start, end, increment specified but not both
+  
+  if(!is.null(start) & !is.null(end) & !is.null(time.increment)){
+    # USING START & END
+    if (!is.null(onsets) | !is.null(termini)){
+      stop("onsets & termini cannot be specified with start & end arguments\n")
+    }
+    # watch out for infs
+    if(is.infinite(start) | is.infinite(end)){
+      stop("start and end values must be finite")
+    }
+    onsets<-seq(from=start,to=end-time.increment,by=time.increment)
+    termini<-seq(from=start+time.increment,to=end,by=time.increment)
+  } else if (!is.null(onsets) & !is.null(termini)){
+    # USING ONSETS & TERMINI
+    if (length(onsets)!=length(termini)){
+      stop('onsets and termini must have the same number of elements')
+    }
+    if(any(onsets>termini)){
+      stop("Onset times must precede terminus times\n")
+    }
   } else {
-    time.slice <- onset:terminus    
+    stop("Unable to infer appropriate onsets and termini values for extracting networks, start & end, or onsets and termini parameters must be specified")
   }
   
-  net.list <- lapply(time.slice, function(x){
-    net.list.i <- network.collapse(dnet,at=x,...)
-    # set retain.all.vertices=TRUE in order to have fixed size networks in the list.
-    net.list.i %n% "timestep" <- x
-    net.list.i
+  net.list <- lapply(seq_along(onsets), function(x){
+    network.collapse(dnet,onset=onsets[x],terminus=termini[x],...)
   } )
   
   return(net.list)  
