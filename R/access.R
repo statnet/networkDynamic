@@ -775,7 +775,7 @@ network.edgecount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, a
                                     rule=c("any","all"), na.omit = TRUE, active.default=TRUE){
   if(x%n%"mnext">1){
     act<-is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
-                 e=seq_len(x%n%"mnext"-1), v=NULL,rule=rule, active.default=active.default)
+                 e=valid.eids(x), v=NULL,rule=rule, active.default=active.default)
     if(na.omit)
       sum(act*(1-(x%e%"na")))
     else
@@ -791,7 +791,7 @@ network.naedgecount.active<-function (x, onset=NULL, terminus=NULL, length=NULL,
                                       rule=c("any","all"), active.default=TRUE){
   if(x%n%"mnext">1) {
     act<-is.active(x=x,onset=onset,terminus=terminus,length=length, at=at,
-                   e=seq_len(x%n%"mnext"-1),v=NULL,rule=rule, active.default=active.default)
+                   e=valid.eids(x),v=NULL,rule=rule, active.default=active.default)
     sum(act*(x%e%"na"))
   }else{
     0

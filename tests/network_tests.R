@@ -803,53 +803,7 @@ net0<-network.collapse(nd,at=0)
 expect_true(is.network(net0),info="check network object returned for net of zero vertices")
 expect_equal(network.size(net0),0,info="check network object returned for net of zero vertices has 0")
 
-#----- get.slices tests -------
-
-#test for get.slices.networkDynamic
-
-test <- network.initialize(5)
-add.edges.active(test, tail=c(1,2,3), head=c(2,3,4),onset=0,terminus=1)
-activate.edges(test,onset=3,terminus=5)
-activate.edges(test,onset=-2,terminus=-1)
-activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
-activate.edge.attribute(test,'weight',3,onset=4,terminus=5,e=1:2)
-
-
-list <- get.slices.networkDynamic(test,onset=0, terminus=5)
-
-if(!all(unlist(lapply(list,network.size))==5))
-  stop("network list encounter errors")
-
-if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
-  stop("network list encounter errors")
-lapply(list,function(x)list.vertex.attributes(x))
-lapply(list,function(x)list.edge.attributes(x))
-lapply(list,function(x)get.edge.value(x,"weight"))
-#NULL: the edge is not activate at that slice
-#NA: the attribute is not activate at that slice, but the edge is activate
-#Numerical Value: both the edge and the attribute are activate at that slice.
-
-
-# test for get.slices.networkDynamic when onset=-Inf and terminus=Inf
-test <- network.initialize(5)
-add.edges.active(test, tail=c(1,2,3), head=c(2,3,4),onset=-Inf,terminus=Inf)
-activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
-activate.edge.attribute(test,'weight',3,onset=4,terminus=5,e=1:2)
-
-
-list <- get.slices.networkDynamic(test,onset=0, terminus=5)
-
-if(!all(unlist(lapply(list,network.size))==5))
-  stop("network list encounter errors")
-
-if(!all(unlist(lapply(list,function(x)x%n%"timestep"))==0:5))
-  stop("network list encounter errors")
-lapply(list,function(x)list.vertex.attributes(x))
-lapply(list,function(x)list.edge.attributes(x))
-lapply(list,function(x)get.edge.value(x,"weight"))
-
-
-# check that the earliest and latest rules work
+# ----- check that the earliest and latest rules work----
 testD<-network.initialize(4)
 testD[1,2:4]<-1
 activate.vertex.attribute(testD,'color','red',onset=0,terminus=1)
@@ -866,6 +820,60 @@ expect_equal(testEarly%e%'letter',rep('a',3))
 testLate<-network.collapse(testD,rule='latest')
 expect_equal(testLate%v%'color',rep('blue',4))
 expect_equal(testLate%e%'letter',rep('c',3))
+
+#----- get.networks -------
+
+#test for get.networks
+
+test <- network.initialize(5)
+add.edges.active(test, tail=c(1,2,3), head=c(2,3,4),onset=0,terminus=1)
+activate.edges(test,onset=3,terminus=5)
+activate.edges(test,onset=-2,terminus=-1)
+activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
+activate.edge.attribute(test,'weight',3,onset=4,terminus=5,e=1:2)
+
+# uset start and end args
+netlist <- get.networks(test,start=0, end=5)
+expect_equal(length(netlist),5,info='get.networks tets')
+expect_equal(network.edgecount(netlist[[1]]),3,info='get.networks tets')
+expect_equal(network.edgecount(netlist[[2]]),0,info='get.networks tets')
+expect_equal(network.edgecount(netlist[[4]]),3,info='get.networks tets')
+expect_equal(network.edgecount(netlist[[5]]),3,info='get.networks tets')
+
+# use start end and increment
+expect_warning(netlist <- get.networks(test,start=0, end=5,time.increment=5),'Multiple attribute values matched')
+expect_equal(length(netlist),1)
+# warning-free extraction using 'latest' rule
+netlist <- get.networks(test,start=0, end=5,time.increment=5,rule='latest')
+expect_equal(netlist[[1]]%e%'weight',c(3,3,5))
+
+
+# test error cases
+expect_error(get.networks(test,start=1),"Unable to infer appropriate onsets and term")
+expect_error(get.networks(test,end=1),"Unable to infer appropriate onsets and term")
+expect_error(get.networks(test,start=0,end=1,onsets=1),"onsets & termini cannot be specified with start & end arguments")
+expect_error(get.networks(test,onsets=1,termini=1:5),"onsets and termini must have the same number of elements")
+expect_error(get.networks(test,onsets=1:3,termini=3:1),"Onset times must precede terminus times")
+expect_error(get.networks(test,start=-Inf,end=1),"start and end values must be finite")
+
+#use onset and terminus
+netlist<-get.networks(test,onsets=c(0,1,2),termini=c(1,2,3))
+expect_equal(length(netlist),3)
+
+# use net obs period to infer params
+test%n%'net.obs.period'<-list(observations=c(-1,5),mode='discrete',time.increment=1,time.unit='step')
+netlist<-get.networks(test)
+expect_equal(length(netlist),6)
+
+
+# check network size changes and argument passing
+test<-network.initialize(5)
+activate.vertices(test,onset=1:5,terminus=c(5,5,5,5,5))
+netlist<-get.networks(test,start=1,end=5)
+expect_equal(sapply(netlist,network.size),1:4)
+
+netlist<-get.networks(test,start=1,end=5,retain.all.vertices=TRUE)
+expect_equal(sapply(netlist,network.size),c(5,5,5,5))
 
 
 cat("ok\n")

@@ -370,6 +370,7 @@ nobs <-get.network.attribute(newcombGaps,'net.obs.period')
 names(nobs)
 nobs$'time.unit'<-'week'
 nobs$'mode'<-'discrete'
+nobs$'time.increment'<-1
 set.network.attribute(newcombGaps,'net.obs.period',nobs)
 @
 
@@ -451,7 +452,6 @@ The original data include some attribute information for the vertices which we'd
 
 <<mcfarland_vertattr>>=
 nrow(vertexData)==length(unique(vertexData$vertex_id))
-
 @
 Looks good! Lets load 'em up...
 <<mcfarland_vertexattr2>>=
@@ -460,13 +460,10 @@ set.vertex.attribute(classDyn,"sex",as.character(vertexData$sex))
 set.vertex.attribute(classDyn,"role",as.character(vertexData$role))
 @
 
-To run standard network measures we will need to first ``bin'' or ``slice'' the network up into static networks. Although there is not yet a utility function for this operation, we will convert the classroom data into series of networks, each of which aggregates 5 minutes of streaming interactions. We do this by creating a list of times, and then using the \verb@lapply@ function to apply \verb@network.extract@ for each of those times.
+To run standard network measures we will need to first ``bin'' or ``slice'' the network up into static networks. Using the \verb@get.networks@ function we will collapse the classroom data into series of networks, each of which aggregates 5 minutes of streaming interactions. 
 
-<<classroom_binning>>=
-startTimes <-seq(from=0,to=40,by=5) # make a list of times 
-classNets <- lapply(startTimes, function(t){ 
-  network.extract(classDyn,onset=t,terminus=t+5)})
-classMats <- lapply(classNets,as.sociomatrix) # make into matrices
+<<classroom_binning,fig=TRUE>>=
+classNets <- get.networks(classDyn,start=0,end=50,time.increment=5,rule='latest')
 classDensity <- sapply(classNets, network.density) 
 plot(classDensity,type='l',xlab='network slice #',ylab='density')
 @
@@ -521,7 +518,12 @@ What are the pids of vertices with needles? Which vertices are the corresponding
 get.vertex.pid(newstack,needleIds)
 get.vertex.id(haystack,get.vertex.pid(newstack,needleIds))
 @
-In the example above, we made up a new id, but if the data set already had some type of unique identifier for vertices, we could have used it instead. In some cases it might be tempting to use the \verb@vertex.names@ attributes of networks as a persistent id without checking that it is unique. This can cause problems if vertices are added or deleted.
+In the example above, we made up a new id, but if the data set already had some type of unique identifier for vertices, we could have used it instead. For the previous McFarland example we could use \verb@data_id@:
+<<pids6>>==
+set.network.attribute(classDyn,'vertex.pid','data_id')
+@
+
+In some cases it might be tempting to use the \verb@vertex.names@ attributes of networks as a persistent id without checking that it is unique. This can cause problems if vertices are added or deleted.
 
 <<nonpid_delete_example>>=
 net<-network.initialize(3)
@@ -578,14 +580,14 @@ vertSpells[1:5,]
 Which is not so exciting in this example, since we don't have any vertex dynamics. 
 
 \subsection{Converting to a list of networks or matrices}
-We are still missing the \verb@get.slice.networks@ function. It should have an example here. Instead we can use \verb@lapply@ to extract a list of several non-overlapping unit slices from the random network we created a while back, and them print them out as matrices. 
+The \verb@get.networks@ function gives us a quick way to collapse a series of static \verb@network@ objects from a \verb@networkDynamic@. We can use \verb@lapply@ to extract a list of several non-overlapping unit slices from the random network we created a while back, and them print them out as matrices. 
 <<slice_nets>>=
-onsets<-0:2
-slices<-lapply(onsets,function(t){
-          network.extract(randomNet,onset=t,terminus=t+1)
-        })
-is.network(slices[[1]])
-lapply(slices,as.matrix) # print 'em out as matrices
+lapply(get.networks(randomNet,start=0,end=2,time.increment=1),as.matrix)
+@
+If we have a network that already has 'slicing' information in its \verb@net.obs.period@ attribute, \verb@get.networks@ can use those values a defaults.  So if we apply it to our previous \verb@newcombGaps@ example we should get back our list of 15 networks, with the ninth one missing.
+<<slice_nets2>>=
+newSlices<-get.networks(newcombGaps)
+sapply(newSlices,network.size)
 @
 
 
@@ -862,7 +864,7 @@ We can see that the rumor started at v1, our seed vertex, which has a little loo
 \section{Related packages and other coming attractions}
 The statnet team is releasing several packages that work closely with the \verb@networkDynamic@ package to provide additional features. 
 \begin{itemize}
- \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. 
+ \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}
 \item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format. 
 \end{itemize}
 
