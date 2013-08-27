@@ -1,7 +1,9 @@
 Change Log:
 v0.5 - Features & bug fixes
  New Features:
+  - added get.networks() function that returns a list of network objects sampled from a networkDynamic
   - added functions to support defining optional 'persistent ids' attributes for vertices and edges that will remain invariant through network extractions: get.vertex.id, get.vertex.pid, for translating between normal (positional) vertex ids and vertex pids, get.edge.id, get.edge.pid do the same for edges, vertex.pid.check, edge.pid.check to verify pid uniqueness, and initialize.pids provides some options for defining the pids.  Overrides add.edges, add.edge, add vertices from network package to allow passing in new ids when creating new network elements.
+  - added reconcile.vertex.activity and reconcile.edge.activity functions with various modes for modifying the activity of one set of elements to be consistent with the other
   - support for bipartite networks with size-zero first partition (bipartite=0)
   - implemented 'earliest' and 'latest' aggregation rules for processing attribute queries that might return multiple values
   - added ability to activate multiple spells per vertex by adding duplicate elements to the v elment of activate.vertices
