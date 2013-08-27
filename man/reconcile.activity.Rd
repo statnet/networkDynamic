@@ -1,5 +1,6 @@
 \name{reconcile.vertex.activity}
 \alias{reconcile.vertex.activity}
+\alias{reconcile.edge.activity}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Modify the activity spells of vertices to match incident edges or the other way around
@@ -9,6 +10,8 @@ When networkDynamic objects are created from real-world data it is often the cas
 }
 \usage{
 reconcile.vertex.activity(net, mode = "match.to.edges", edge.active.default = TRUE)
+
+reconcile.edge.activity(net, mode="reduce.to.vertices", active.default=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,15 +20,23 @@ reconcile.vertex.activity(net, mode = "match.to.edges", edge.active.default = TR
   \item{mode}{ string indicating the method for reconciling
 }
   \item{edge.active.default}{
-boolean, should edges with no definied activity be considered active?
+boolean, should edges with no definied activity be considered active?}
+  \item{active.default}{
+boolean, should edges and nodes with no definied activity be considered active?
+
 }
 }
 \details{
 
 \itemize{
 The \code{mode} argument takes the following values:
-\item \code{match.to.edges} vertices will be modified so as to be \bold{only} active when incident vertices are active.
+\item \code{match.to.edges} vertices will be modified so as to be only active when incident edges are active. Existing vertex spells are deleted.
+\item \code{expand.to.edges} vertices activity will be expanded to include the activity periods of any incident edges (still permits isolated vertices). Existing vertex spells are preserved.
+\item \code{encompass.edges} vertices activity will be modified so that it has a single spell beginning with the earliest incident edge activity, and encompasses the last edge activity. Existing vertex spells are deleted.
 
+\item \code{match.to.vertices} edges will be modified so as to be active whenever all incident vertices are active. Existing
+edge spells are deleted.
+\item \code{reduce.to.vertices} edges will be modified so as to have no active spells when incident verticse are inactive. Existing edge spells are preserved.
 }
 
 }
@@ -34,11 +45,9 @@ The \code{mode} argument takes the following values:
 }
 
 \author{
-skyebend
+skyebend, lxwang
 }
-\note{
-not yet fully implemented, only one rule so far. Should have rule to expand (but not delete) activity to match edges
-}
+
 
 
 \examples{

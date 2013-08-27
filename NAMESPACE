@@ -67,5 +67,6 @@ edge.pid.check,
 add.vertices,
 add.edges,
 add.edge,
-reconcile.vertex.activity
+reconcile.vertex.activity,
+reconcile.edge.activity
 )
