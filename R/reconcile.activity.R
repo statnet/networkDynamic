@@ -2,13 +2,14 @@
 
 
 
-reconcile.vertex.activity<-function(net,mode="match.to.edges",edge.active.default=TRUE){
+reconcile.vertex.activity<-function(net,mode=c("expand.to.edges","match.to.edges","encompass.edges"),edge.active.default=TRUE){
   if (!is.networkDynamic(net)){
     stop("reconcile.vertex.activity can only be applied to networkDynamic objects")
   }
   xn <- deparse(substitute(net))
   ev <- parent.frame()
   v<-seq_len(network.size(net))
+  mode<-match.arg(mode)
   if(mode=='match.to.edges'){
     # set the activity spells of all vertices to match the activity of their incident edges
     # delete the vertices' activity
@@ -19,7 +20,8 @@ reconcile.vertex.activity<-function(net,mode="match.to.edges",edge.active.defaul
       eids<-get.edgeIDs(net,v=vert,neighborhood='combined')
       if (length(eids)>0){
         # get the activity of those edges and  union the edge activiy spells
-        activity<-unique(get.edge.activity(net,e=eids,as.spellList=TRUE,active.default=edge.active.default)[,1:2])
+        # hid the warnings in the case there is no edge activity
+        suppressWarnings(activity<-unique(get.edge.activity(net,e=eids,as.spellList=TRUE,active.default=edge.active.default)[,1:2]))
         if (nrow(activity)>0){
           # set vertex activity to edges' activity
           for (i in seq_len(nrow(activity))) {
@@ -44,7 +46,8 @@ reconcile.vertex.activity<-function(net,mode="match.to.edges",edge.active.defaul
       eids<-get.edgeIDs(net,v=vert,neighborhood='combined')
       if (length(eids)>0){
         # get the activity of those edges and  union the edge activiy spells
-        activity<-unique(get.edge.activity(net,e=eids,as.spellList=TRUE,active.default=edge.active.default)[,1:2])
+        # hide warnings generated if all edgs are inactive
+        suppressWarnings(activity<-unique(get.edge.activity(net,e=eids,as.spellList=TRUE,active.default=edge.active.default)[,1:2]))
         if (nrow(activity)>0){
           # set vertex activity to edges' activity
           for (i in seq_len(nrow(activity))) {
@@ -94,12 +97,13 @@ reconcile.vertex.activity<-function(net,mode="match.to.edges",edge.active.defaul
 }
 
 
-reconcile.edge.activity<-function(net,mode="reduce.to.vertices", active.default=TRUE){
+reconcile.edge.activity<-function(net,mode=c("match.to.vertices","reduce.to.vertices"), active.default=TRUE){
   if (!is.networkDynamic(net)){
     stop("reconcile.edge.activity can only be applied to networkDynamic objects")
   }
   xn <- deparse(substitute(net))
   ev <- parent.frame()
+  mode<-match.arg(mode)
   v<-seq_len(network.size(net))
   
   if(mode=='reduce.to.vertices'){
