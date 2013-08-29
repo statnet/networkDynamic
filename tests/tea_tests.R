@@ -374,6 +374,15 @@ if(!all(deparse(nd2)==deparse(nd))){
   stop("activate.edge.attribute did not return modified network argument or it does not match argument modified in place")
 }
 
+# test bug #523 where edge values getting incorrectly permuted when using e argument
+
+test<-network.initialize(3)
+add.edges.active(test,tail=1,head=2,onset=0,terminus=1)
+add.edges.active(test,tail=2,head=3,onset=2,terminus=3)
+activate.edge.attribute(test,'letter','a',onset=0,terminus=1,e=1)
+activate.edge.attribute(test,'letter','b',onset=2,terminus=3,e=2)
+expect_equal(get.edge.attribute.active(test,'letter',at=0),c("a",NA)) # this was returning c("a","a")
+
 # what if an edge is null because it was deleted
 
 # apply to subset of edge

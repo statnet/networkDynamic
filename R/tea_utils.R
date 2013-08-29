@@ -528,7 +528,7 @@ activate.edge.attribute <-function(x, prefix, value, onset=NULL, terminus=NULL,l
   
   timedlist <- get.edge.attribute(x$mel, attrname,unlist=FALSE);
   timedlist <- lapply(seq_len(length(e)),function(n){
-    timed <- timedlist[[n]];
+    timed <- timedlist[[e[n]]];
     if(is.null(timed) || (length(timed)==1 && is.na(timed))){
       # create a new TEA attribute
       return(list(list(value[[n]]),matrix(c(onset[n],terminus[n]),nrow=1,ncol=2)))
