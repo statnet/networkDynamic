@@ -13,6 +13,7 @@ v0.5 - Features & bug fixes
  Bugs fixed:
   - dramatic speed improvements to spell list importing via the networkDynamic() function
   - fixed bug in network.edgecount.active and network.naedgecount.active when network has deleted edges (such as ergm sim output). 
+  - fixed bug in activate.edge.attributes that could swap edge values in some cases when using e argument.
 
 v0.4.1 - bug fixes
   - fixed problem in delete spell function that would give errors on some deactivate.vertices calls
