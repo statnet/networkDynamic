@@ -15,7 +15,8 @@
   Given a start time, end time, and increment (or vectors of onsets and termini) to express sampling intervals, return a list of collapsed networks from a networkDynamic object. 
 }
 \usage{
-  get.networks(dnet, start = NULL, end = NULL, time.increment = NULL, onsets=NULL, termini=NULL,...)
+  get.networks(dnet, start = NULL, end = NULL, time.increment = NULL, 
+               onsets=NULL, termini=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
