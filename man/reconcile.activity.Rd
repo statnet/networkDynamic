@@ -17,9 +17,13 @@ Modify the activity spells of vertices to match incident edges or the other way 
 When networkDynamic objects are created from real-world data it is often the case that activity information for vertices and edges may not come from the same source and may not match up exactly.  Vertices may be inactive when incident edges are active, etc.  The \code{reconcile.vertex.activity} function modifies the activity of a network's vertices acording to the \code{mode} specified, while \code{reconcile.edge.activity} performs similar operations for edges.
 }
 \usage{
-reconcile.vertex.activity(net,mode=c("expand.to.edges","match.to.edges","encompass.edges"), edge.active.default = TRUE)
+reconcile.vertex.activity(net,
+                      mode = c ("expand.to.edges", "match.to.edges", "encompass.edges"),
+                      edge.active.default = TRUE)
 
-reconcile.edge.activity(net, mode=c("match.to.vertices","reduce.to.vertices"), active.default=TRUE)
+reconcile.edge.activity(net, 
+                     mode = c("match.to.vertices", "reduce.to.vertices"), 
+                     active.default = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
