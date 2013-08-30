@@ -218,7 +218,28 @@ net[1,2]<-1
 expect_equal(network.edgecount(network.extract(net,at=1,retain.all.vertices=TRUE,active.default=FALSE)),0,info="check if edges to inactive vertices are retained when retain.all.vertices=TRUE")
 
 # check that net.obs.period updated
+net<-network.initialize(3)
+activate.vertices(net,onset=0,terminus=31)
+net%n%'net.obs.period'<-list(observations=list(c(-3,-1),c(0,24),c(25,26),c(27,31),c(32,32)),mode="discrete", time.increment=1,time.unit="day")
+netex<-network.extract(net,onset=20,terminus=30)
+net.obs<-netex%n%'net.obs.period'
+expect_equal(unlist(unlist(net.obs$observations)),c(20,24,25,26,27,30))
 
+netex<-network.extract(net,onset=25,terminus=26)
+net.obs<-netex%n%'net.obs.period'
+expect_equal(unlist(net.obs$observations),c(25,26))
+
+netex<-network.extract(net,onset=25.5,terminus=25.5)
+net.obs<-netex%n%'net.obs.period'
+expect_equal(unlist(net.obs$observations),c(25.5,25.5))
+
+netex<-network.extract(net,onset=32,terminus=32)
+net.obs<-netex%n%'net.obs.period'
+expect_equal(unlist(net.obs$observations),c(32,32))
+
+netex<-network.extract(net,onset=-4,terminus=0)
+net.obs<-netex%n%'net.obs.period'
+expect_equal(unlist(net.obs$observations),c(-4,0))
 
 # check extraction of network size 0
 nd<-activate.vertices(network.initialize(5),onset=1,terminus=Inf)
@@ -237,6 +258,17 @@ expect_equal(network.vertex.names(n1),LETTERS[5:1])
 deactivate.vertices(nd,onset=-1,terminus=2,v=2:4)
 n2<-network.extract(nd,at=0)
 expect_equal(network.vertex.names(n2),c("E","A"))
+
+# check that network attributes respected by extraction
+net<-network.initialize(3,directed=FALSE,bipartite=0,hyper=TRUE,loops=TRUE,multiple=TRUE)
+activate.vertices(net,onset=0,terminus=3)
+netout<-network.extract(net,onset=1,terminus=2)
+expect_equal(is.bipartite(netout),TRUE)
+expect_equal(netout%n%'bipartite',0)
+expect_equal(is.multiplex(netout),TRUE)
+expect_equal(is.hyper(netout),TRUE)
+expect_equal(is.directed(netout),FALSE)
+
 
 
 cat("ok\n")
@@ -861,7 +893,7 @@ netlist<-get.networks(test,onsets=c(0,1,2),termini=c(1,2,3))
 expect_equal(length(netlist),3)
 
 # use net obs period to infer params
-test%n%'net.obs.period'<-list(observations=c(-1,5),mode='discrete',time.increment=1,time.unit='step')
+test%n%'net.obs.period'<-list(observations=list(c(-1,5)),mode='discrete',time.increment=1,time.unit='step')
 netlist<-get.networks(test)
 expect_equal(length(netlist),6)
 

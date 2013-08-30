@@ -60,8 +60,9 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
   net$gal<-as.list(x$gal)
   net%n%"n"<-n
   net%n%"mnext"<-1
-  if(is.bipartite(net))
+  if(is.bipartite(net) && net%n%'bipartite' > 0){
     net%n%"bipartite"<-newVid[net%n%"bipartite"]
+  }
   # Set vertex-level attributes
   if(n>0){
     if(retain.all.vertices){
@@ -81,25 +82,25 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
       add.edges(net,tail=tail,head=head,names.eval=nam,vals.eval=atl)
     }
   }
+  # figure out onset and terminus from at and length if necessary
+  if(!is.null(at)) {
+    onset <- terminus <- at
+  } else if (!is.null(onset)) {
+    
+    if (!is.null(length))
+      terminus <- onset + length
+  } else {
+    if (is.null(terminus)) {
+      onset <- -Inf
+      terminus <- Inf
+    } else {
+      onset <- terminus - length
+    }
+  }
   if (trim.spells){
     # delete extra spell data on vertices edges and attributes that would be outside the query time range.
     # not sure how this should handle censoring
     # https://statnet.csde.washington.edu/trac/ticket/216
-    # figure out onset and terminus from at and length if necessary
-    if(!is.null(at)) {
-      onset <- terminus <- at
-    } else if (!is.null(onset)) {
-      
-      if (!is.null(length))
-        terminus <- onset + length
-    } else {
-      if (is.null(terminus)) {
-        onset <- -Inf
-        terminus <- Inf
-      } else {
-        onset <- terminus - length
-      }
-    }
     
     # need to handle the case of 'at' (onset=terminus) queries seperately to avoid returning
     # spell matrix with the 'null' spell Inf,Inf
@@ -186,7 +187,25 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
       }
     }
   } # end tripm.spells bock
-  # todo: update net.obs.period censoring info
+  # update net.obs.period censoring info
+  net.obs.period<-net%n%'net.obs.period'
+  if(!is.null(net.obs.period)){
+    # truncate the observations to the onset and terminus value
+    obs<-net.obs.period$observations
+    # sub set to just spells that intersect query period
+    obs<-obs[sapply(obs,function(ob){ob[1]<terminus &ob[2]>=onset})]
+    
+    if (length(obs)>0){
+      # modify the onset of the first and terminus of the last
+      obs[[1]][1]<-onset
+      obs[[length(obs)]][2]<-terminus
+    } else {
+      # create a new spell
+      obs<-list(c(onset,terminus))
+    }
+    net.obs.period$observations<-obs
+    net%n%'net.obs.period'<-net.obs.period
+  }
   set.nD.class(net)
 
 }
