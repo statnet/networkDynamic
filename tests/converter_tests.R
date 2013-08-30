@@ -1,6 +1,13 @@
-#test networkDynamic conversion functionality
-#AFTER IT INITALY PASSES TESTS, ALL 'warning' should be switched to 'stop'
+#  Part of the statnet package, http://statnetproject.org
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) in
+#    http://statnetproject.org/attribution
+#
+#  Copyright 2013 the statnet development team
+######################################################################
 
+#test networkDynamic conversion functionality
 
 require(networkDynamic)
 require(testthat)
@@ -93,7 +100,7 @@ expect_equal(nrow(get.vertex.activity(net,as.spellList=TRUE,active.default=FALSE
 
 # --------------- networkDynamic() conversion test -----
 
-# vertex spells
+# ---- networkDynamic() vertex spells -----
 vert.spls <-matrix(
   c(1,2,1,
   2,3,2,
@@ -134,7 +141,7 @@ vert.spls <-matrix(numeric(0),ncol=3,nrow=0)
 nd<-networkDynamic(vertex.spells=vert.spls)
 expect_equal(network.size(nd),0,info="checking creating zero vertex network with networkDynamic converter")
    
-# edge spells
+#  ---- networkDynamic() edge spells ---------------
 edge.spls <-matrix(
   c(1,2,1,2,
     2,3,2,3,
@@ -206,7 +213,7 @@ nd<-networkDynamic(vertex.spells=vert.spls, edge.spells=edge.spls)
 # inconsistant edges and vertices
 
 
-# vertex toggles - no base net
+#  ---- networkDynamic() vertex toggles - no base net ---------------
 vrt.tog <-matrix(
   c(1,1,
     2,2,
@@ -237,7 +244,7 @@ if(!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(1,1,1,
 expect_equal(unlist(get.vertex.activity(nd)),c(-Inf,1,-Inf,3,2,Inf,-Inf,Inf))
 
 
-# edge toggles
+#  ---- networkDynamic() edge toggles ------------
 edge.tog <- matrix(
   c(1,1,2,
     2,2,3,
@@ -265,7 +272,7 @@ if(!all(get.edge.activity(nd,as.spellList=TRUE)[,1:4]==matrix(c(0,3,3,4,
 }
 expect_equal(unlist(get.edge.activity(nd)),c(-Inf,Inf,-Inf,0,1,Inf,2,3))
 
-# vertex changes
+#  ---- networkDynamic() vertex changes ----------
 vrt.cng <-matrix(
   c(1,1,1,
     2,2,1,
@@ -277,7 +284,7 @@ if (!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(1,3,1,2, 2,3,
 
 expect_equal(unlist(get.vertex.activity(nd)),c(1,Inf,2,3))
 
-# edge changes
+#  ---- networkDynamic() edge changes -----------
 edge.cng <-matrix(
   c(1,1,2,1,
     2,2,3,1,
@@ -301,7 +308,7 @@ expect_equivalent(as.numeric(get.edge.activity(nd,as.spellList=TRUE)[1:4]),c(2,3
 
 
 
-# 
+#  ---- networkDynamic() list of networks ---------- 
 #try converting the newcomb panel data (working 9/3)
 data(newcomb)
 newDyn <- networkDynamic(network.list=newcomb)
@@ -374,10 +381,92 @@ if (any(is.active(dynBeach, at=25,v=1:network.size(dynBeach)))){
 expect_equal(do.call(rbind,(dynBeach%n%'net.obs.period')$observations),cbind(c(1:24,26:31),c(2:25,27:32)),info='was net.obs.period created by default by networkDynamic() with onsets and termini did not have expected range')
 
 
-#try the version that has edge weights
-#newRankDyn <-networkDynamic(newcomb.rank)
 
 
+#  ---- networkDynamic()  network list TEAs -----------
+
+#try the newcomb version that has edge weights
+newRankDyn <-networkDynamic(network.list=newcomb.rank)
+# check that it matches original
+expect_equal(as.matrix(network.collapse(newRankDyn,at=0),attrname='rank'),as.matrix(newcomb.rank[[1]],attrname='rank'))
+expect_equal(as.matrix(network.collapse(newRankDyn,at=10),attrname='rank'),as.matrix(newcomb.rank[[11]],attrname='rank'))
+
+# test vertex TEA from list of odd-sized networks
+netlist<-list(network.initialize(3),network.initialize(1),network.initialize(2),network.initialize(2))
+netlist[[1]]<-set.vertex.attribute(netlist[[1]],'id',c('a','b','c'))
+netlist[[2]]<-set.vertex.attribute(netlist[[2]],'id','b')
+netlist[[3]]<-set.vertex.attribute(netlist[[3]],'id',c('c','d'))
+netlist[[4]]<-set.vertex.attribute(netlist[[4]],'id',c('c','d'))
+netlist[[1]]<-set.vertex.attribute(netlist[[1]],'val',c('a1','b1','c1'))
+netlist[[2]]<-set.vertex.attribute(netlist[[2]],'val','b2')
+netlist[[3]]<-set.vertex.attribute(netlist[[3]],'val',c('c3','d3'))
+dyn<-networkDynamic(network.list=netlist,vertex.pid='id')
+expect_equal(get.vertex.attribute.active(dyn,'val',at=0),c('a1','b1','c1',NA))
+expect_equal(get.vertex.attribute.active(dyn,'val',at=1),c(NA,'b2',NA,NA))
+expect_equal(get.vertex.attribute.active(dyn,'val',at=2),c(NA,NA,'c3','d3'))
+expect_true(all(is.na(get.vertex.attribute.active(dyn,'val',at=3))))
+
+# test edge TEA from list of odd-sized networks
+netlist[[1]]<-add.edges(netlist[[1]],tail=1:2,head=2:3)
+netlist[[3]]<-add.edges(netlist[[3]],tail=1,head=2)
+netlist[[4]]<-add.edges(netlist[[4]],tail=1,head=2)
+netlist[[1]]<-set.edge.attribute(netlist[[1]],'eid','ab1',e=1)
+netlist[[1]]<-set.edge.attribute(netlist[[1]],'eid','bc1',e=2)
+netlist[[3]]<-set.edge.attribute(netlist[[3]],'eid','cd3',e=1)
+netlist[[4]]<-set.edge.attribute(netlist[[4]],'eid','cd4',e=1)
+dyn<-networkDynamic(network.list=netlist,vertex.pid='id')
+expect_equal(get.edge.attribute.active(dyn,'eid',at=0),c("ab1","bc1" ,NA   ))
+expect_equal(get.edge.attribute.active(dyn,'eid',at=1),c(NA,NA ,NA))
+expect_equal(get.edge.attribute.active(dyn,'eid',at=2),c(NA,NA,"cd3"))
+expect_equal(get.edge.attribute.active(dyn,'eid',at=3),c(NA,NA,"cd4"))
+
+# test network TEA from list of odd-sized networks
+netlist[[1]]<-set.network.attribute(netlist[[1]],'netname','first')
+netlist[[2]]<-set.network.attribute(netlist[[2]],'netname','second')
+netlist[[3]]<-set.network.attribute(netlist[[3]],'netname','third')
+netlist[[4]]<-set.network.attribute(netlist[[4]],'netname','forth')
+dyn<-networkDynamic(network.list=netlist,vertex.pid='id')
+expect_equal(unlist(get.network.attribute.active(dyn,'netname',onset=-Inf,terminus=Inf,return.tea=TRUE)[[1]]),c("first",  "second", "third",  "forth"))
+
+
+# test TEAs with same size networks, no vertex.pid
+netlist<-list(network.initialize(4),network.initialize(4),network.initialize(4),network.initialize(4))
+template<-netlist[[1]]
+template<-set.vertex.attribute(template,'id',c('a','b','c','d'))
+netlist[[1]]<-set.vertex.attribute(netlist[[1]],'val',c('a1','b1','c1'),v=1:3)
+netlist[[2]]<-set.vertex.attribute(netlist[[2]],'val','b2',v=2)
+netlist[[3]]<-set.vertex.attribute(netlist[[3]],'val',c('c3','d3'),v=3:4)
+dyn<-networkDynamic(network.list=netlist,base.net=template)
+expect_equal(get.vertex.attribute(dyn,'id'),c('a','b','c','d'))
+expect_equal(get.vertex.attribute.active(dyn,'val',at=0),c('a1','b1','c1',NA))
+expect_equal(get.vertex.attribute.active(dyn,'val',at=1),c(NA,'b2',NA,NA))
+expect_equal(get.vertex.attribute.active(dyn,'val',at=2),c(NA,NA,'c3','d3'))
+expect_true(all(is.na(get.vertex.attribute.active(dyn,'val',at=3))))
+
+# test edge TEA from list of same-sized networks
+netlist[[1]]<-add.edges(netlist[[1]],tail=1:2,head=2:3)
+netlist[[3]]<-add.edges(netlist[[3]],tail=3,head=4)
+netlist[[4]]<-add.edges(netlist[[4]],tail=3,head=4)
+netlist[[1]]<-set.edge.attribute(netlist[[1]],'eid','ab1',e=1)
+netlist[[1]]<-set.edge.attribute(netlist[[1]],'eid','bc1',e=2)
+netlist[[3]]<-set.edge.attribute(netlist[[3]],'eid','cd3',e=1)
+netlist[[4]]<-set.edge.attribute(netlist[[4]],'eid','cd4',e=1)
+dyn<-networkDynamic(network.list=netlist)
+expect_equal(get.edge.attribute.active(dyn,'eid',at=0),c("ab1","bc1" ,NA   ))
+expect_equal(get.edge.attribute.active(dyn,'eid',at=1),c(NA,NA ,NA))
+expect_equal(get.edge.attribute.active(dyn,'eid',at=2),c(NA,NA,"cd3"))
+expect_equal(get.edge.attribute.active(dyn,'eid',at=3),c(NA,NA,"cd4"))
+
+# test network TEA from list of same-sized networks
+netlist[[1]]<-set.network.attribute(netlist[[1]],'netname','first')
+netlist[[2]]<-set.network.attribute(netlist[[2]],'netname','second')
+netlist[[3]]<-set.network.attribute(netlist[[3]],'netname','third')
+netlist[[4]]<-set.network.attribute(netlist[[4]],'netname','forth')
+dyn<-networkDynamic(network.list=netlist)
+expect_equal(unlist(get.network.attribute.active(dyn,'netname',onset=-Inf,terminus=Inf,return.tea=TRUE)[[1]]),c("first",  "second", "third",  "forth"))
+
+
+# ----------- as.networkDynamic.data.frame tests -------
 
 # check correct spells printed for edges
 test <- network.initialize(3)
@@ -616,19 +705,22 @@ expect_warning(networkDynamic(network.list = dlist), "have different network pro
 # are vertex attributes included?
 d1 <- network.initialize(2)
 d2 <- network.initialize(2)
-set.vertex.attribute(d1,"test","one")
-set.network.attribute(d1,'another',"two")
+dbase<-network.initialize(2)
+set.vertex.attribute(dbase,"test","one")
+set.network.attribute(dbase,'another',"two")
 dlist <- list(d1,d2)
-dnet<-networkDynamic(base.net=d1,network.list = dlist)
+dnet<-networkDynamic(base.net=dbase,network.list = dlist)
 
 expect_true('test'%in%list.vertex.attributes(dnet),info="vertex attributes from base.net network not copied by networkDynamic()")
 
 expect_true('another'%in%list.network.attributes(dnet),info="user specified network attributes from base.net network not copied by networkDynamic()")
 
+dlist[[1]]<-set.vertex.attribute(dlist[[1]],"test","one")
+dlist[[1]]<-set.network.attribute(dlist[[1]],'another',"two")
 dnet<-networkDynamic(network.list = dlist)
-expect_true('test'%in%list.vertex.attributes(dnet),info="vertex attributes from first item of network list network not copied by networkDynamic()")
+expect_true('test.active'%in%list.vertex.attributes(dnet),info="vertex attributes from first item of network list network not copied as TEA by networkDynamic()")
 
-expect_true('another'%in%list.network.attributes(dnet),info="user specified network attributes from base.net network not copied by networkDynamic()")
+expect_true('another.active'%in%list.network.attributes(dnet),info="user specified network attributes from base.net network not copied as TEA by networkDynamic()")
 
 
 # are edge attributes included

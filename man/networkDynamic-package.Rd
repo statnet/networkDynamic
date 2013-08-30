@@ -20,8 +20,8 @@ Simple interface routines to facilitate the handling of dynamic network objects 
 \tabular{ll}{
 Package: \tab networkDynamic\cr
 Type: \tab Package\cr
-Version: \tab 0.3-0\cr
-Date: \tab 2012-02-29\cr
+Version: \tab 0.5\cr
+Date: \tab 2013-08-29\cr
 Depends: \tab network\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
@@ -32,9 +32,9 @@ The \code{networkDynamic} package provides support for a simple family of dynami
 The basis for the dynamic extensions is described in \link{activity.attribute}.  Other core routines can be found in the links below.
 }
 \author{
-Ayn Leslie-Cook \email{aynlc3@uw.edu}, Zack Almquist \email{almquist@uci.edu}, Skye Bender-deMoll, Martina Morris, Carter T. Butts \email{buttsc@uci.edu}
+Carter T. Butts \email{buttsc@uci.edu}, Ayn Leslie-Cook \email{aynlc3@uw.edu}, Zack Almquist \email{almquist@uci.edu}, Skye Bender-deMoll {skyebend@uw.edu}, Martina Morris
 
-Maintainer: Ayn Leslie-Cook \email{aynlc3@uw.edu}, Zack Almquist \email{almquist@uci.edu}, Carter T. Butts \email{buttsc@uci.edu}
+Maintainer: Skye Bender-deMoll {skyebend@uw.edu}, Carter T. Butts \email{buttsc@uci.edu}
 }
 %\references{
 %~~ Literature or other references for background information ~~

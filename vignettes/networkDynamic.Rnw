@@ -337,7 +337,7 @@ Currently, the \verb@networkDynamic()@ conversion function importing edge and ve
 Please see \verb@?networkDynamic@ for full parameter explanations. The sections below give some more in-depth examples. 
 
 \subsection{But my data are panels of network matrices...}
-Researchers frequently have network data in the form of network panels or ``stacks'' of network matrices. The \verb@networkDynamic@ package includes one such classic dynamic network data-set in this format: Newcomb's Fraternity Networks. The data are 14 panel observations of friendship preference rankings among fraternity members in a 1956 sociology study. (For more details, see \verb@?newcomb@.) This network is a useful example because it has edge weights  that change over time and the \verb@newcomb.rank@ version has asymmetric rank choice ties.\footnote{Although this release of the networkDynamic package supports dynamic edge attributes, the import utilities yet don't support edge wights.} 
+Researchers frequently have network data in the form of network panels or ``stacks'' of network matrices. The \verb@networkDynamic@ package includes one such classic dynamic network data-set in this format: Newcomb's Fraternity Networks. The data are 14 panel observations of friendship preference rankings among fraternity members in a 1956 sociology study. (For more details, see \verb@?newcomb@.) This network is a useful example because it has edge weights  that change over time and the \verb@newcomb.rank@ version has asymmetric rank choice ties\footnote{The attributes of individual panels will be converted to dynamic attributes, see the section on TEAs}.
 <<newcomb,eval=TRUE,include=TRUE,echo=TRUE>>=
 require(networkDynamic)
 data(newcomb)             # load the data
