@@ -115,6 +115,16 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       }
         
     } 
+    
+    # construct the list of vertex attributes that may become TEAs
+    TEAvertAttrs<-unique(unlist(lapply(network.list,list.vertex.attributes)))
+    TEAvertAttrs<-TEAvertAttrs[!TEAvertAttrs%in%c('na','vertex.names',vertex.pid)]
+    # also for edges
+    TEAedgeAttrs<-unique(unlist(lapply(network.list,list.edge.attributes)))
+    TEAedgeAttrs<-TEAedgeAttrs[!TEAedgeAttrs%in%c('na')]
+    # and for networks
+    TEAnetAttrs<-unique(unlist(lapply(network.list,list.network.attributes)))
+    TEAnetAttrs<-TEAnetAttrs[!TEAnetAttrs%in%c('directed', 'hyper', 'loops', 'multiple', 'bipartite','mnext','net.obs.period','vertex.pid','edge.pid','n')]
        
     
     # ---- vertex.pid present ----
@@ -134,11 +144,22 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       base.net.pids <- sort(unique(base.net.pids))
       
       # initialize, copy network attributes
+      vattrs=character(0)
+      nattrs=character(0)
       if (is.null(base.net)){ 
         base.net <- network.list[[1]]
         if (verbose){
           cat("Argument base.net not specified, using first element of network.list instead\n")
         }
+        # attributes will not be copied from base net
+      } else {
+        # get the list of attributes to copy from 
+        vattrs<-list.vertex.attributes(base.net)
+        # don't create a TEA if attribute of the same name exists only in base net
+        TEAvertAttrs<-setdiff(TEAvertAttrs,vattrs)
+        
+        nattrs<-list.network.attributes(base.net)
+        nattrs<-setdiff(nattrs,c("bipartite","directed","hyper","loops","mnext","multiple","n"))
       }
       # todo: should we warn here that used first network as base net?
       # I guess the reason to init instead of copy is in case the pids imply a different network size?
@@ -148,14 +169,12 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       if (verbose){
         cat(paste("Initialized network of size",network.size(out.net),"inferred from number of unique vertex.pids\n"))
       }
-      # copy vertex attributes
-      vattrs<-list.vertex.attributes(base.net)
+      # copy vertex attributes (only occurs if real base net specified)
+      
       for(attr in vattrs){
         set.vertex.attribute(out.net,attr,get.vertex.attribute(base.net,attr))
       }
-      # copy network attributes EXCEPT network properties
-      nattrs<-list.network.attributes(base.net)
-      nattrs<-setdiff(nattrs,c("bipartite","directed","hyper","loops","mnext","multiple","n"))
+      # copy network attributes EXCEPT network properties (if real base.net specified)
       for (attr in nattrs){
         set.network.attribute(out.net,attr,get.network.attribute(base.net,attr))
       }
@@ -182,6 +201,11 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         ts<-rep(termini[i], length(vertices))
         activate.vertices(base.net,onset=os,terminus=ts,v=vertices)
         
+        # copy any non-standard, vertex, attributes into TEAs
+        for(attr in TEAvertAttrs){
+          activate.vertex.attribute(base.net,attr,get.vertex.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i],v=get.vertex.id(base.net,net.pids))
+        }
+        
         # activate the edges
         for (e in seq_len(nrow(edges))) {
           t <- edges[e,1]
@@ -190,13 +214,25 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           if (length(get.edgeIDs(base.net, t, h)) == 0) {
             add.edge(base.net, tail=t, head=h)
           }
-          activate.edges(base.net, e = get.edgeIDs(base.net,t,h)[1], 
-                         onset=onsets[i], terminus=termini[i]) 
+          eid<-get.edgeIDs(base.net,t,h)[1]
+          activate.edges(base.net, e = eid,  onset=onsets[i], terminus=termini[i])
+          #  copy any non-standard edge attributes into TEAs
+          for(attr in TEAedgeAttrs){
+            activate.edge.attribute(base.net,attr,get.edge.attribute(network.list[[i]],attrname=attr,unlist=FALSE)[get.edgeIDs(network.list[[i]],v=edgelist[e,1],alter=edgelist[e,2])],e=eid,onset=onsets[i],terminus=termini[i])
+          }
           
+        } # end edge copy loop
+        
+        # copy any non-standard network attributes into TEAs
+        for(attr in TEAnetAttrs){
+          activate.network.attribute(base.net,attr,get.network.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
         }
         
-        # TODO: copy any non-standard, vertex, edge, or network attributs into TEAs
-      }
+      } # end network loop
+      
+      
+      
+      
       
     } else {
       # ---- no vertex.pid, all networks same size ----
@@ -209,7 +245,7 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       out.net <- network.initialize(network.size(base.net), directed = base.net%n%"directed", 
                                    hyper = base.net%n%"hyper", loops = base.net%n%"loops", 
                                    multiple = base.net%n%"multiple", bipartite = base.net%n%"bipartite")
-      # copy vertex attributes
+      # copy vertex attributes  These may be overwritten by TEAs if they appear on later networks
       vattrs<-list.vertex.attributes(base.net)
       for(attr in vattrs){
         set.vertex.attribute(out.net,attr,get.vertex.attribute(base.net,attr))
@@ -226,11 +262,13 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       for (i in seq_along(network.list)) {
         edges <- as.edgelist(network.list[[i]])
         
-        
         # all vertices are assumed to be active
         activate.vertices(base.net, onset=onsets[i], terminus=termini[i])
         
-        # TODO: copy any vertex attributes into a vertex TEA
+        # copy any vertex attributes into a vertex TEA
+        for(attr in TEAvertAttrs){
+          activate.vertex.attribute(base.net,attr,get.vertex.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+        }
         
         # activate the edges
         for (e in seq_len(nrow(edges))) {
@@ -240,15 +278,22 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           if (length(get.edgeIDs(base.net, t, h)) == 0) {
             add.edge(base.net, tail=t, head=h)
           }
-          activate.edges(base.net, e = get.edgeIDs(base.net,t,h)[1], 
-                         onset=onsets[i], terminus=termini[i]) 
+          eid <- get.edgeIDs(base.net,t,h)[1]
+          activate.edges(base.net, e = eid, onset=onsets[i], terminus=termini[i]) 
+          # TODO: copy any edge attributes into an edge TEA
+          for(attr in TEAedgeAttrs){
+            activate.edge.attribute(base.net,attr,get.edge.attribute(network.list[[i]],attrname=attr,unlist=FALSE)[get.edgeIDs(network.list[[i]],v=t,alter=h)],e=eid,onset=onsets[i],terminus=termini[i])
+          }
           
         }
+        # copy any non-standard network attributes into TEAs
+        for(attr in TEAnetAttrs){
+          activate.network.attribute(base.net,attr,get.network.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+        }
         
-        # TODO: copy any edge attributes into an edge TEA
       }
       
-      # TODO: copy any non-standard network attributes into network TEA
+      
       
     }
     ## check that net.obs.period has appropriate structure

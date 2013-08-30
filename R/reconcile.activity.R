@@ -1,6 +1,13 @@
+#  Part of the statnet package, http://statnetproject.org
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) in
+#    http://statnetproject.org/attribution
+#
+#  Copyright 2013 the statnet development team
+######################################################################
+
 # functions for reconciling edge and vertex activity
-
-
 
 reconcile.vertex.activity<-function(net,mode=c("expand.to.edges","match.to.edges","encompass.edges"),edge.active.default=TRUE){
   if (!is.networkDynamic(net)){
