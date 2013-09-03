@@ -21,7 +21,7 @@ networkDynamic(base.net = NULL, edge.toggles = NULL, vertex.toggles =NULL,
                  edge.changes = NULL, vertex.changes = NULL,
                  network.list = NULL, onsets = NULL, termini = NULL,
                  vertex.pid = NULL, start = NULL, end = NULL, 
-                 net.obs.period=NULL,verbose=TRUE,...)
+                 net.obs.period=NULL,verbose=TRUE,create.TEAs,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -70,6 +70,9 @@ Optional argument to indicate the latest time at which any changes in the networ
   }
  \item{verbose}{
  Logical, If TRUE (default), status message will be printed about the assumptions made in the conversion process. 
+ }
+ \item{create.TEAs}{If TRUE, Dynamic TEA attributes will be created corresponding to the static attributes appear on the network elements of \code{network.list}
+ 
  }
   \item{\dots}{
 Additional arguments controling the creating of the network or processing of attached data objects.
