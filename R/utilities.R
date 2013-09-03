@@ -21,7 +21,7 @@
 
 networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
                   edge.spells=NULL,vertex.spells=NULL,edge.changes=NULL,vertex.changes=NULL,
-                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,...) {
+                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,...) {
   
   
   if (!is.null(start) && !is.null(end)) {
@@ -115,17 +115,30 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       }
         
     } 
-    
-    # construct the list of vertex attributes that may become TEAs
-    TEAvertAttrs<-unique(unlist(lapply(network.list,list.vertex.attributes)))
-    TEAvertAttrs<-TEAvertAttrs[!TEAvertAttrs%in%c('na','vertex.names',vertex.pid)]
-    # also for edges
-    TEAedgeAttrs<-unique(unlist(lapply(network.list,list.edge.attributes)))
-    TEAedgeAttrs<-TEAedgeAttrs[!TEAedgeAttrs%in%c('na')]
-    # and for networks
-    TEAnetAttrs<-unique(unlist(lapply(network.list,list.network.attributes)))
-    TEAnetAttrs<-TEAnetAttrs[!TEAnetAttrs%in%c('directed', 'hyper', 'loops', 'multiple', 'bipartite','mnext','net.obs.period','vertex.pid','edge.pid','n')]
-       
+    copyTEAs<-create.TEAs #flag to control if we process TEAs, which is slow
+    if (copyTEAs){
+      # construct the list of vertex attributes that may become TEAs
+      TEAvertAttrs<-unique(unlist(lapply(network.list,list.vertex.attributes)))
+      TEAvertAttrs<-TEAvertAttrs[!TEAvertAttrs%in%c('na','vertex.names',vertex.pid)]
+      # also for edges
+      TEAedgeAttrs<-unique(unlist(lapply(network.list,list.edge.attributes)))
+      TEAedgeAttrs<-TEAedgeAttrs[!TEAedgeAttrs%in%c('na')]
+      # and for networks
+      TEAnetAttrs<-unique(unlist(lapply(network.list,list.network.attributes)))
+      TEAnetAttrs<-TEAnetAttrs[!TEAnetAttrs%in%c('directed', 'hyper', 'loops', 'multiple', 'bipartite','mnext','net.obs.period','vertex.pid','edge.pid','n')]
+      if (verbose){
+        cat("Dynamic attributes (TEAs) will be created for the following attributes of the networks on network.list:\n")
+        if (length(TEAnetAttrs)){
+          cat("\tNetwork: ",TEAnetAttrs,"\n")
+        }
+        if (length(TEAvertAttrs)){
+          cat("\tVertices: ",TEAvertAttrs,"\n")
+        }
+        if (length(TEAedgeAttrs)){
+          cat("\tEdges: ",TEAedgeAttrs,"\n")
+        }
+      }
+    }
     
     # ---- vertex.pid present ----
     if (!is.null(vertex.pid)) {
@@ -155,8 +168,10 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       } else {
         # get the list of attributes to copy from 
         vattrs<-list.vertex.attributes(base.net)
-        # don't create a TEA if attribute of the same name exists only in base net
-        TEAvertAttrs<-setdiff(TEAvertAttrs,vattrs)
+        if (copyTEAs){
+          # don't create a TEA if attribute of the same name exists only in base net
+          TEAvertAttrs<-setdiff(TEAvertAttrs,vattrs)
+        }
         
         nattrs<-list.network.attributes(base.net)
         nattrs<-setdiff(nattrs,c("bipartite","directed","hyper","loops","mnext","multiple","n"))
@@ -185,7 +200,7 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       set.network.attribute(out.net,'vertex.pid',vertex.pid)
       
       base.net <- out.net
-      
+        
       # get combined edge list, indexed by the vertices in base.net
       for (i in seq_along(network.list)) {
         edgelist <- as.edgelist(network.list[[i]])
@@ -201,9 +216,11 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         ts<-rep(termini[i], length(vertices))
         activate.vertices(base.net,onset=os,terminus=ts,v=vertices)
         
-        # copy any non-standard, vertex, attributes into TEAs
-        for(attr in TEAvertAttrs){
-          activate.vertex.attribute(base.net,attr,get.vertex.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i],v=get.vertex.id(base.net,net.pids))
+        if (copyTEAs){
+          # copy any non-standard, vertex, attributes into TEAs
+          for(attr in TEAvertAttrs){
+            activate.vertex.attribute(base.net,attr,get.vertex.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i],v=get.vertex.id(base.net,net.pids))
+          }
         }
         
         # activate the edges
@@ -216,16 +233,20 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           }
           eid<-get.edgeIDs(base.net,t,h)[1]
           activate.edges(base.net, e = eid,  onset=onsets[i], terminus=termini[i])
-          #  copy any non-standard edge attributes into TEAs
-          for(attr in TEAedgeAttrs){
-            activate.edge.attribute(base.net,attr,get.edge.attribute(network.list[[i]],attrname=attr,unlist=FALSE)[get.edgeIDs(network.list[[i]],v=edgelist[e,1],alter=edgelist[e,2])],e=eid,onset=onsets[i],terminus=termini[i])
+          if (copyTEAs){
+            #  copy any non-standard edge attributes into TEAs
+            for(attr in TEAedgeAttrs){
+              activate.edge.attribute(base.net,attr,get.edge.attribute(network.list[[i]],attrname=attr,unlist=FALSE)[get.edgeIDs(network.list[[i]],v=edgelist[e,1],alter=edgelist[e,2])],e=eid,onset=onsets[i],terminus=termini[i])
+            }
           }
           
         } # end edge copy loop
         
-        # copy any non-standard network attributes into TEAs
-        for(attr in TEAnetAttrs){
-          activate.network.attribute(base.net,attr,get.network.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+        if (copyTEAs){
+          # copy any non-standard network attributes into TEAs
+          for(attr in TEAnetAttrs){
+            activate.network.attribute(base.net,attr,get.network.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+          }
         }
         
       } # end network loop
@@ -265,9 +286,11 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         # all vertices are assumed to be active
         activate.vertices(base.net, onset=onsets[i], terminus=termini[i])
         
-        # copy any vertex attributes into a vertex TEA
-        for(attr in TEAvertAttrs){
-          activate.vertex.attribute(base.net,attr,get.vertex.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+        if(copyTEAs){
+          # copy any vertex attributes into a vertex TEA
+          for(attr in TEAvertAttrs){
+            activate.vertex.attribute(base.net,attr,get.vertex.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+          }
         }
         
         # activate the edges
@@ -280,15 +303,18 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           }
           eid <- get.edgeIDs(base.net,t,h)[1]
           activate.edges(base.net, e = eid, onset=onsets[i], terminus=termini[i]) 
-          # TODO: copy any edge attributes into an edge TEA
-          for(attr in TEAedgeAttrs){
-            activate.edge.attribute(base.net,attr,get.edge.attribute(network.list[[i]],attrname=attr,unlist=FALSE)[get.edgeIDs(network.list[[i]],v=t,alter=h)],e=eid,onset=onsets[i],terminus=termini[i])
+          if (copyTEAs){
+            # copy any edge attributes into an edge TEA
+            for(attr in TEAedgeAttrs){
+              activate.edge.attribute(base.net,attr,get.edge.attribute(network.list[[i]],attrname=attr,unlist=FALSE)[get.edgeIDs(network.list[[i]],v=t,alter=h)],e=eid,onset=onsets[i],terminus=termini[i])
+            }
           }
-          
         }
-        # copy any non-standard network attributes into TEAs
-        for(attr in TEAnetAttrs){
-          activate.network.attribute(base.net,attr,get.network.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+        if (copyTEAs){
+          # copy any non-standard network attributes into TEAs
+          for(attr in TEAnetAttrs){
+            activate.network.attribute(base.net,attr,get.network.attribute(network.list[[i]],attr,unlist=FALSE),onset=onsets[i],terminus=termini[i])
+          }
         }
         
       }
