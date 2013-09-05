@@ -311,13 +311,13 @@ expect_equivalent(as.numeric(get.edge.activity(nd,as.spellList=TRUE)[1:4]),c(2,3
 #  ---- networkDynamic() list of networks ---------- 
 #try converting the newcomb panel data (working 9/3)
 data(newcomb)
-newDyn <- networkDynamic(network.list=newcomb)
+newDyn <- networkDynamic(network.list=newcomb[1:3])
 #does it pass a consistency check?
 check <- network.dynamic.check(newDyn) 
 if (!all(sapply(check, all)))
   stop("newcomb network.list conversion did not pass network.dynamic.check")
 #is the matrix equal to the input matrix
-for (k in 1:length(newcomb)) {
+for (k in 1:3) {
   if (!all(as.sociomatrix(newcomb[[k]]) == as.sociomatrix(network.extract(newDyn,onset=k-1,terminus=k)))){
     stop("FAIL: networkDynamic conversion: 1st input matrix does not match crosssection from time 0 to 1 for newcomb example")
   }
@@ -326,7 +326,7 @@ for (k in 1:length(newcomb)) {
 # try converting a list that includes different size networks. (working 9/10)
 # note that beach[[25]] is NA (missing)
 data(windsurferPanels)
-beach<-beach[-25]
+beach<-beach[1:7]
 # should return error
 dynBeach=NULL
 expect_error(dynBeach<-networkDynamic(network.list = beach),
@@ -366,9 +366,11 @@ for (i in 1:length(beach)) {
   }
 }
 
-# try a better representation that preserves edge times
+# try a better (but truncated to make test fast) representation that preserves edge times and gaps
 
-dynBeach<-networkDynamic(network.list=beach, vertex.pid="vertex.names",onsets=c(1:24,26:31),termini=c(2:25,27:32))
+data(windsurferPanels)
+beach<-beach[c(24,26)]
+dynBeach<-networkDynamic(network.list=beach, vertex.pid="vertex.names",onsets=c(24,26),termini=c(25,27))
 
 
 # make sure day 25 really is missing
@@ -378,7 +380,7 @@ if (any(is.active(dynBeach, at=25,v=1:network.size(dynBeach)))){
 
 # check net.obs.period
 
-expect_equal(do.call(rbind,(dynBeach%n%'net.obs.period')$observations),cbind(c(1:24,26:31),c(2:25,27:32)),info='was net.obs.period created by default by networkDynamic() with onsets and termini did not have expected range')
+expect_equal(do.call(rbind,(dynBeach%n%'net.obs.period')$observations),cbind(c(24,26),c(25,27)),info='was net.obs.period created by default by networkDynamic() with onsets and termini did not have expected range')
 
 
 
@@ -386,10 +388,10 @@ expect_equal(do.call(rbind,(dynBeach%n%'net.obs.period')$observations),cbind(c(1
 #  ---- networkDynamic()  network list TEAs -----------
 
 #try a reduced newcomb version that has edge weights
-newRankDyn <-networkDynamic(network.list=newcomb.rank[1:4],create.TEAs=TRUE)
+newRankDyn <-networkDynamic(network.list=newcomb.rank[1:2],create.TEAs=TRUE)
 # check that it matches original
 expect_equal(as.matrix(network.collapse(newRankDyn,at=0),attrname='rank'),as.matrix(newcomb.rank[[1]],attrname='rank'))
-expect_equal(as.matrix(network.collapse(newRankDyn,at=3),attrname='rank'),as.matrix(newcomb.rank[[4]],attrname='rank'))
+expect_equal(as.matrix(network.collapse(newRankDyn,at=1),attrname='rank'),as.matrix(newcomb.rank[[2]],attrname='rank'))
 
 # test vertex TEA from list of odd-sized networks
 netlist<-list(network.initialize(3),network.initialize(1),network.initialize(2),network.initialize(2))
