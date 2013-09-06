@@ -9,6 +9,7 @@
 \name{reconcile.activity}
 \alias{reconcile.vertex.activity}
 \alias{reconcile.edge.activity}
+\alias{reconcile.activity}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Modify the activity spells of vertices to match incident edges or the other way around
