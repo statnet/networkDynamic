@@ -287,10 +287,15 @@ is.networkDynamic(flat)
 get.change.times(flat)
 network.edgecount(flat)
 list.edge.attributes(flat)
+@
+If the argument \verb@rm.time.info=FALSE@ , the \verb@network.collapse@ function also adds \verb@actiactivity.count@ and \verb@activity.duration@ attributes to the vertices and edges to give a crude summary of the timing information that has been removed. However, the duration information does not take into account possible censoring of ties at the beginning and end of the network observation time period. 
+<<collapse2>>=
+flat <-network.collapse(triangle,onset=1,terminus=3,rm.time.info=FALSE)
+flat%v%'activity.duration'
 flat%e%'activity.count'
 flat%e%'activity.duration'
 @
-The \verb@network.collapse@ function also adds \verb@.count@ and \verb@.duration@ attributes to the vertices and edges to give a crude summary of the timing information that has been removed. However, the duration information does not take into account possible censoring of ties at the beginning and end of the network observation time period. 
+
 
 \subsection{Wiping the slate: removing activity information}
 Most \verb@network@ methods will ignore the timing information on a \verb@networkDynamic@ object. However, there may be situations where it is desirable to remove all of the timing information attached to a \verb@networkDynamic@ object.  (Note: this is not the same thing as deactivating elements of the network.) This can be done using the \verb@delete.edge.activity@ and \verb@delete.vertex.activity@ functions which accept arguments to specify which elements should have the timing information deleted.

@@ -22,6 +22,8 @@
 \alias{list.vertex.attributes.active}
 \alias{list.edge.attributes.active}
 \alias{list.network.attributes.active}
+\alias{TEAs}
+\alias{dynamic.attributes}
 \title{
 Functions to activate and query dynamic attributes on vertices, edges, and networks
 }

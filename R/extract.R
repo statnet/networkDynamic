@@ -192,13 +192,17 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
   if(!is.null(net.obs.period)){
     # truncate the observations to the onset and terminus value
     obs<-net.obs.period$observations
-    # sub set to just spells that intersect query period
+    # subset to just spells that intersect query period
     obs<-obs[sapply(obs,function(ob){ob[1]<terminus &ob[2]>=onset})]
     
     if (length(obs)>0){
-      # modify the onset of the first and terminus of the last
-      obs[[1]][1]<-onset
-      obs[[length(obs)]][2]<-terminus
+      # modify the onset of the first and terminus of the last but don't expand
+      if(onset>obs[[1]][1]){
+        obs[[1]][1]<-onset
+      }
+      if(terminus<obs[[length(obs)]][2]){
+        obs[[length(obs)]][2]<-terminus
+      }
     } else {
       # create a new spell
       obs<-list(c(onset,terminus))
@@ -432,12 +436,12 @@ network.dynamic.check<-function(x,verbose=TRUE, complete=TRUE){
 }
 
 #Operator form for network.collapse
-"%k%"<-function(x,at){
-  network.collapse(dnet=x,at=at)
+"%k%"<-function(dnet,at){
+  network.collapse(dnet=dnet,at=at)
 }
 
 # execute a network crossection, and then an attribute crossection. 
-network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL,rule=c("any","all","earliest","latest"),active.default=TRUE,retain.all.vertices=FALSE,...){
+network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL,rule=c("any","all","earliest","latest"),active.default=TRUE,retain.all.vertices=FALSE,rm.time.info=TRUE,...){
   # check args
   if(missing(dnet) || !is.networkDynamic(dnet)){
     stop("network.collapse requires that the first argument be a networkDynamic object")
@@ -488,7 +492,8 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
   exRule<-'any'  # network extract doesn't support the 'earliest' and 'latest' rules
   if(rule=='all') exRule<-'all'
   
-  net <- network.extract(dnet,onset=onset,terminus=terminus,rule=exRule,active.default=active.default, trim.spells=TRUE,retain.all.vertices=retain.all.vertices)
+  # we do not need to trim spells (which may be expensive) if we won't be returning the activity count info anyway
+  net <- network.extract(dnet,onset=onset,terminus=terminus,rule=exRule,active.default=active.default, trim.spells=!rm.time.info,retain.all.vertices=retain.all.vertices)
     # collapse network level attributes
     knownNAttrs<-list.network.attributes(net)
     activeAttrs <- knownNAttrs[grep(".active",knownNAttrs)]
@@ -509,29 +514,31 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
         net<-delete.edge.attribute(net,attr)
       }
       # handle edge activity.count and activity.duration
-      # Todo: what  deleted edge cases?
-      eteas <-get.edge.value(net,"active",unlist=FALSE)
-      hasspls <- !sapply(eteas,is.null)
-      # if there are no edges, don't bother updating
-      if ('activity.count'%in%knownEdgeAttrs){
-        warning('Edge attribute "activity.count" already exists and was not updated')
-      } else {
-        # assume existing edges with no activity are defined by single spell -Inf, Inf
-        # if active.default=FALSE, edges with no activity will allready be removed
-        edge.counts <-rep.int(1,length(eteas))
-        edge.counts[hasspls] <-sapply(eteas[hasspls],nrow)
-        set.edge.attribute(net,'activity.count',edge.counts)
-      }
-      if ('activity.duration'%in%knownEdgeAttrs){
-        warning('Edge attribute "activity.duration" already exists and was not updated')
-      } else {
-        
-         # assume existing edges with no activity are defined by single spell -Inf, Inf
-        #  if active.default=FALSE, edges with no activity will allready have been removed)
-        edge.durations<-rep.int(Inf,length(eteas))
-        
-        edge.durations[hasspls] <-sapply(eteas[hasspls],function(spls){sum(spls[,2]-spls[,1])},simplify=FALSE)
-        set.edge.attribute(net,'activity.duration',edge.durations)
+      if (!rm.time.info){
+        # Todo: what  deleted edge cases?
+        eteas <-get.edge.value(net,"active",unlist=FALSE)
+        hasspls <- !sapply(eteas,is.null)
+        # if there are no edges, don't bother updating
+        if ('activity.count'%in%knownEdgeAttrs){
+          warning('Edge attribute "activity.count" already exists and was not updated')
+        } else {
+          # assume existing edges with no activity are defined by single spell -Inf, Inf
+          # if active.default=FALSE, edges with no activity will allready be removed
+          edge.counts <-rep.int(1,length(eteas))
+          edge.counts[hasspls] <-sapply(eteas[hasspls],nrow)
+          set.edge.attribute(net,'activity.count',edge.counts)
+        }
+        if ('activity.duration'%in%knownEdgeAttrs){
+          warning('Edge attribute "activity.duration" already exists and was not updated')
+        } else {
+          
+           # assume existing edges with no activity are defined by single spell -Inf, Inf
+          #  if active.default=FALSE, edges with no activity will allready have been removed)
+          edge.durations<-rep.int(Inf,length(eteas))
+          
+          edge.durations[hasspls] <-sapply(eteas[hasspls],function(spls){sum(spls[,2]-spls[,1])},simplify=FALSE)
+          set.edge.attribute(net,'activity.duration',edge.durations)
+        }
       }
       delete.edge.attribute(net,'active')
     } # end edges block
@@ -546,28 +553,35 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
     }
     
     # handle vertex activity.count and activity.duration
-    vteas <- get.vertex.attribute(net,"active",unlist=FALSE)
-    hasspls <-!is.na(vteas)
-    if ('activity.count'%in%knownVAttrs){
-      warning('Vertex attribute "activity.count" already exists and was not updated')
-    } else {
-      # TODO: probably need active default paramter to handle this
-      # default to 'always active' assuming 1 fake spell
-      vertex.counts <- rep.int(1,length(vteas))
-      vertex.counts[hasspls] <-sapply(vteas[hasspls],nrow)
-      set.vertex.attribute(net,'activity.count',vertex.counts)
-    }
-    if ('activity.duration'%in%knownVAttrs){
-      warning('Edge attribute "activity.duration" already exists and was not updated')
-    } else {
-      # TODO: probably need active default paramter to handle this
-      # default to 'always active' assuming so assume Inf duration 
-      vertex.durations <-rep.int(Inf,length(vteas))
-      vertex.durations[hasspls] <-sapply(vteas[hasspls],function(spls){sum(spls[,2,drop=FALSE]-spls[,1,drop=FALSE])},simplify=FALSE)
-      set.vertex.attribute(net,'activity.duration',vertex.durations)
+    if (!rm.time.info){
+      vteas <- get.vertex.attribute(net,"active",unlist=FALSE)
+      hasspls <-!is.na(vteas)
+      if ('activity.count'%in%knownVAttrs){
+        warning('Vertex attribute "activity.count" already exists and was not updated')
+      } else {
+        # TODO: probably need active default paramter to handle this
+        # default to 'always active' assuming 1 fake spell
+        vertex.counts <- rep.int(1,length(vteas))
+        vertex.counts[hasspls] <-sapply(vteas[hasspls],nrow)
+        set.vertex.attribute(net,'activity.count',vertex.counts)
+      }
+      if ('activity.duration'%in%knownVAttrs){
+        warning('Edge attribute "activity.duration" already exists and was not updated')
+      } else {
+        # TODO: probably need active default paramter to handle this
+        # default to 'always active' assuming so assume Inf duration 
+        vertex.durations <-rep.int(Inf,length(vteas))
+        vertex.durations[hasspls] <-sapply(vteas[hasspls],function(spls){sum(spls[,2,drop=FALSE]-spls[,1,drop=FALSE])},simplify=FALSE)
+        set.vertex.attribute(net,'activity.duration',vertex.durations)
+      }
     }
     delete.vertex.attribute(net,'active')
   } # end zero vertices block
+  
+  if (rm.time.info){
+    # remove net.obs.period if it exists
+    delete.network.attribute(net,'net.obs.period')
+  }
   
   class(net)<-'network'
   return(net)
