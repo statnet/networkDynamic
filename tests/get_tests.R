@@ -124,7 +124,7 @@ cat("ok\n")
 
 #---------------- GET.EDGEIDS.ACTIVE TESTS ------------------------
 # Notes:
-#  --this function is basicallly 2 lines, which call functions that
+#  --this function is basically 2 lines, which call functions that
 #    are well tested (get.edgeIDs by time, is.active by me), thus
 #    the testing here is quite minimal
 #-------------------------------------------------------------------
@@ -217,7 +217,7 @@ c4=all(sapply(v,function(x){identical(get.edgeIDs.active(a1,x,at=-1),get.edgeIDs
 c.tests = paste("c", seq(1,4), sep="")
 c.results= sapply(c.tests, function(x){eval(parse(text=x))})
 if(any(!c.results)){
-  bad.tests = paste("c", which(!b.results), sep="", collapse=" ")
+  bad.tests = paste("c", which(!c.results), sep="", collapse=" ")
   stop(paste("get.edgeIDs.active is returning incorrect edge IDs in tests",
              bad.tests))
 }
