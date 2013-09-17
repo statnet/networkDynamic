@@ -616,7 +616,7 @@ get.networks <- function(dnet, start=NULL, end=NULL, time.increment=NULL, onsets
     if (is.null(end)){
       end<-max(unlist(net.obs.period$observations))
     }
-    if (is.null(time.increment)){
+    if (is.null(time.increment) && is.numeric(net.obs.period$time.increment)){
       time.increment<-net.obs.period$time.increment
     }
   }
