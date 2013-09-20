@@ -927,6 +927,9 @@ test%n%'net.obs.period'<-list(observations=list(c(-1,5)),mode='discrete',time.in
 netlist<-get.networks(test)
 expect_equal(length(netlist),6)
 
+# params should override net.obs.period
+netlist<-get.networks(test,onsets=c(0,1,2),termini=c(1,2,3))
+expect_equal(length(netlist),3)
 
 # check network size changes and argument passing
 test<-network.initialize(5)
