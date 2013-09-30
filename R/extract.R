@@ -609,14 +609,14 @@ get.networks <- function(dnet, start=NULL, end=NULL, time.increment=NULL, onsets
   
   # arguments are null, try to guess from net.obs.period
   net.obs.period<-dnet%n%'net.obs.period'
-  if (!is.null(net.obs.period)){
+  if (!is.null(net.obs.period) & is.null(onsets) & is.null(termini)){
     if (is.null(start)){
       start<-min(unlist(net.obs.period$observations))
     }
     if (is.null(end)){
       end<-max(unlist(net.obs.period$observations))
     }
-    if (is.null(time.increment)){
+    if (is.null(time.increment) && is.numeric(net.obs.period$time.increment)){
       time.increment<-net.obs.period$time.increment
     }
   }
