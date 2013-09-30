@@ -555,15 +555,28 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       # initialize
       #if (is.null(edge.spells)) activate.edges(base.net, onset=-Inf, terminus=Inf)
       
-      #if we are in the spells case, and no edges exist yet we can avoid actually looping
-      if (!is.null(edge.spells)){
-        dyads<-unique(edge.data[,3:4,drop=FALSE])
-        tails<-as.list(dyads[,1])
-        heads<-as.list(dyads[,2])
-        add.edges(base.net,tail=tails,head=heads)
-        eids<-sapply(seq_len(nrow(edge.data)),function(i){get.edgeIDs(base.net,v=edge.data[i,3],alter=edge.data[i,4])})
-        if (length(eids)>0){
-          activate.edges(base.net,onset=edge.data[,1],terminus=edge.data[,2],e=eids)
+      #if we are in the spells case, 
+      if (!is.null(edge.spells) ){
+        # if no edges exist yet we can avoid actually looping
+        if (network.edgecount(base.net) ==0){
+          dyads<-unique(edge.data[,3:4,drop=FALSE])
+          tails<-as.list(dyads[,1])
+          heads<-as.list(dyads[,2])
+          add.edges(base.net,tail=tails,head=heads)
+          eids<-sapply(seq_len(nrow(edge.data)),function(i){get.edgeIDs(base.net,v=edge.data[i,3],alter=edge.data[i,4])})
+          if (length(eids)>0){
+            activate.edges(base.net,onset=edge.data[,1],terminus=edge.data[,2],e=eids)
+          }
+        } else {  # there are pre-existing edges, so need to check for them while looping
+          for (i in seq_len(nrow(edge.data))){
+            eid<-get.edgeIDs(base.net,v=edge.data[i,3],alter=edge.data[i,4])
+            if (length(eid)==0){
+              # if the edge doesn't exist, add it and get the new edge id
+              add.edge(base.net,tail=edge.data[i,3],head=edge.data[i,4])
+              eid<-get.edgeIDs(base.net,v=edge.data[i,3],alter=edge.data[i,4])
+            } 
+            activate.edges(base.net,onset=edge.data[i,1],terminus=edge.data[i,2],e=eid)
+          }
         }
   
       } else {  # changes or toggles, so have to loop to avoid hurting our heads
