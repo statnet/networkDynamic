@@ -825,6 +825,11 @@ expect_error(networkDynamic(base.net=net,vertex.changes = verttimes),"be numeric
 
 expect_equal(network.size(networkDynamic(network.list=list(network.initialize(0)))),0)
 
+# check for edge.spells plus base.net with pre-existing edges bug #556
+test<-network.initialize(3)
+test[1,2]<-1
+networkDynamic(base.net=test,edge.spells=matrix(c(0,1,1,2),ncol=4))
+
 
 # =============== TESTING as.data.frame.networkDynamic ====
 message('testing as.data.frame.networkDynamic\n')
