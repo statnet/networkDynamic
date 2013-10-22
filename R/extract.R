@@ -193,7 +193,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
     # truncate the observations to the onset and terminus value
     obs<-net.obs.period$observations
     # subset to just spells that intersect query period
-    obs<-obs[sapply(obs,function(ob){ob[1]<terminus &ob[2]>=onset})]
+    obs<-obs[sapply(obs,function(ob){ob[1]<terminus &ob[2]>onset})]
     
     if (length(obs)>0){
       # modify the onset of the first and terminus of the last but don't expand
@@ -205,7 +205,9 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
       }
     } else {
       # create a new spell
-      obs<-list(c(onset,terminus))
+      #obs<-list(c(onset,terminus))
+      # or should we instead return a null spell?
+      obs<-list(c(Inf,Inf))
     }
     net.obs.period$observations<-obs
     net%n%'net.obs.period'<-net.obs.period

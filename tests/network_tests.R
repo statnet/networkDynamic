@@ -233,9 +233,42 @@ test_that("net.obs.period updated appropriately",{
   net.obs<-netex%n%'net.obs.period'
   expect_equal(unlist(net.obs$observations),c(25.5,25.5))
   
+  netex<-network.extract(net,onset=26.5,terminus=26.5)  # query inside gap in range
+  net.obs<-netex%n%'net.obs.period'
+  #expect_equal(unlist(net.obs$observations),c(26.5,26.5))
+  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
+  
+  netex<-network.extract(net,onset=25,terminus=26.5)  # query overlap gap in range
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(unlist(net.obs$observations),c(25,26))
+  
   netex<-network.extract(net,onset=32,terminus=32)
   net.obs<-netex%n%'net.obs.period'
-  expect_equal(unlist(net.obs$observations),c(32,32))
+  #expect_equal(unlist(net.obs$observations),c(32,32))
+  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
+  
+  netex<-network.extract(net,onset=32,length=1)
+  net.obs<-netex%n%'net.obs.period'
+  #expect_equal(unlist(net.obs$observations),c(32,33))
+  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
+  
+  netex<-network.extract(net,onset=33,terminus=34)
+  net.obs<-netex%n%'net.obs.period'
+  #expect_equal(unlist(net.obs$observations),c(33,34)) # queries outside of range construct new range
+  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
+  
+  netex<-network.extract(net,onset=27,length=1)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(unlist(net.obs$observations),c(27,28))
+  
+  netex<-network.extract(net,terminus=28,length=1)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(unlist(net.obs$observations),c(27,28))
+  
+  netex<-network.extract(net,at=26)  # at query at open end of interval
+  net.obs<-netex%n%'net.obs.period'
+  #expect_equal(unlist(net.obs$observations),c(26,26))
+  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
   
   netex<-network.extract(net,onset=-4,terminus=0)
   net.obs<-netex%n%'net.obs.period'
@@ -247,6 +280,10 @@ test_that("net.obs.period updated appropriately",{
   
   # make sure the time range is not expanded
   netex<-network.extract(net,onset=-Inf,terminus=Inf)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(net.obs$observations,list(c(-3,-1),c(0,24),c(25,26),c(27,31),c(32,32)))
+  
+  netex<-network.extract(net,onset=-10,terminus=40)
   net.obs<-netex%n%'net.obs.period'
   expect_equal(net.obs$observations,list(c(-3,-1),c(0,24),c(25,26),c(27,31),c(32,32)))
   
