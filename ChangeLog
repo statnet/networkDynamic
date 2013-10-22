@@ -1,6 +1,7 @@
 Change Log:
-v0.5 - Features & bug fixes
+v0.5.2 - Features & bug fixes
  New Features:
+  - network.extract() function now truncates the observation spells of the net.obs.period attribute (if it is present)
   - the networkDynamic() converter function for lists of networks will now convert attributes of the panel networks into TEA attributes of the dynamic network. But vertex attributes of first net in list no longer copied in as static attributes (static attributes will be copied from base.net)
   - added get.networks() function that returns a list of network objects sampled from a networkDynamic
   - added functions to support defining optional 'persistent ids' attributes for vertices and edges that will remain invariant through network extractions: get.vertex.id, get.vertex.pid, for translating between normal (positional) vertex ids and vertex pids, get.edge.id, get.edge.pid do the same for edges, vertex.pid.check, edge.pid.check to verify pid uniqueness, and initialize.pids provides some options for defining the pids.  Overrides add.edges, add.edge, add vertices from network package to allow passing in new ids when creating new network elements.

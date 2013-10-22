@@ -54,6 +54,9 @@ When \code{retain.all.vertices=TRUE}
    \item{Edges with one or more inactive vertices still will be removed (even if the vertex is being 'retained' to preserve network size)}
    
   }
+  
+  If a \code{\link{net.obs.period}} network attribute is present, its observation spells will be truncated by the onset and terminus of extraction.  If the onset and terminus do not intersect with any observation spells, the `$observations` component will be set to the `null` spell \code{c(Inf,Inf)}.
+  
   \code{\%t\%} (the temporal cross-section operator) is  a
   simplified (and less flexible) wrapper for \code{network.extract} that
   returns the network of active vertices and edges at a given time point.
