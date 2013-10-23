@@ -244,13 +244,12 @@ test_that("net.obs.period updated appropriately",{
   
   netex<-network.extract(net,onset=32,terminus=32)
   net.obs<-netex%n%'net.obs.period'
-  #expect_equal(unlist(net.obs$observations),c(32,32))
-  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
+  expect_equal(unlist(net.obs$observations),c(32,32))
+
   
   netex<-network.extract(net,onset=32,length=1)
   net.obs<-netex%n%'net.obs.period'
-  #expect_equal(unlist(net.obs$observations),c(32,33))
-  expect_equal(unlist(net.obs$observations),c(Inf,Inf))
+  expect_equal(unlist(net.obs$observations),c(32,32))
   
   netex<-network.extract(net,onset=33,terminus=34)
   net.obs<-netex%n%'net.obs.period'
@@ -305,6 +304,12 @@ test_that("net.obs.period updated appropriately",{
   netex<-network.extract(test,onset=0,terminus=0)
   net.obs<-netex%n%'net.obs.period'
   expect_equal(net.obs$observations,list(c(Inf,Inf)))
+  
+  test<-network.initialize(1)
+  test%n%'net.obs.period'<-list(observations=list(c(1,1)),mode="discrete", time.increment=1,time.unit="day")
+  netex<-network.extract(test,onset=1,terminus=1)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(net.obs$observations,list(c(1,1)))
                
 })
 

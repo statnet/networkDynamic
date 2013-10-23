@@ -13,6 +13,7 @@ v0.5.2 - Features & bug fixes
   - modified is.active function to give warning if an eid is specified that corresponds to a deleted edge, meaning that the indicies returned will not correspond to indices of the e parameter and valid.eids should be used
   
  Bugs fixed:
+  - fixed bug in spells.overlap() when considering null spell (Inf,Inf) and some point queries.
   - dramatic speed improvements to spell list importing via the networkDynamic() function
   - fixed bug in network.edgecount.active and network.naedgecount.active when network has deleted edges (such as ergm sim output). 
   - fixed bug in activate.edge.attributes that could swap edge values in some cases when using e argument.

@@ -637,12 +637,18 @@ spells.overlap <-function(s1,s2){
   if (length(s1)!=2 | length(s2)!=2){
 		stop("Each spell must be a vector of length 2")
 	}
+  # check for null spell
+  if ((s1[1]==Inf & s1[2]==Inf) | (s2[1]==Inf & s2[2]==Inf)){
+    return(FALSE)
+  }
 	if (( s1[1] >= s2[1]) & (s1[1]<s2[2])){
 		return(TRUE)
-	} else if (( s1[2] > s2[1]) & (s1[2]<=s2[2])){
+	} else if (( s1[2] > s2[1]) & (s1[2]<s2[2])){
 		return(TRUE)
-	} else if (( s1[1] <= s2[1]) & (s1[2]>=s2[2])){
+	} else if (( s1[1] <= s2[1]) & (s1[2]>s2[2])){
 		return(TRUE)
+	} else if (all(s1==s2)){
+    return(TRUE) 
 	} else {
 		return(FALSE)
 	}
