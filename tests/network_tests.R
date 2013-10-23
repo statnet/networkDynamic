@@ -287,6 +287,25 @@ test_that("net.obs.period updated appropriately",{
   net.obs<-netex%n%'net.obs.period'
   expect_equal(net.obs$observations,list(c(-3,-1),c(0,24),c(25,26),c(27,31),c(32,32)))
   
+  # test with at spell at begining of spell #575
+  test<-network.initialize(1)
+  test%n%'net.obs.period'<-list(observations=list(c(0,1),c(2,3)),mode="discrete", time.increment=1,time.unit="day")
+  netex<-network.extract(test,onset=0,terminus=0)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(net.obs$observations,list(c(0,0)))
+  
+  netex<-network.extract(test,onset=2,terminus=2)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(net.obs$observations,list(c(2,2)))
+  
+  
+  # test for 'null' observation spell
+  test<-network.initialize(1)
+  test%n%'net.obs.period'<-list(observations=list(c(Inf,Inf)),mode="discrete", time.increment=1,time.unit="day")
+  netex<-network.extract(test,onset=0,terminus=0)
+  net.obs<-netex%n%'net.obs.period'
+  expect_equal(net.obs$observations,list(c(Inf,Inf)))
+               
 })
 
 # check extraction of network size 0
