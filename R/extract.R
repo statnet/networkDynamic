@@ -193,7 +193,11 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
     # truncate the observations to the onset and terminus value
     obs<-net.obs.period$observations
     # subset to just spells that intersect query period
-    obs<-obs[sapply(obs,function(ob){ob[1]<terminus &ob[2]>onset})]
+    if (onset==terminus){
+      obs<-obs[sapply(obs,function(ob){ob[1]<=terminus &ob[2]>onset})]
+    } else { 
+      obs<-obs[sapply(obs,function(ob){ob[1]<terminus &ob[2]>onset})]
+    }
     
     if (length(obs)>0){
       # modify the onset of the first and terminus of the last but don't expand
