@@ -784,19 +784,20 @@ match.rule.any <-function(x,y,z){(y >= x[1] && y <  x[2]) ||
                 (y <= x[1] && z >= x[2] && !(x[2]==x[1] && z==x[2]))}
 
 
-# internal function to get a set of values from value and spell list using query params
-# active is a list of activity attributes, each of which list where first is list of values, and 2nd is spell matrix
-# onset, terminus, length and at if specified must have teh same length as active
+# internal function to get a set of values corresponding to a query spell, uing the TEA value and spell list components
+# active is a list of TEA attributes corresponding to a vertex (or edge), each of which is a list where the first element is list of atribute values, and the second element 2nd is spell matrix
+# onset, terminus, length and at if specified must have the same length as active
 # returns a list with elements corresponding to active, which are NA or contain list of matching values
-# todo: maybe this could be re-written to be faster with the "findinterval" function?
+# TODO: maybe this could be re-written to be faster with the "findInterval" function?
 # or just move the entire function into C
 # or parallelize with package "parallel" and parLapply
 getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NULL,
                              rule=c("any","all","earliest","latest"),return.tea=FALSE){
   
-  #since this is not a user functin assumes inputs verified by calling functio
-  # query rule
-  # x is matrix row, y is onset, z is terminus
+  # since this is not a user function assumes inputs were allready verified by the calling function
+
+  # switch out the function we will use to compare spell intervals 
+  # to either the 'any' or 'all' match rule
   if(match.arg(rule)=="all"){
     int.query.true <- match.rule.all
   } else {
@@ -804,37 +805,44 @@ getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NUL
   }
   
   
-  # default values of NA
-  vals<-as.list(rep(NA,times=length(active))) 
-  # tried this loop as lapply, didn't get speedup
+  # create a vector default values of NA for any elements that may not be otherwise specified
+  vals<-as.list(rep(NA,times=length(active)))
+  
+  # Skye: I tried this loop as lapply, didn't get any speedup, but that could be because it wasn't well written. But looping in reverse may give us lots of speedup if the most common use cases is extracting the last timepoint.
+  
+  # for each network element (either vertex or edge), check the spell matrix for intersections with the query spell and return the corresponding values. 
   for(i in seq_along(active)){
-    if(is.null(active[[i]])){
+    if(is.null(active[[i]])){ # is the attribute malformed?
       stop(paste("activity attribute missing for element",i))
       # TODO: should this be controled by the null.na value?
-    } else if (length(active[[i]])==1 && is.na(active[[i]])){
-      #don't do anything, we will return NA
-    } else if (active[[i]][[2]][1,1]==-Inf && active[[i]][[2]][1,2]==Inf){
-      if (return.tea){
+    } else if (length(active[[i]])==1 && is.na(active[[i]])){ # if no value was ever specified ...
+      # don't do anything, we will return NA
+    } else if (active[[i]][[2]][1,1]==-Inf && active[[i]][[2]][1,2]==Inf){ # if it is always active ...
+      if (return.tea){ # should we return a TEA structure (for user to process) instead of just the value?
         vals[[i]]<-list(active[[i]][[1]][[1]],active[[i]][[2]][1,])
       } else {
-        vals[[i]]<-active[[i]][[1]][[1]]
+        vals[[i]]<-active[[i]][[1]][[1]]  # just return the value
       }
-    } else if (all(is.infinite(active[[i]][[2]]))) {
-      vals[[i]]<-NA
-    } else if (terminus[i] == onset[i]){  # point query
+    } else if (all(is.infinite(active[[i]][[2]]))) { # check allways inactive spell (Inf, Inf) The valid (-Inf,Inf) already dealt with in previous condition.
+      vals[[i]]<-NA  # it was marked as never active, so set to NA
+    } else if (terminus[i] == onset[i]){  # if the query is a point interval we know it can only match one value
+      # construct a vector of indices of spells having an onset equal to the query onset
       befon<-which(onset[i]==active[[i]][[2]][,1]) # before onset
-      if(length(befon)>0){
-        if (return.tea){
+      if(length(befon)>0){  # did we find it?
+        if (return.tea){ # should we return a TEA structure (for user to process) instead of just the value?
           vals[[i]]<-list(active[[i]][[1]][befon],active[[i]][[2]][befon,])
         } else {
           vals[[i]]<-active[[i]][[1]][befon]
         }
       } else {
-        afton <-which(onset[i]>=active[[i]][[2]][,1]) # after onset
-        befterm<-which((active[[i]][[2]][,2]==Inf)|(onset[i]<active[[i]][[2]][,2])) # before term
+        # construct a vector of indices of spells where the query onset is after (>=) spell onset
+        afton <-which(onset[i]>=active[[i]][[2]][,1])
+        # construct a vector of indices of spells where the query onset is before (<) spell terminus
+        befterm<-which((active[[i]][[2]][,2]==Inf)|(onset[i]<active[[i]][[2]][,2]))
+        # intersect the vector of indices to find the matching set
         splindex <-sort(intersect(afton,befterm))
         if (length(splindex)>0){
-          if (return.tea){
+          if (return.tea){ # should we return a TEA structure (for user to process) instead of just the value?
             vals[[i]]<-list(active[[i]][[1]][splindex],active[[i]][[2]][splindex,])
           } else {
             vals[[i]]<-active[[i]][[1]][splindex]
@@ -842,16 +850,17 @@ getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NUL
         }
       }
     } else {  # interval query
-      #this seems to be slow..
+      # TODO: this seems to be slow..
+      # apply the spell query to each row of the activity matrix to determine the indices of intersecting values
       splindex <- sort(which(apply(active[[i]][[2]], 1, int.query.true, onset[i], terminus[i])))
-      if (length(splindex)>0){
-        # evaluate the earliest or latest rule
+      if (length(splindex)>0){  # if we found more than one value ...
+        # evaluate the earliest or latest rule to decide which to return
         if(rule=='earliest'){
-          splindex<-splindex[1] # choose the earliest value
+          splindex<-splindex[1] # choose the earliest value found
         } else if (rule=='latest'){
-          splindex<-splindex[length(splindex)] # choose the latest value
+          splindex<-splindex[length(splindex)] # choose the latest value found
         }
-        if (return.tea){
+        if (return.tea){ # should we return the TEA structure instead of just the value?
           vals[[i]]<-list(active[[i]][[1]][splindex],active[[i]][[2]][splindex,])
         } else {
           vals[[i]]<-active[[i]][[1]][splindex]
