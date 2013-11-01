@@ -1014,3 +1014,82 @@ maxtime <- function(vertex.data, edge.data) {
   cat(paste("  Time unit:",nop$time.unit,"\n"))
   cat(paste("  Suggested time increment:",nop$time.increment,"\n"))
 }
+
+# function to adjust all of the activity spells in a network by a specified amount
+adjust.activity <-function(nd,offset=0,factor=1){
+  # check args
+  if (!is.networkDynamic(nd)){
+    stop("adjust.activity requires a networkDynamic object as its first argument")
+  }
+  if (!is.numeric(offset)){
+    stop("the offset argument must be a positive or negative numeric value giving the amount of the time adjustment")
+  }
+  
+  if (!is.numeric(factor)){
+    stop("the factor argument must be a positive or negative numeric value giving the amount of the time should be multiplied by")
+  }
+  xn <- deparse(substitute(nd))   # needed for proper assignment in calling environment
+  ev <- parent.frame()
+  
+  # change all the vertex spells
+  nd$val<-lapply(nd$val, function(v){
+    if (!is.null(v$active)){
+      v$active<-(v$active+offset)*factor
+    }
+    v
+  })
+  
+  # change all the vertex teas
+  vattributes <- list.vertex.attributes(nd)
+  vattributes.active <- grep(".active", vattributes, value = TRUE)
+  for (attrname in vattributes.active){
+    nd$val<-lapply(nd$val, function(v){
+      if (!is.null(v[[attrname]])){
+        v[[attrname]][[2]]<-(v[[attrname]][[2]]+offset)*factor
+      }
+      v
+    })
+  }
+  
+  # change all the edge spells
+  nd$mel<-lapply(nd$mel, function(e){
+    if (!is.null(e$atl$active)){
+      e$atl$active<-(e$atl$active+offset)*factor
+    }
+    e
+  })
+  
+  # change all the edge teas
+  nd$mel<-lapply(nd$mel, function(e){
+    # get the list of attribute names for the edge
+    eattributes.active <- grep(".active", names(e$atl), value = TRUE)
+    for(attrname in eattributes.active)
+    if (!is.null(e$atl[[attrname]])){
+      e$atl[[attrname]][[2]]<-(e$atl[[attrname]][[2]]+offset)*factor
+    }
+    e
+  })
+  
+  # change the network teas
+  nattributes <- list.network.attributes(nd)
+  nattributes.active <- grep(".active", nattributes, value = TRUE)
+  for (attrname in nattributes.active){
+      nd$gal[[attrname]][[2]]<-(nd$gal[[attrname]][[2]]+offset)*factor
+  }
+  
+  # change the net.obs.period
+  obs<-nd%n%'net.obs.period'
+  if(!is.null(obs)){
+    # transform the observation spells
+    obs$observations<-lapply(obs$observations,function(observation){
+      (observation+offset)*factor
+    })
+    # also transform the time.increment
+    obs$time.increment<-obs$time.increment*factor
+    nd%n%'net.obs.period'<-obs
+  }
+  if (exists(xn, envir = ev)) 
+    on.exit(assign(xn, nd, pos = ev)) # remap to parent environmnet
+  invisible(nd)
+}
+

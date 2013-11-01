@@ -64,5 +64,6 @@ add.vertices,
 add.edges,
 add.edge,
 reconcile.vertex.activity,
-reconcile.edge.activity
+reconcile.edge.activity,
+adjust.activity
 )
