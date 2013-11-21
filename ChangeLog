@@ -1,4 +1,10 @@
 Change Log:
+v0.6 - Features & bug fixes
+ New Features:
+  - added adjust.activity() function to transform the all of the known activity spell values in a networkDynamic object
+  - converted add.edges to add.edges.networkDynamic, add.edge to add.edge.networkDynamic and add.vertices to add.vertices.networkDynamic to more correctly use S3 dispatching
+  - changed argument order of add.edges.active and add.vertices.active to avoid S3 warnings and implemented pass-through for additional arguments. 
+
 v0.5.2 - Features & bug fixes
  New Features:
   - network.extract() function now truncates the observation spells of the net.obs.period attribute (if it is present)

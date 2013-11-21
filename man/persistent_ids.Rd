@@ -10,9 +10,6 @@
 \alias{persistent.ids}
 \alias{vertex.pid.check}
 \alias{edge.pid.check}
-\alias{add.vertices}
-\alias{add.edges}
-\alias{add.edge}
 \alias{get.vertex.id}
 \alias{get.vertex.pid}
 \alias{get.edge.id}
@@ -26,7 +23,6 @@ Use and manipulate persistent ids of network elements
 Persistent ids (pids) are unique values attached to vertices or edges which remain unchanged throughout network manipulation and extraction processes. The ``vertex.pid'' of a vertex is an overall data-set id, unlike the ``vertex.id'' which is an index dependent on network size.  These functions provide ways to look up vertex.pids from vertex.ids (and the other way around) and also provide necessary modifications to some standard network functions to safely work with pids. 
 }
 \usage{
-
 get.vertex.id(nd, pid)
 
 get.vertex.pid(nd, id)
@@ -40,15 +36,6 @@ initialize.pids(nd)
 vertex.pid.check(nd)
 
 edge.pid.check(nd)
-
-add.vertices(x, nv, vattr = NULL, last.mode = TRUE, vertex.pid = NULL)
-
-add.edges(x, tail, head, names.eval = NULL, vals.eval = NULL, 
-    edge.pid = NULL, ...)
-    
-add.edge(x, tail, head, names.eval = NULL, vals.eval = NULL, 
-    edge.check = FALSE, edge.pid = NULL, ...)    
-    
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -57,18 +44,6 @@ add.edge(x, tail, head, names.eval = NULL, vals.eval = NULL,
   }
   \item{pid}{persistent id(s) of the network element(s) for which the network-specific id(s) should be returned}
   \item{id}{network-specific (index) id(s)  of the network element for which the persistent id(s) should be returned}
-  \item{x}{an object of class \code{network} or \code{networkDynamic} (see \code{\link[network:add.vertices]{add.vertices}} in network)}
-  \item{nv}{number of vertices to be added. (see \code{\link[network:add.vertices]{add.vertices}} in network)}
-  \item{vattr}{optionally, a list of attributes with one entry per new vertex. (see \code{\link[network:add.vertices]{add.vertices}} in network)}
-  \item{last.mode}{logical; should the new vertices be added to the last (rather than the first) mode of a bipartite network? (see \code{\link[network:add.vertices]{add.vertices}} in network)}
-  \item{vertex.pid}{a vector of vertex.pids to be assigned to the newly-added vertices}
-  \item{edge.pid}{a vector of edge.pids to be assigned to the newly-added edges}
-  \item{names.eval}{see \code{\link[network:add.edges]{add.edges}} in network)}
-  \item{vals.eval}{see \code{\link[network:add.edges]{add.edges}} in network)}
-  \item{edge.check}{see \code{\link[network:add.edges]{add.edges}} in network)}
-  \item{head}{see \code{\link[network:add.edges]{add.edges}} in network)}
-  \item{tail}{see \code{\link[network:add.edges]{add.edges}} in network)}
-  \item{...}{see \code{\link[network:add.edges]{add.edges}} in network)}
 }
 \details{
 The persistent id functionality is an optional feature of \code{networkDynamic} objects. If a network-level attribute named \code{vertex.pid} exists, its value is required to be the name of a vertex attribute that can safely be used as a vertex.pid. If it is set to \code{NULL}, pids will be ignored.   A vertex.pid must have a unique value for all vertices. Persistent ids for edges function in the same way, except the attribute is named \code{edge.pid}.
@@ -100,11 +75,6 @@ Each of the above return \code{NA} values where no match is found.
   \item{\code{edge.pid.check} throws an error if the \code{edge.pid} is found to not meet specifications. Otherwise returns \code{TRUE} or \code{FALSE} and gives a warning if edge.pid does not exist}
 }
 
-Element addition methods:
-\itemize{
-  \item{\code{add.verticies} (invisibly) returns a reference to the network with the new vertices added. Pids will be added/created if a \code{vertex.pid} attribute is set.}
-  \item{\code{add.edge} and \code{add.edges} (invisibly) return a reference to the network with the new vertices added. Pids will be added/created if a \code{vertex.pid} attribute is set.}
-}
 }
 \references{
 A specification document: \url{https://statnet.csde.washington.edu/trac/wiki/PersistentIdProposal}
