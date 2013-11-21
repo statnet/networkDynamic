@@ -108,7 +108,7 @@ get.edge.pid <- function(nd, id) {
 # adding vertex.pid to new node if specified
 # this function needs to overide the version in network to make sure
 # that the pid is hanled correctly
-add.vertices <- function(x, nv, vattr=NULL, last.mode=TRUE, vertex.pid=NULL) {
+add.vertices.networkDynamic <- function(x, nv, vattr=NULL, last.mode=TRUE, vertex.pid=NULL, ...) {
   
   # todo: test x is net
   
@@ -144,7 +144,7 @@ add.vertices <- function(x, nv, vattr=NULL, last.mode=TRUE, vertex.pid=NULL) {
     }
   }
   
-  x<-network::add.vertices(x=x, nv=nv, vattr=vattr, last.mode=last.mode)
+  x<-add.vertices.network(x=x, nv=nv, vattr=vattr, last.mode=last.mode)
   # TODO: if there is an error condition below, network will allready have been modified. 
   
   # only mess with vertex pids if it is named at the network level
@@ -160,13 +160,13 @@ add.vertices <- function(x, nv, vattr=NULL, last.mode=TRUE, vertex.pid=NULL) {
 }
 
 # override add.edges in network to manage pid stuff
-add.edges<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.pid=NULL,...){
+add.edges.networkDynamic<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.pid=NULL,...){
   # for modify in place
   xn <- deparse(substitute(x))
   ev <- parent.frame()
   
   mnextOrig<-x%n%'mnext'
-  x<-network::add.edges(x=x,tail=tail,head=head,names.eval=names.eval,vals.eval=vals.eval,...=...)
+  x<-add.edges.network(x=x,tail=tail,head=head,names.eval=names.eval,vals.eval=vals.eval,...=...)
   mnextNew<-x%n%'mnext'
   
   # only mess with edge pids if it is named at the network level
@@ -199,13 +199,13 @@ add.edges<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.pid=NULL
 }
 
 # override add.edges in network to manage pid stuff
-add.edge<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.check=FALSE,edge.pid=NULL,...){
+add.edge.networkDynamic<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.check=FALSE,edge.pid=NULL,...){
   # for modify in place
   xn <- deparse(substitute(x))
   ev <- parent.frame()
   
   mnextOrig<-x%n%'mnext'
-  x<-network::add.edge(x=x,tail=tail,head=head,names.eval=names.eval,vals.eval=vals.eval,edge.check=edge.check,...=...)
+  x<-add.edge.network(x=x,tail=tail,head=head,names.eval=names.eval,vals.eval=vals.eval,edge.check=edge.check,...=...)
   mnextNew<-x%n%'mnext'
   
   # only mess with edge pids if it is named at the network level

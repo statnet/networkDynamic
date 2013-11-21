@@ -64,17 +64,17 @@ expect_error(get.vertex.pid(network.initialize(0),"does not have a 'vertex.pid' 
 # ---------- add.vertices  checks -----
 
 # test calling original function, direct assignment
-net <- network.initialize(1)
+net <- as.networkDynamic(network.initialize(1))
 net <-add.vertices(net,nv=3)
 expect_equal(network.size(net),4,info='add.vertices direct assignment')
 
 # test calling original function, modify inplace
-net <- network.initialize(1)
+net <- as.networkDynamic(network.initialize(1))
 add.vertices(net,nv=3)
 expect_equal(network.size(net),4,info='add.vertices modify in place')
 
 
-net <- network.initialize(1)
+net <- as.networkDynamic(network.initialize(1))
 set.network.attribute(net,'vertex.pid','data_id')
 set.vertex.attribute(net,'data_id','one')
 
@@ -98,7 +98,7 @@ add.vertices(net,3)
 expect_equal(anyDuplicated(get.vertex.attribute(net,'data_id')),0)
 
 # adding with pid disabled
-net<-network.initialize(3)
+net<-as.networkDynamic(network.initialize(3))
 set.network.attribute(net,'vertex.pid',NULL)
 expect_equal(network.size(add.vertices(net,3)),6)
 
@@ -109,17 +109,17 @@ expect_equal(network.size(add.vertices(network.initialize(0),1)),1)
 # ------------ add.edges checks ----
 
 # no pid defined, modify in place
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 add.edges(nd,tail=1:3,head=c(2,3,1))
 expect_equal(network.edgecount(nd),3)
 
 # direct assignement
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 nd2<-add.edges(nd,tail=1:3,head=c(2,3,1))
 expect_equal(network.edgecount(nd2),3)
 
 # pid defined
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 set.network.attribute(nd,'edge.pid','myFavoriteId')
 add.edges(nd,tail=1:3,head=c(2,3,1))
 expect_true(nd%n%'edge.pid'=='myFavoriteId')
@@ -127,7 +127,7 @@ expect_equal(length(get.edge.attribute(nd,'myFavoriteId')),3,info='check add.edg
 expect_true('myFavoriteId'%in%list.edge.attributes(nd),info='check add.edges created edge.pid with correct name')
 
 # adding to net with edges, and passing 
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 add.edges(nd,tail=1:3,head=c(2,3,1))
 set.network.attribute(nd,'edge.pid','edge.pid')
 set.edge.attribute(nd,'edge.pid',c("A","B","C"))
@@ -140,17 +140,17 @@ expect_equal(get.edge.attribute(nd,'edge.pid')[1:4],LETTERS[1:4])
 # ------------ add.edge checks ----
              
 # no pid defined, modify in place
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 add.edge(nd,tail=1,head=2)
 expect_equal(network.edgecount(nd),1)
              
 # direct assignement
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 nd2<-add.edge(nd,tail=1,head=2)
 expect_equal(network.edgecount(nd2),1)
              
 # pid defined
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 set.network.attribute(nd,'edge.pid','myFavoriteId')
 add.edge(nd,tail=1,head=2)
 expect_true(nd%n%'edge.pid'=='myFavoriteId')
@@ -158,7 +158,7 @@ expect_equal(length(get.edge.attribute(nd,'myFavoriteId')),1,info='check add.edg
 expect_true('myFavoriteId'%in%list.edge.attributes(nd),info='check add.edge created edge.pid with correct name')
              
 # adding to net with edges, and passing 
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 add.edges(nd,tail=1:3,head=c(2,3,1))
 set.network.attribute(nd,'edge.pid','edge.pid')
 set.edge.attribute(nd,'edge.pid',c("A","B","C"))
@@ -170,12 +170,12 @@ expect_equal(get.edge.attribute(nd,'edge.pid')[1:4],LETTERS[1:4])
              
              
 # check error for non-unique
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 set.network.attribute(nd,'edge.pid','edge.pid')
 expect_error(add.edge(nd,tail=1,head=2,edge.pid=c("A","A","A")), 'Only one edge.pid can be specified')   
              
 # check for errror from existign non-unique
-nd<-network.initialize(3)
+nd<-as.networkDynamic(network.initialize(3))
 set.network.attribute(nd,'edge.pid','edge.pid')  
 add.edges(nd,tail=1:3,head=c(2,3,1))
 set.edge.attribute(nd,'edge.pid',"A")             
@@ -185,7 +185,7 @@ expect_error(add.edge(nd,tail=3,head=1,edge.pid="B"),"edge.pid attribute must be
 
 # ---- intitialize.pids ----
 
-test<-network.initialize(30)
+test<-as.networkDynamic(network.initialize(30))
 add.edges(test,1:29,2:30)
 initialize.pids(test)
 expect_equal(anyDuplicated(get.vertex.attribute(test,'vertex.pid')),0)
@@ -194,7 +194,7 @@ expect_equal(anyDuplicated(get.edge.attribute(test,'edge.pid')),0)
 initialize.pids(network.initialize(0))
 
 # ----- get.edge.id ----------------
-net<-network.initialize(5)
+net<-as.networkDynamic(network.initialize(5))
 add.edges(net,1:4,2:5)
 set.edge.attribute(net,'data_id',LETTERS[1:4])
 set.network.attribute(net,'edge.pid','data_id')
@@ -222,7 +222,7 @@ expect_error(get.edge.pid(network.initialize(0)),"does not have an 'edge.pid' at
 
 
 #----- edge.pid.check  checks ---------
-nd <-network.initialize(5)
+nd <-as.networkDynamic(network.initialize(5))
 add.edges(nd,1:4,2:5)
 set.edge.attribute(nd,"myId",LETTERS[1:4])
 set.network.attribute(nd,'edge.pid','myId')
@@ -250,12 +250,12 @@ expect_warning(edge.pid.check(network.initialize(0)),"does not have an 'edge.pid
 
 
 # ----- vertex.pid.check checks ------
-nd <-network.initialize(5)
+nd <-as.networkDynamic(network.initialize(5))
 set.vertex.attribute(nd,"myId",LETTERS[1:5])
 set.network.attribute(nd,'vertex.pid','myId')
 expect_true(vertex.pid.check(nd),info='checking correctly formatted edge.pid')
 
-nd <-network.initialize(5)
+nd <-as.networkDynamic(network.initialize(5))
 set.vertex.attribute(nd,"myId",LETTERS[1:4],v=1:4)
 set.network.attribute(nd,'vertex.pid','myId')
 expect_error(vertex.pid.check(nd),info='error for mis-formatted vertex.pid')
@@ -265,7 +265,7 @@ expect_warning(vertex.pid.check(network.initialize(3)),"does not have a 'vertex.
 expect_warning(vertex.pid.check(network.initialize(0)),"does not have a 'vertex.pid' attribute")
 
 # ------- extraction check ----
-nd <-network.initialize(5)
+nd <-as.networkDynamic(network.initialize(5))
 set.vertex.attribute(nd,"myId",LETTERS[1:5])
 set.network.attribute(nd,'vertex.pid','myId')
 activate.vertices(nd,onset=c(1,2,3,4,5),terminus=c(3,4,5,6,7))

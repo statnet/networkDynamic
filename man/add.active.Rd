@@ -13,13 +13,15 @@
 add.verticies.active, add.edges.active
 }
 \description{
-Convienience functions for adding a set of verticies (or edges) and setting them to be active in a single call
+Convenience functions for adding a set of verticies (or edges) and setting them to be active in a single call
 }
 
 \usage{
-add.vertices.active(x, nv, onset = NULL, terminus = NULL, length = NULL, at = NULL)
+\method{add.vertices}{active}(x, nv, vattr = NULL, last.mode = TRUE,
+            onset = NULL, terminus = NULL, length = NULL, at = NULL, ...)
 
-add.edges.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, tail, head)
+\method{add.edges}{active}(x, tail, head, names.eval = NULL, vals.eval = NULL, 
+         onset = NULL, terminus = NULL, length = NULL, at = NULL, ...)
 }
 \arguments{
   \item{x}{ an object of class \code{\link{network}} or \code{\link{networkDynamic}}. }
@@ -27,13 +29,18 @@ add.edges.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, tai
   \item{tail}{a vector of vertex IDs corresponding to the tail (source, ego) of each edge to be added}
   \item{head}{a vector of vertex IDs corresponding to the head (target, alter) of each edge to be added}
   
-  \item{onset}{ an optional vector of timepoints that specifies the starts of the interval(s). This must be accompanied by one of \code{terminus} or \code{length}. }
-  \item{terminus}{ an optional vector of timepoints that specifies the ends of the interval(s). This must be accompanied by one of \code{onset} or \code{length}. }
+  \item{onset}{ an optional vector of time points that specifies the starts of the interval(s). This must be accompanied by one of \code{terminus} or \code{length}. }
+  \item{terminus}{ an optional vector of time points that specifies the ends of the interval(s). This must be accompanied by one of \code{onset} or \code{length}. }
   \item{length}{ an optional vector of interval lengths for the interval(s). This must be accompanied by one of \code{onset} or \code{terminus}. }
   \item{at}{ optional, one or more time points to be activated. }
+  \item{names.eval}{optional list of length equal to the number of edges, with each element containing a list of names for the attributes of the corresponding edge. not currently interpreted in a dynamic context, but passed directly to \code{\link{add.edges}}}
+  \item{vals.eval}{an optional list of lists of edge attribute values (matching \code{names.eval}). Not currently interpreted in a dynamic context, but passed directly to \code{\link{add.edges}}}
+  \item{vattr}{optionally, a list of attributes with one entry per new vertex. not currently interpreted in a dynamic context, but passed directly to \code{\link{add.vertices}}}
+  \item{last.mode}{logical; should the new vertices be added to the last (rather than the first) mode of a bipartite network?}
+  \item{...}{possible future additional arguments}
 }
 \details{
-Essentially a wrapper for a call to \code{\link{add.vertices}} and \code{\link{activate.vertices}}  or \code{\link{add.edges}} and \code{\link{activate.edges}} when setting up a network object. 
+Essentially a wrapper for a call to \code{\link{add.vertices}} and \code{\link{activate.vertices}}  or \code{\link{add.edges}} and \code{\link{activate.edges}} when setting up a network object. These are not the S3 methods that their name appears to imply, since there is no "active" class.  See \code{\link{add.edges.networkDynamic}}, etc.
 }
 \value{
 The passed in network object with class set to \code{\link{networkDynamic}} and the specified number of new vertices or edges added and activated
@@ -42,7 +49,7 @@ The passed in network object with class set to \code{\link{networkDynamic}} and 
 \author{
 Ayn Leslie-Cook \email{aynlc3@uw.edu}}
 
-\note{Does not currently support the multiple-vertex head- and tail-sets of \code{add.edges} or \code{add.edge}}
+\note{Order of arguments was changed in version 1.9 for S3 method consistency. Does not currently support the multiple-vertex head- and tail-sets of \code{add.edges} or \code{add.edge}.}
 
 
 \seealso{

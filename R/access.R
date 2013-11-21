@@ -391,7 +391,7 @@ deactivate.vertices<-function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL
 
 
 # adds new edges, active at the given time
-add.edges.active <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL, tail, head) {
+add.edges.active <- function(x, tail, head, names.eval=NULL, vals.eval=NULL, onset=NULL, terminus=NULL, length=NULL, at=NULL, ...) {
   xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
   ev <- parent.frame()
 
@@ -410,7 +410,7 @@ add.edges.active <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
     head = rep(head, length=n)
   }
 
-  add.edges(x, tail, head)
+  add.edges(x, tail, head,names.eval,vals.eval)
   activate.edges(x, onset, terminus, length, at, e=seq(x%n%"mnext"-n, x%n%"mnext"-1))
   if(exists(xn, envir=ev))
     on.exit(assign(xn, x, pos=ev))
@@ -419,7 +419,7 @@ add.edges.active <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
 
 
 # adds new vertices, active at the given time
-add.vertices.active <- function(x, nv, onset=NULL, terminus=NULL, length=NULL, at=NULL) {
+add.vertices.active <- function(x, nv, vattr=NULL, last.mode=TRUE, onset=NULL, terminus=NULL, length=NULL, at=NULL,...) {
   xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
   ev <- parent.frame()
   if(!is.network(x))
@@ -427,7 +427,7 @@ add.vertices.active <- function(x, nv, onset=NULL, terminus=NULL, length=NULL, a
   if(!is.numeric(nv))
     stop("The number of vertices given in 'nv' must be numeric in add.verices.active.\n")
 
-  add.vertices(x, nv)
+  add.vertices(x, nv,vattr,last.mode)
   activate.vertices(x, onset, terminus, length, at, v=seq(x%n%"n"-nv+1, x%n%"n"))
   if(exists(xn, envir=ev))
     on.exit(assign(xn, x, pos=ev))
