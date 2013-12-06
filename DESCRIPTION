@@ -3,7 +3,7 @@ Version: 0.6
 Date: 2013-09-06
 Title: Dynamic Extensions for Network Objects
 Type: Package
-Depends: network (>= 1.8), statnet.common
+Depends: network (>= 1.9), statnet.common
 Suggests: testthat
 Authors@R:c(
     person("Carter T.", "Butts", role=c("aut"), email="buttsc@uci.edu"),
