@@ -272,7 +272,6 @@ get.edge.value.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NU
           vals[[index]]<-vals[[index]][[1]]
         }
       }
-      # TODO: this is probably where we would apply any other merge rules
       # now that there is only one value, need to remove a level of nesting.
       vals[valid.edges] <-lapply(vals[valid.edges],"[[",1)
     }
@@ -721,57 +720,58 @@ insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
      } else {
         double.entry=FALSE
         ns <- NROW(cur.spells)
-  # find the row that this spell will go into
-	if(onset>cur.spells[ns,1]) {
-	  spell.row <- ns+1
-	} else {
-	  spell.row <- min(which(onset<=cur.spells[,1]))
-	}
-	# if the onset interrupts/continues an existing spell... 
-	if (spell.row > 1 && onset<=cur.spells[spell.row-1,2]) {
-          if(identical(val, cur.vals[[spell.row-1]])) {
-	     spell.row <- spell.row-1
-	     onset <- cur.spells[spell.row,1]   # back up onset to that of interrupted spell
-	   } else {
-             if(terminus < cur.spells[spell.row-1,2]){  # this spells splits the interrupted spell in 2
-               double.entry<-TRUE
-               val2 <- cur.vals[[spell.row-1]]
-               spell2 <-matrix(c(terminus, cur.spells[spell.row-1,2]),1,2)
-             }
-             cur.spells[spell.row-1,2] <- onset   # truncate interrupted spell
-	   }
-	}
-	# find the minimum spell that is retained (vs. spells that are overlapped/overwritten)
-	if(terminus>=cur.spells[ns, 2])
-	  retain.row <- ns+1
-	else
-	  retain.row <- min(which(terminus<cur.spells[,2]))  
-	# if the terminus interrupts/continues an existing spell...
-	if(retain.row <= ns && terminus>=cur.spells[retain.row,1]) {
-	  if(identical(val,cur.vals[[retain.row]])) {
-	    terminus <- cur.spells[retain.row,2]  # forward terminus to that of interrupted spell
-	    retain.row <- retain.row+1
-	  } else {
-	    cur.spells[retain.row,1] <- terminus  # partial overwrite of interrupted spell
-	  }
-	}
-	# construct new spell matrix and value vector
-	new.spells <- matrix(c(onset, terminus),1,2)
-	new.values <- list(val)
-        if(double.entry){
-          new.spells <- rbind(new.spells, spell2)
-          new.values[[2]] <- val2
-        }
-	if(spell.row > 1){
-	  new.spells <- rbind(cur.spells[1:(spell.row-1),], new.spells)
-	  new.values <- c(cur.vals[1:(spell.row-1)], new.values)
-	}
-	if(retain.row <= ns) {
-	  new.spells <- rbind(new.spells, cur.spells[retain.row:ns,])
-	  new.values <- c(new.values, cur.vals[retain.row:ns])
-	}
-  }
-      list(new.values, new.spells)
+        # find the row that this spell will go into
+      	if(onset>cur.spells[ns,1]) {
+      	  spell.row <- ns+1
+      	} else {
+      	  spell.row <- min(which(onset<=cur.spells[,1]))
+      	}
+      	# if the onset interrupts/continues an existing spell... 
+      	if (spell.row > 1 && onset<=cur.spells[spell.row-1,2]) {
+                if(identical(val, cur.vals[[spell.row-1]])) {
+      	     spell.row <- spell.row-1
+      	     onset <- cur.spells[spell.row,1]   # back up onset to that of interrupted spell
+      	   } else {
+                   if(terminus < cur.spells[spell.row-1,2]){  # this spells splits the interrupted spell in 2
+                     double.entry<-TRUE
+                     val2 <- cur.vals[[spell.row-1]]
+                     spell2 <-matrix(c(terminus, cur.spells[spell.row-1,2]),1,2)
+                   }
+                   cur.spells[spell.row-1,2] <- onset   # truncate interrupted spell
+      	   }
+      	}
+      	# find the minimum spell that is retained (vs. spells that are overlapped/overwritten)
+      	if(terminus>=cur.spells[ns, 2]){
+      	  retain.row <- ns+1
+      	} else {
+      	  retain.row <- min(which(terminus<cur.spells[,2]))
+      	}
+      	# if the terminus interrupts/continues an existing spell...
+      	if(retain.row <= ns && terminus>=cur.spells[retain.row,1]) {
+      	  if(identical(val,cur.vals[[retain.row]])) {
+      	    terminus <- cur.spells[retain.row,2]  # forward terminus to that of interrupted spell
+      	    retain.row <- retain.row+1
+      	  } else {
+      	    cur.spells[retain.row,1] <- terminus  # partial overwrite of interrupted spell
+      	  }
+      	}
+      	# construct new spell matrix and value vector
+      	new.spells <- matrix(c(onset, terminus),1,2)
+      	new.values <- list(val)
+              if(double.entry){
+                new.spells <- rbind(new.spells, spell2)
+                new.values[[2]] <- val2
+              }
+      	if(spell.row > 1){
+      	  new.spells <- rbind(cur.spells[1:(spell.row-1),], new.spells)
+      	  new.values <- c(cur.vals[1:(spell.row-1)], new.values)
+      	}
+      	if(retain.row <= ns) {
+      	  new.spells <- rbind(new.spells, cur.spells[retain.row:ns,])
+      	  new.values <- c(new.values, cur.vals[retain.row:ns])
+      	}
+    }
+    list(new.values, new.spells)
 }
 
 # define functions to use as match rules. These are interval comparison functions 
@@ -808,7 +808,7 @@ getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NUL
   # create a vector default values of NA for any elements that may not be otherwise specified
   vals<-as.list(rep(NA,times=length(active)))
   
-  # Skye: I tried this loop as lapply, didn't get any speedup, but that could be because it wasn't well written. But looping in reverse may give us lots of speedup if the most common use cases is extracting the last timepoint.
+  # Skye: I tried this loop as lapply, didn't get any speedup, but that could be because it wasn't well written. 
   
   # for each network element (either vertex or edge), check the spell matrix for intersections with the query spell and return the corresponding values. 
   for(i in seq_along(active)){
@@ -852,8 +852,21 @@ getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NUL
     } else {  # interval query
       # TODO: this seems to be slow..
       # apply the spell query to each row of the activity matrix to determine the indices of intersecting values
-      splindex <- sort(which(apply(active[[i]][[2]], 1, int.query.true, onset[i], terminus[i])))
-      if (length(splindex)>0){  # if we found more than one value ...
+      # old code:
+      #splindex <- which(apply(active[[i]][[2]], 1, int.query.true, onset[i], terminus[i]))
+      # new code:
+      # amazingly, the for loop below takes less time than apply above because we can loop backwards
+      splindex<-numeric(0)
+      foundSome<-FALSE
+      for (r in nrow(active[[i]][[2]]):1){
+        if(int.query.true(active[[i]][[2]][r,],onset[i],terminus[i])){
+          splindex<-c(r,splindex)
+          foundSome<-TRUE
+        } else if (foundSome){ # since rows are ordered, stop searching if we've already found some
+          break
+        }
+      }
+      if (length(splindex)>0){  # if we found 1 or more values ...
         # evaluate the earliest or latest rule to decide which to return
         if(rule=='earliest'){
           splindex<-splindex[1] # choose the earliest value found
@@ -865,7 +878,7 @@ getValsForSpells <- function(active,onset=NULL,terminus=NULL,length=NULL, at=NUL
         } else {
           vals[[i]]<-active[[i]][[1]][splindex]
         }
-      }
+      } 
     }
   }
   vals
