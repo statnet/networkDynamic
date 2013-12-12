@@ -639,7 +639,7 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
   if(length(e)){
     origelen<-length(e)
     e <- e[!sapply(x$mel[e], is.null)]  # filter out non-edges
-    # if e were ommited due to null edges, give warning
+    # if e were omitted due to null edges, give warning
     if (length(e)< origelen){
       warning("Some edge IDs in the e argument correspond to deleted edges and will be ignored. Indices of values returned will not correspond to elements of e.")
     }
@@ -672,34 +672,9 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
   }
   if(any(onset>terminus))
     stop("Onset times must precede terminus times in is.active.\n")
-  act<-rep(FALSE,length(active))  
-  if(match.arg(rule)=="all")
-    int.query.true <- match.rule.all  # use the match rule defined in tea_utils.R
-  else
-    int.query.true <- match.rule.any
 
-  # main loop  
-  for(i in seq_along(active)){
-    if(is.null(active[[i]]))
-      act[i]<-active.default
-    else if (active[[i]][1,1]==-Inf && active[[i]][1,2]==Inf)
-      act[i]<-TRUE
-    else if (all(is.infinite(active[[i]])))
-      act[i]<-FALSE
-    else if (terminus[i] == onset[i]){  # point query
-      befon<-which(onset[i]==active[[i]][,1])
-      if(length(befon)>0){
-        act[i]<-TRUE
-      } else {
-        afton <-which(onset[i]>=active[[i]][,1])
-        befterm<-which((active[[i]][,2]==Inf)|(onset[i]<active[[i]][,2]))
-        act[i]<-((length(afton)*length(befterm)>0)&&(max(afton)==min(befterm)))
-      }
-    } else {  # interval query
-      act[i] <- any(apply(active[[i]], 1, int.query.true, onset[i], terminus[i]))
-    }
-  }
-  act
+#  return(.Call('IsActiveInVector', onset, terminus, active, (match.arg(rule) == 'all'), active.default, get("debug.output", envir=.GlobalEnv)))
+  return(.Call('IsActiveInVector', onset, terminus, active, (match.arg(rule) == 'all'), active.default, FALSE))
 }
 
 
