@@ -42,5 +42,14 @@ expect_equal(test$mel[[1]]$atl$'veggie.active'[[2]],matrix(c(2.5,4),ncol=2))
 expect_equal(unlist((test%n%'net.obs.period')$observations),c(2.5,3,3,3.5,3.5,4))
 expect_equal((test%n%'net.obs.period')$time.increment,0.5)
 
+# ---- test for add.vertices.active -----
+net<-network.initialize(3)
+# test for adding zero vertices
+add.vertices.active(net,nv=0)
+expect_equal(network.size(net),3)
+expect_true(is.networkDynamic(net))
 
-
+add.vertices.active(net,nv=2, onset=1,terminus=2)
+expect_equal(network.size(net),5)
+expect_true(is.networkDynamic(net))
+expect_equal(unlist(get.vertex.activity(net,as.spellList=TRUE)[4:5,1:2]),c(1,1,2,2),check.names=FALSE)
