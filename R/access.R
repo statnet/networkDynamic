@@ -420,15 +420,21 @@ add.edges.active <- function(x, tail, head, names.eval=NULL, vals.eval=NULL, ons
 
 # adds new vertices, active at the given time
 add.vertices.active <- function(x, nv, vattr=NULL, last.mode=TRUE, onset=NULL, terminus=NULL, length=NULL, at=NULL,...) {
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+ 
   if(!is.network(x))
     stop("add.vertices.active requires an argument of class network.\n")
   if(!is.numeric(nv))
     stop("The number of vertices given in 'nv' must be numeric in add.verices.active.\n")
-
-  add.vertices(x, nv,vattr,last.mode)
-  activate.vertices(x, onset, terminus, length, at, v=seq(x%n%"n"-nv+1, x%n%"n"))
+  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
+  ev <- parent.frame()
+  if (nv>0){
+    add.vertices(x, nv,vattr,last.mode)
+    activate.vertices(x, onset, terminus, length, at, v=seq(x%n%"n"-nv+1, x%n%"n"))
+  } else {
+    if(!is.networkDynamic(x)){
+      x<-set.nD.class(x)
+    }
+  }
   if(exists(xn, envir=ev))
     on.exit(assign(xn, x, pos=ev))
   invisible(x)  
