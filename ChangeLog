@@ -1,6 +1,7 @@
 Change Log:
 v0.6 - Features & bug fixes
  New Features:
+  - added get.dyads.active function to facilitate looking up the vertex ids of the heads and tails of active edges of a non-hypergraphic network
   - reimplemented is.active in C to speed up operations on large networks with lots of time steps
   - added adjust.activity() function to transform the all of the known activity spell values in a networkDynamic object
   - converted add.edges to add.edges.networkDynamic, add.edge to add.edge.networkDynamic and add.vertices to add.vertices.networkDynamic to more correctly use S3 dispatching
