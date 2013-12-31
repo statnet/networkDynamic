@@ -24,8 +24,6 @@
 #   get.edges.active
 #   get.neighborhood.active
 #   get.change.times
-#   get.edge.activity
-#   get.vertex.activity
 #   is.active
 #   is.adjacent.active
 #   network.dyadcount.active

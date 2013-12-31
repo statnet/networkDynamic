@@ -4,7 +4,7 @@
 Return the set of vertex ids of edges active at a given time
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Constructs a matrix, essentially an edgelist, of the pairs of vertices connected by edges active within the query spell.
 }
 \usage{
 get.dyads.active(nD, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
@@ -35,7 +35,7 @@ a character string indicating the definition of "active" for this query: \code{a
 }
 }
 \details{
-Constructs a matrix, essentially an edgelist, of the pairs of vertices connected by edges active within the query spell. Uses \code{\link{is.active}} internally.  The ordering of matrix rows is arbitrary.  The ordering of vertices in non-directed networks corresponds to how they were set in the data structure (i.e. does not enforce i > j) If no edges are active or exist, a matrix with zero rows will be returned. 
+Uses \code{\link{is.active}} internally.  The ordering of matrix rows is arbitrary.  The ordering of vertices in non-directed networks corresponds to how they were set in the data structure (i.e. does not enforce i > j) If no edges are active or exist, a matrix with zero rows will be returned. 
 }
 \value{
 Returns a two-column numeric matrix in which the first column gives a tail vertex.id and the second column gives the head vertex.id and each row corresponds to the existence of an active relationship between the vertices for the given query spell. 

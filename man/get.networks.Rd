@@ -64,7 +64,7 @@ activate.edges(test,onset=-2,terminus=-1)
 activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
 activate.edge.attribute(test,'weight',3,onset=4,terminus=5,e=1:2)
 
-# obtain the list of network
+# obtain the list of networks
 list <- get.networks(test,start=0, end=5)
 
 # aggregate over a longer time period with specified rule
