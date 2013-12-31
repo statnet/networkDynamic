@@ -993,6 +993,13 @@ spls<-get.edge.activity(net,active.default=TRUE)
 expect_true(is.null(spls[[2]]),info='check get.edge.activity with ordinary net and active.default=TRUE distinguish deleted edge')
 expect_equal(spls[[3]],matrix(c(-Inf,Inf),ncol=2),info='check get.edge.activity with ordinary net and active.default=TRUE and null spell')
 
+# check that it doesn't censor by default with net.obs.period
+net<-network.initialize(2)
+add.edges.active(net,tail=1,head=2,onset=-Inf,terminus=Inf)
+net%n%'net.obs.period'<-list(observations=list(c(0,100)),mode="discrete", time.increment=1,time.unit="step")
+expect_equal(as.numeric(get.edge.activity(net,as.spellList=TRUE)[1:2]),c(-Inf,Inf))
+
+
 
 
 # ------- networkDynamic from toggles (function used by TERGM) ------------

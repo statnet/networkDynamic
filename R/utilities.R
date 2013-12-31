@@ -640,7 +640,7 @@ get.edge.activity <- function(x, e=seq_along(x$mel), as.spellList=FALSE,active.d
       stop("Illegal edge in get.edge.activity.\n")
   
   if (as.spellList) {
-    return(as.data.frame.networkDynamic(x, e=e,active.default=active.default))
+    return(as.data.frame.networkDynamic(x, e=e,active.default=active.default,start=-Inf,end=Inf))
   } else {
     spls<-get.edge.attribute(x$mel, "active", unlist=FALSE)
     if (active.default & length(e)>0){

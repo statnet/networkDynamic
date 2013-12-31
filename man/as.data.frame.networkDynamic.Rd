@@ -14,12 +14,11 @@
 Extracts the edge timing information from a networkDynamic object and represent as a data.frame.
 }
 \description{
-Creates a data.frame giving lists of edges and their activity spells corresponding to the networkDynamic object.
+Creates a data.frame giving lists of edges and their activity spells corresponding to the networkDynamic object. Edges with \code{-Inf} or \code{Inf} values in the spells may have them censored to an observation window.
 }
 \usage{
-\method{as.data.frame}{networkDynamic}(x, row.names = NULL, optional = FALSE,
-                                       e =seq_along(x$mel),
-                                       start = NULL, end = NULL, active.default=TRUE,...)
+\method{as.data.frame}{networkDynamic}(x, row.names = NULL, optional = FALSE, e =seq_along(x$mel), 
+             start = NULL, end = NULL, active.default=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,24 +26,20 @@ Creates a data.frame giving lists of edges and their activity spells correspondi
   \item{row.names}{ignored}
   \item{optional}{ignored}
   \item{e}{vector of edge ids that should be included in the output.}
-  \item{start}{Left-censoring time: time at which the network was first
+  \item{start}{optional, numeric onset-censoring time: time at which the network was first
     observed. Edge spells with onset \code{-Inf} are given this
     as their start time (and marked as left censored). See Details for
     the default values.}
-  \item{end}{Right-censoring time: time at which the network was last
+  \item{end}{optional right-censoring time: time at which the network was last
     observed. Edge spells with terminus \code{Inf} are given this
     as their end time (and marked as right censored). See Details for
     the default values.}
-  \item{active.default}{logical indicating if edges with no defined a
-  ctivity spells should be considered active by default 
-  (and appear as a row in output)}
+  \item{active.default}{logical indicating if edges with no defined activity spells should be considered active by default (and appear as a row in output)}
   \item{\dots}{possible additional arguments}
 }
 \details{
-Represents the edge dynamics of a networkDynamic object as a data frame giving lists of edges and their activity spells, including whether an activity spell was
-"censored". If \code{x} has \code{attr}-style attribute \code{"start"},
-it will be used as the left-censoring time and similarly for
-\code{"end"} and right-censoring time.
+Exports the edge dynamics of a networkDynamic object as a data.frame giving a table of edges with their activity spells, including whether an activity spell was ``censored'' (onset or termination was not observed within the observation window). 
+If a \code{\link{net.obs.period}} attribute exists, the maximal and minimal values will be used as censoring times by default.  Censoring times can also be provided using the \code{start} and \code{end} arguments, and censoring can be prevented by setting \code{start=-Inf, end=Inf}.
 }
 \value{
 A \code{\link{data.frame}} containing timed relational information
@@ -59,7 +54,7 @@ The output \code{data.frame} will be sorted by edge.id, onset,terminus. This mea
 }
 
 \note{
-Vertex and attribute activity is not included in the returned value. If an edge has multiple activity spells, it will have multiple rows in the output. 
+Vertex and attribute activity is not included in the returned value. If an edge has multiple activity spells, it will have multiple rows in the output. When output in censored, it may not match values returned by \code{\link{get.edge.activity}}
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
