@@ -26,8 +26,8 @@
 #network object. 
 #retain.all.verticies added if you want to not remove inactive verticies so networks stay the same size for comparison
 #TODO: rewrite this using get.inducedSubgraph?
-network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                               rule=c("any","all"),active.default=TRUE,retain.all.vertices=FALSE,trim.spells=FALSE){
+old.network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
+                          rule=c("any","all"),active.default=TRUE,retain.all.vertices=FALSE,trim.spells=FALSE){
   rule<-match.arg(rule)
   # determine which nodes/edges are active
   # nodes activity is straight forward
@@ -115,8 +115,235 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
       # deactivate spells on either side of query spell
       # also have to avoid setting spells to -Inf,-Inf or Inf,Inf
       if(onset!=-Inf){
-       deactivate.vertices(net,onset=-Inf,terminus=onset)
-       deactivate.edges(net,onset=-Inf,terminus=onset)
+        deactivate.vertices(net,onset=-Inf,terminus=onset)
+        deactivate.edges(net,onset=-Inf,terminus=onset)
+      }
+      if (terminus!=Inf){
+        deactivate.vertices(net,onset=terminus,terminus=Inf)
+        deactivate.edges(net,onset=terminus,terminus=Inf)
+      }
+    }
+    # if retain.all was used, mark retained vertices as inactive
+    if(retain.all.vertices){
+      deactivate.vertices(net,v=which(!activeV))
+    }
+    
+    # if there are edges, trim edge attributes to range
+    if (network.edgecount(net)>0){
+      active.edge.attrs <-gsub(".active","",grep(".active",list.edge.attributes(net),value=TRUE))
+      if(length(active.edge.attrs)>0){
+        for(attr in active.edge.attrs){
+          if (onset==terminus){
+            # todo: need to worry about missing edges / unset attributes getting value out of whack?
+            values<-get.edge.value.active(net,prefix=attr,at=onset)
+            # todo: might be faster to just delete from list?
+            deactivate.edge.attribute(net,attr,onset=-Inf,terminus=Inf)
+            activate.edge.attribute(net,attr,values,at=onset)
+          } else {
+            if (onset!=-Inf){
+              deactivate.edge.attribute(net,attr,onset=-Inf,terminus=onset)
+            }
+            if (terminus!=Inf){
+              deactivate.edge.attribute(net,attr,onset=terminus,terminus=Inf)
+            }
+          }
+        }
+      }
+    }
+    # trim vertex attributes to range
+    active.vertex.attrs <-gsub(".active","",grep(".active",list.vertex.attributes(net),value=TRUE))
+    if(length (active.vertex.attrs)>0){
+      for(attr in active.vertex.attrs){
+        if(onset==terminus){
+          values<-get.vertex.attribute.active(net,prefix=attr,at=onset)
+          deactivate.vertex.attribute(net,attr,onset=-Inf,terminus=Inf)
+          activate.vertex.attribute(net,prefix=attr,values,at=onset)
+        } else {
+          if(onset!=-Inf){
+            deactivate.vertex.attribute(net,attr,onset=-Inf,terminus=onset)
+          }
+          if(terminus!=Inf){
+            deactivate.vertex.attribute(net,attr,onset=terminus,terminus=Inf)
+          }
+        }
+      }
+    }
+    # trim network attributes to range
+    active.net.attrs <-gsub(".active","",grep(".active",list.network.attributes(net),value=TRUE))
+    if(length(active.net.attrs)>0){
+      for(attr in active.net.attrs){
+        if (onset==terminus){
+          value <-get.network.attribute.active(net,prefix=attr,at=onset)
+          deactivate.network.attribute(net,attr,onset=-Inf,terminus=Inf)
+          activate.network.attribute(net,attr,value,at=onset)
+        } else {
+          if(onset!=-Inf){
+            deactivate.network.attribute(net,attr,onset=-Inf,terminus=onset)
+          }
+          if(terminus!=Inf){
+            deactivate.network.attribute(net,attr,onset=terminus,terminus=Inf)
+          }
+        }
+      }
+    }
+  } # end tripm.spells bock
+  # update net.obs.period censoring info
+  net.obs.period<-net%n%'net.obs.period'
+  if(!is.null(net.obs.period)){
+    # truncate the observations to the onset and terminus value
+    obs<-net.obs.period$observations
+    # subset to just spells that intersect query period
+    
+    obs<-obs[sapply(obs,function(ob){spells.overlap(ob,c(onset,terminus))})]
+    
+    
+    if (length(obs)>0){
+      # modify the onset of the first and terminus of the last but don't expand
+      if(onset>obs[[1]][1]){
+        obs[[1]][1]<-onset
+      }
+      if(terminus<obs[[length(obs)]][2]){
+        obs[[length(obs)]][2]<-terminus
+      }
+    } else {
+      # create a new spell
+      #obs<-list(c(onset,terminus))
+      # or should we instead return a null spell?
+      obs<-list(c(Inf,Inf))
+    }
+    net.obs.period$observations<-obs
+    net%n%'net.obs.period'<-net.obs.period
+  }
+  set.nD.class(net)
+  
+}
+
+network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
+                               rule=c("any","all"),active.default=TRUE,retain.all.vertices=FALSE,trim.spells=FALSE){
+  rule<-match.arg(rule)
+  
+  # determine which nodes/edges are active
+  # nodes activity is straight forward
+  # edge activity depends on the activity of the edge, but
+  # also the activity of it's in/out (tail/head) nodes
+  
+  activeV<-is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
+                     e=NULL,v=seq_len(x%n%"n"), rule=rule, active.default=active.default)
+  activeE=logical(0)
+  if(length(x$mel)){
+    activeE<-is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
+                       e=valid.eids(x),v=NULL, rule=rule, active.default=active.default)
+    nullE <- sapply(x$mel, is.null)
+    inV = sapply(x$mel[!nullE], "[[", "inl")  # in nodes of edges
+    outV = sapply(x$mel[!nullE], "[[", "outl")  # out nodes of edges
+    activeTH = sapply(1:length(inV), function(x){activeV[inV[x]] && activeV[outV[x]]})  # are head and tail active?
+  }
+  if(retain.all.vertices){
+    newVid <-seq.int(x%n%"n")
+  } else {
+    newVid <- cumsum(activeV)
+  }
+  
+  # figure out onset and terminus from at and length if necessary
+  if(!is.null(at)) {
+    onset <- terminus <- at
+  } else if (!is.null(onset)) {
+    
+    if (!is.null(length))
+      terminus <- onset + length
+  } else {
+    if (is.null(terminus)) {
+      onset <- -Inf
+      terminus <- Inf
+    } else {
+      onset <- terminus - length
+    }
+  }
+  
+  # Create network
+  n<-ifelse(retain.all.vertices, x%n%"n", sum(activeV))
+  #if(n==0)
+  #  return(list()) # from before we allowed nets size 0!
+  net<-network.initialize(n)
+  # Set network-level attributes
+  gal<-as.list(x$gal)
+  gal[['n']]<-n
+  gal[["mnext"]]<-1
+  if(is.bipartite(x) && gal[["bipartite"]] > 0){
+    gal[["bipartite"]]<-newVid[gal[["bipartite"]]]
+  }
+  # update net.obs.period censoring info
+  if(!is.null(gal[['net.obs.period']])){
+    # truncate the observations to the onset and terminus value
+    obs<-gal[['net.obs.period']]$observations
+    # subset to just spells that intersect query period
+    
+    obs<-obs[sapply(obs,function(ob){spells.overlap(ob,c(onset,terminus))})]
+    
+    
+    if (length(obs)>0){
+      # modify the onset of the first and terminus of the last but don't expand
+      if(onset>obs[[1]][1]){
+        obs[[1]][1]<-onset
+      }
+      if(terminus<obs[[length(obs)]][2]){
+        obs[[length(obs)]][2]<-terminus
+      }
+    } else {
+      # create a new spell
+      #obs<-list(c(onset,terminus))
+      # or should we instead return a null spell?
+      obs<-list(c(Inf,Inf))
+    }
+    gal[['net.obs.period']]$observations<-obs
+  } 
+  # assign all the network attribute changes to the network in a single call
+  set.network.attribute(net,names(gal),gal)
+  
+  # Set vertex-level attributes
+  if(n>0){
+    if(retain.all.vertices){
+      net$val<-as.list(x$val)
+    } else {
+      net$val<-as.list(x$val[activeV]) # safer to do this with attribute methods... 
+    }
+  } 
+  
+  # Add edges
+  if(length(activeE)){
+    activeETH = activeE & activeTH
+    if(any(activeETH)){
+      tail<-as.list(lapply(x$mel[!nullE][activeETH],function(z){newVid[z$outl]}))
+      head<-as.list(lapply(x$mel[!nullE][activeETH],function(z){newVid[z$inl]}))
+      atl<-as.list(lapply(x$mel[!nullE][activeETH],"[[","atl"))
+      nam<-as.list(lapply(x$mel[!nullE][activeETH],function(z){names(z$atl)}))
+      add.edges(net,tail=tail,head=head,names.eval=nam,vals.eval=atl)
+    }
+  }
+  
+  if (trim.spells){
+    # delete extra spell data on vertices edges and attributes that would be outside the query time range.
+    # not sure how this should handle censoring
+    # https://statnet.csde.washington.edu/trac/ticket/216
+    
+    # need to handle the case of 'at' (onset=terminus) queries seperately to avoid returning
+    # spell matrix with the 'null' spell Inf,Inf
+    if (onset==terminus){
+      # remove all spells and replace with query spell
+      #deactivate.vertices(net)
+      #activate.vertices(net,onset=onset,terminus=terminus)
+      splmat<-list(matrix(c(onset,terminus),ncol=2))
+      set.vertex.attribute(net,'active',splmat)
+      set.edge.attribute(net,'active',splmat)
+      #deactivate.edges(net)
+      #activate.edges(net,onset=onset,terminus=terminus)
+    } else {
+      
+      # deactivate spells on either side of query spell
+      # also have to avoid setting spells to -Inf,-Inf or Inf,Inf
+      if(onset!=-Inf){
+        deactivate.vertices(net,onset=-Inf,terminus=onset)
+        deactivate.edges(net,onset=-Inf,terminus=onset)
       }
       if (terminus!=Inf){
         deactivate.vertices(net,onset=terminus,terminus=Inf)
@@ -187,33 +414,7 @@ network.extract<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
       }
     }
   } # end tripm.spells bock
-  # update net.obs.period censoring info
-  net.obs.period<-net%n%'net.obs.period'
-  if(!is.null(net.obs.period)){
-    # truncate the observations to the onset and terminus value
-    obs<-net.obs.period$observations
-    # subset to just spells that intersect query period
-    
-    obs<-obs[sapply(obs,function(ob){spells.overlap(ob,c(onset,terminus))})]
-    
-    
-    if (length(obs)>0){
-      # modify the onset of the first and terminus of the last but don't expand
-      if(onset>obs[[1]][1]){
-        obs[[1]][1]<-onset
-      }
-      if(terminus<obs[[length(obs)]][2]){
-        obs[[length(obs)]][2]<-terminus
-      }
-    } else {
-      # create a new spell
-      #obs<-list(c(onset,terminus))
-      # or should we instead return a null spell?
-      obs<-list(c(Inf,Inf))
-    }
-    net.obs.period$observations<-obs
-    net%n%'net.obs.period'<-net.obs.period
-  }
+  
   set.nD.class(net)
 
 }
@@ -445,6 +646,153 @@ network.dynamic.check<-function(x,verbose=TRUE, complete=TRUE){
 }
 
 # execute a network crossection, and then an attribute crossection. 
+old.network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL,rule=c("any","all","earliest","latest"),active.default=TRUE,retain.all.vertices=FALSE,rm.time.info=TRUE,...){
+  # check args
+  if(missing(dnet) || !is.networkDynamic(dnet)){
+    stop("network.collapse requires that the first argument be a networkDynamic object")
+  }
+  
+  
+  if(!is.null(at)) {
+    if(!is.numeric(at))
+      stop("Activation times must be numeric in activate.network.attribute.\n")
+    if(!(is.null(onset) && is.null(terminus) && is.null(length)))
+      stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
+  } else {
+    if(!is.null(onset) && (!is.vector(onset) || !is.numeric(onset)))
+      stop("Onset times must be numeric in network.collapse.\n")
+    if(!is.null(terminus) && (!is.vector(terminus) || !is.numeric(terminus)))
+      stop("Terminus times must be a numeric value in network.collapse.\n")
+    if(!is.null(length) && (!is.vector(length) || !is.numeric(length) || any(length < 0)))
+      stop("Interval length must be a non-negative numeric value in network.collapse.\n")
+    if(!is.null(onset)) {
+      if(!xor(is.null(terminus),is.null(length)))
+        stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
+    } else {
+      if(xor(is.null(terminus),is.null(length)))
+        stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
+    }
+  }
+  
+  
+  # figure out onset and terminus from at and length if necessary
+  if(!is.null(at)) {
+    onset <- terminus <- at
+  } else if (!is.null(onset)) {
+    
+    if (!is.null(length))
+      terminus <- onset + length
+  } else {
+    if (is.null(terminus)) {
+      onset <- -Inf
+      terminus <- Inf
+    } else {
+      onset <- terminus - length
+    }
+  }
+  if(onset>terminus){
+    stop("Onset times must precede terminus times in network.collapse\n")
+  }
+  rule<-match.arg(rule)
+  exRule<-'any'  # network extract doesn't support the 'earliest' and 'latest' rules
+  if(rule=='all') exRule<-'all'
+  
+  # we do not need to trim spells (which may be expensive) if we won't be returning the activity count info anyway
+  net <- network.extract(dnet,onset=onset,terminus=terminus,rule=exRule,active.default=active.default, trim.spells=!rm.time.info,retain.all.vertices=retain.all.vertices)
+  # collapse network level attributes
+  knownNAttrs<-list.network.attributes(net)
+  activeAttrs <- knownNAttrs[grep(".active",knownNAttrs)]
+  for(attr in activeAttrs){
+    net<-set.network.attribute(net,sub(".active","",attr),get.network.attribute.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
+    net<-delete.network.attribute(net,attr)
+  }
+  
+  if(network.size(net)>0){
+    # only mess with edges if there are edges
+    if (network.edgecount(net)>0){
+      # collapse edge level attributes
+      knownEdgeAttrs <-list.edge.attributes(net) # listing is expensive, avoid doing it multiple times
+      activeEdgeAttrs <- knownEdgeAttrs[grep(".active",knownEdgeAttrs)]
+      
+      for (attr in activeEdgeAttrs){
+        net<-set.edge.attribute(net,sub(".active","",attr),get.edge.value.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
+        net<-delete.edge.attribute(net,attr)
+      }
+      # handle edge activity.count and activity.duration
+      if (!rm.time.info){
+        # Todo: what  deleted edge cases?
+        eteas <-get.edge.value(net,"active",unlist=FALSE)
+        hasspls <- !sapply(eteas,is.null)
+        # if there are no edges, don't bother updating
+        if ('activity.count'%in%knownEdgeAttrs){
+          warning('Edge attribute "activity.count" already exists and was not updated')
+        } else {
+          # assume existing edges with no activity are defined by single spell -Inf, Inf
+          # if active.default=FALSE, edges with no activity will allready be removed
+          edge.counts <-rep.int(1,length(eteas))
+          edge.counts[hasspls] <-sapply(eteas[hasspls],nrow)
+          set.edge.attribute(net,'activity.count',edge.counts)
+        }
+        if ('activity.duration'%in%knownEdgeAttrs){
+          warning('Edge attribute "activity.duration" already exists and was not updated')
+        } else {
+          
+          # assume existing edges with no activity are defined by single spell -Inf, Inf
+          #  if active.default=FALSE, edges with no activity will allready have been removed)
+          edge.durations<-rep.int(Inf,length(eteas))
+          
+          edge.durations[hasspls] <-sapply(eteas[hasspls],function(spls){sum(spls[,2]-spls[,1])},simplify=FALSE)
+          set.edge.attribute(net,'activity.duration',edge.durations)
+        }
+      }
+      delete.edge.attribute(net,'active')
+    } # end edges block
+    
+    # collapse vertex level attributes
+    knownVAttrs<-list.vertex.attributes(net)  # avoid listing multiple times
+    activeNodeAttrs <-knownVAttrs[grep(".active",list.vertex.attributes(net))]
+    for (attr in activeNodeAttrs){
+      # have to decide if result should be unlisted so as not to mangle
+      net<-set.vertex.attribute(net,sub(".active","",attr),get.vertex.attribute.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
+      net<-delete.vertex.attribute(net,attr)
+    }
+    
+    # handle vertex activity.count and activity.duration
+    if (!rm.time.info){
+      vteas <- get.vertex.attribute(net,"active",unlist=FALSE)
+      hasspls <-!is.na(vteas)
+      if ('activity.count'%in%knownVAttrs){
+        warning('Vertex attribute "activity.count" already exists and was not updated')
+      } else {
+        # TODO: probably need active default paramter to handle this
+        # default to 'always active' assuming 1 fake spell
+        vertex.counts <- rep.int(1,length(vteas))
+        vertex.counts[hasspls] <-sapply(vteas[hasspls],nrow)
+        set.vertex.attribute(net,'activity.count',vertex.counts)
+      }
+      if ('activity.duration'%in%knownVAttrs){
+        warning('Edge attribute "activity.duration" already exists and was not updated')
+      } else {
+        # TODO: probably need active default paramter to handle this
+        # default to 'always active' assuming so assume Inf duration 
+        vertex.durations <-rep.int(Inf,length(vteas))
+        vertex.durations[hasspls] <-sapply(vteas[hasspls],function(spls){sum(spls[,2,drop=FALSE]-spls[,1,drop=FALSE])},simplify=FALSE)
+        set.vertex.attribute(net,'activity.duration',vertex.durations)
+      }
+    }
+    delete.vertex.attribute(net,'active')
+  } # end zero vertices block
+  
+  if (rm.time.info){
+    # remove net.obs.period if it exists
+    delete.network.attribute(net,'net.obs.period')
+  }
+  
+  class(net)<-'network'
+  return(net)
+}
+
+# execute a network crossection, and then an attribute crossection. 
 network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL,rule=c("any","all","earliest","latest"),active.default=TRUE,retain.all.vertices=FALSE,rm.time.info=TRUE,...){
   # check args
   if(missing(dnet) || !is.networkDynamic(dnet)){
@@ -498,13 +846,28 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
   
   # we do not need to trim spells (which may be expensive) if we won't be returning the activity count info anyway
   net <- network.extract(dnet,onset=onset,terminus=terminus,rule=exRule,active.default=active.default, trim.spells=!rm.time.info,retain.all.vertices=retain.all.vertices)
-    # collapse network level attributes
-    knownNAttrs<-list.network.attributes(net)
-    activeAttrs <- knownNAttrs[grep(".active",knownNAttrs)]
-    for(attr in activeAttrs){
-      net<-set.network.attribute(net,sub(".active","",attr),get.network.attribute.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
-      net<-delete.network.attribute(net,attr)
-    }
+  #tracemem(net)
+  # collapse network level attributes
+  knownNAttrs<-list.network.attributes(net)
+  activeAttrs <- knownNAttrs[grep(".active",knownNAttrs)]
+  newNames <- sub(".active","",activeAttrs)
+  newVals <- lapply(newNames, function(name){get.network.attribute.active(net,name,onset=onset,terminus=terminus,rule=rule,unlist=FALSE)})
+  # set multiple values at once
+  set.network.attribute(net,newNames,newVals)
+  
+  if (rm.time.info){
+    # remove net.obs.period if it exists
+    activeAttrs<-c(activeAttrs,'net.obs.period')
+  }
+  # delete multiple values at once
+  delete.network.attribute(net,activeAttrs)
+  
+  
+  
+#     for(attr in activeAttrs){
+#       net<-set.network.attribute(net,sub(".active","",attr),get.network.attribute.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
+#       net<-delete.network.attribute(net,attr)
+#     }
   
   if(network.size(net)>0){
     # only mess with edges if there are edges
@@ -550,11 +913,22 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
     # collapse vertex level attributes
     knownVAttrs<-list.vertex.attributes(net)  # avoid listing multiple times
     activeNodeAttrs <-knownVAttrs[grep(".active",list.vertex.attributes(net))]
-    for (attr in activeNodeAttrs){
-      # have to decide if result should be unlisted so as not to mangle
-      net<-set.vertex.attribute(net,sub(".active","",attr),get.vertex.attribute.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
-      net<-delete.vertex.attribute(net,attr)
+    newNodeNames<-sub(".active","",activeNodeAttrs)
+    if (length(newNodeNames)>0){
+      newNodeVals<-lapply(newNodeNames,function(name){get.vertex.attribute.active(net,name,onset=onset,terminus=terminus,rule=rule,unlist=FALSE)})
+      # have to avoid situation where we accidentally call singular version with plural nested values
+      if (length(newNodeNames)==1){
+        newNodeVals<-unlist(newNodeVals,recursive=FALSE)
+      }
+      set.vertex.attribute(net,attrname=newNodeNames,value=newNodeVals)
+  #     for (attr in activeNodeAttrs){
+  #       # have to decide if result should be unlisted so as not to mangle
+  #       net<-set.vertex.attribute(net,sub(".active","",attr),get.vertex.attribute.active(net,sub(".active","",attr),onset=onset,terminus=terminus,rule=rule))
+  #       net<-delete.vertex.attribute(net,attr)
+  #     }
+      # also remove the vertex activity attribute
     }
+    
     
     # handle vertex activity.count and activity.duration
     if (!rm.time.info){
@@ -579,15 +953,12 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
         set.vertex.attribute(net,'activity.duration',vertex.durations)
       }
     }
-    delete.vertex.attribute(net,'active')
+    activeNodeAttrs<-c(activeNodeAttrs,'active')
+    delete.vertex.attribute(net,activeNodeAttrs)
   } # end zero vertices block
   
-  if (rm.time.info){
-    # remove net.obs.period if it exists
-    delete.network.attribute(net,'net.obs.period')
-  }
-  
-  class(net)<-'network'
+  # we don't know what additional classes it might have in the future, so just clobber networkDynamic part
+  class(net)<-class(net)[class(net)!="networkDynamic"]
   return(net)
 }
 
