@@ -862,10 +862,20 @@ activate.edges(test,onset=3,terminus=5)
 activate.edges(test,onset=-2,terminus=-1)
 activate.edge.attribute(test,'weight',5,onset=3,terminus=4)
 activate.edge.attribute(test,'weight',3,onset=4,terminus=5)
+activate.vertex.attribute(test,'stuff',3, onset=3,terminus=4)
+activate.vertex.attribute(test,'moreliststuff',list(list(x=1,z=2)), onset=3,terminus=4)
+activate.network.attribute(test,'morestuff',3, onset=3,terminus=4)
+activate.network.attribute(test,'liststuff',list(a=1,b=2), onset=3,terminus=4)
 
 # are attributes flattened correctly?
 net3 <-network.collapse(test,onset=3,terminus=4)
-get.edge.value(net3,'weight')
+expect_equal(get.edge.value(net3,'weight'),c(5,5,5))
+expect_equal(get.network.attribute(net3,'morestuff'),3)
+expect_equal(get.network.attribute(net3,'liststuff'),list(a=1,b=2))
+expect_equal(get.vertex.attribute(net3,'stuff'),c(3,3,3,3,3))
+expect_equal(get.vertex.attribute(net3,'moreliststuff',unlist=FALSE)[[1]],list(x=1,z=2))
+
+
 
 net4 <-network.collapse(test,onset=4,terminus=5)
 if(!all(all(get.edge.value(net3,'weight')==c(5,5,5),get.edge.value(net4,'weight')==c(3,3,3)))){
