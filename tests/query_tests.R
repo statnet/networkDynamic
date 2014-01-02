@@ -323,6 +323,12 @@ delete.edges(test,eid=2)
 expect_warning(is.active(test,e=1:3,onset=-Inf,terminus=Inf),'correspond to deleted edges')
 expect_equal(suppressWarnings(is.active(test,e=1:3,onset=-Inf,terminus=Inf)),c(TRUE,TRUE))
 
+# check that 'earliest' and 'latest' rules accepted as equivilent to 'any' #544
+test<-network.initialize(1)
+activate.vertices(test,at=1)
+expect_true(is.active(test,onset=0,terminus=2,rule='earliest',v=1))
+expect_true(is.active(test,onset=0,terminus=2,rule='latest',v=1))
+
 cat("ok\n")
 
 

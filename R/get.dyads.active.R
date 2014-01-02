@@ -9,11 +9,12 @@
 ######################################################################
 
 # function to return the set of vertex dyads corresponding to active edges in a network
-get.dyads.active<-function(nD, onset = NULL, terminus = NULL, length = NULL, at = NULL,  rule = c("any", "all"), active.default = TRUE){
+get.dyads.active<-function(nD, onset = NULL, terminus = NULL, length = NULL, at = NULL,  rule = c("any", "all","earliest","latest"), active.default = TRUE){
   
   if(is.hyper(nD)){
     stop("get.dyads.active does not currently support hypergraphic networks")
   }
+  rule<-match.arg(rule)
   goodIds<-valid.eids(nD)
   activeEids<-goodIds[is.active(nD,onset=onset,terminus=terminus,length=length,at=at,rule=rule,active.default=active.default,e=goodIds)]
   return(cbind(sapply(nD$mel[activeEids],'[[','outl'),sapply(nD$mel[activeEids],'[[','inl')))

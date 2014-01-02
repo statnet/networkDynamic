@@ -24,26 +24,26 @@
 }
 \usage{
 get.edgeIDs.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    alter = NULL, neighborhood = c("out", "in", "combined"), rule = c("any", "all"), 
+    alter = NULL, neighborhood = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"), 
     na.omit = TRUE, active.default = TRUE)
 get.edges.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    alter = NULL, neighborhood = c("out", "in", "combined"), rule = c("any", "all"),
+    alter = NULL, neighborhood = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"),
     na.omit = TRUE, active.default = TRUE)
 get.neighborhood.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    type = c("out", "in", "combined"), rule = c("any", "all"), 
+    type = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"), 
     na.omit = TRUE, active.default = TRUE)
 
 is.adjacent.active(x, vi, vj, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all"), na.omit = FALSE, active.default = TRUE)
+    rule = c("any", "all", "earliest", "latest"), na.omit = FALSE, active.default = TRUE)
 
 network.dyadcount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all"), na.omit = TRUE, active.default = TRUE)
+    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
 network.edgecount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    rule = c("any", "all"), na.omit = TRUE, active.default = TRUE)
+    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
 network.naedgecount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all"), active.default = TRUE)
+    rule = c("any", "all", "earliest", "latest"), active.default = TRUE)
 network.size.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all"), active.default = TRUE)
+    rule = c("any", "all", "earliest", "latest"), active.default = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -58,7 +58,7 @@ network.size.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
   \item{alter}{ optionally, the ID of another vertex. }
   \item{neighborhood}{ a text string that indicates whether we are interested in in-edges, out-edges, or both (relative to \code{v}).  }
   \item{type}{ a text string that functions as \code{neighborhood}, above, for vertex neighborhoods. }
-  \item{rule}{ a text string for defining \dQuote{active} for this call:  \code{any} (default) to select elements appearing at any time during the specified interval, or \code{all} to select only elements active for the entire interval. }
+  \item{rule}{ a text string for defining \dQuote{active} for this call:  \code{any} (default) to select elements appearing at any time during the specified interval, or \code{all} to select only elements active for the entire interval. For these functions, the values of \code{earliest} and \code{latest} are equivalent to \code{any} and are only included for consistency.}
   \item{na.omit}{ logical; should we omit missing edges? }
   \item{active.default}{ logical; should elements without an activity attribute be regarded as active by default? }
 }
