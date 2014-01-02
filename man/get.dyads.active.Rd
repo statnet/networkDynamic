@@ -8,7 +8,7 @@ Constructs a matrix, essentially an edgelist, of the pairs of vertices connected
 }
 \usage{
 get.dyads.active(nD, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-                rule = c("any", "all"), active.default = TRUE)
+                rule = c("any", "all", "earliest", "latest"), active.default = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,7 +28,7 @@ networkDynamic object to be queried
   optional numeric value giving single time point to query
 }
   \item{rule}{
-a character string indicating the definition of "active" for this query: \code{any} (default) to define active as any active spell during the interval, or \code{all} to define active as being active over the entire interval.
+a character string indicating the definition of "active" for this query: \code{any} (default) to define active as any active spell during the interval, or \code{all} to define active as being active over the entire interval. For this functions, the values of \code{earliest} and \code{latest} are equivalent to \code{any} and are only included for consistency.
 }
   \item{active.default}{
   logical; should elements without an activity attribute be regarded as active by default? Default to \code{TRUE}

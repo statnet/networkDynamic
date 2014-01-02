@@ -16,7 +16,7 @@
 }
 \usage{
 is.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, e = NULL, v = NULL, 
-    rule = c("any", "all"), active.default = TRUE)
+    rule = c("any", "all","earliest","latest"), active.default = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,7 +28,7 @@ is.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, e = NULL, 
   \item{at}{ an optional vector of single time point(s) to query. }
   \item{e}{ a vector of edge IDs to evaluate. }
   \item{v}{ a vector of vertex IDs to evaluate. }
-  \item{rule}{ a character string indicating the definition of "active" for this query:  \code{any} (default) to define active as any active spell during the interval, or \code{all} to define active as being active over the entire interval.  }
+  \item{rule}{ a character string indicating the definition of "active" for this query:  \code{any} (default) to define active as any active spell during the interval, or \code{all} to define active as being active over the entire interval.  Because we are only testing for activity, the values of \code{earliest} and \code{latest} are equivilent to \code{any} and are only included for compatibility with calling functions.  }
   \item{active.default}{logical; should elements without an activity attribute be regarded as active by default?  }
 }
 \details{
