@@ -1,11 +1,20 @@
 Change Log:
 v0.6 - Features & bug fixes
  New Features:
+  - added aditional dynamc datasets:
+     * van DeBunt longitudinal student frindships from Van de Bunt, G.G., M.A.J. van Duijn, and T.A.B. Snijders. 1999. Friendship networks through time: An actor-oriented statistical network model. Computational and Mathematical Organization Theory, 5, 167-192.
+     * Harry Potter support networks of Goele Bossaert and Nadine Meidert from Goele Bossaert and Nadine Meidert (2013). 'We are only as strong as we are united, as weak as we are divided'. A dynamic analysis of the peer support networks in the Harry Potter books. Open Journal of Applied Sciences, Vol. 3 No. 2, pp. 174-185. http://dx.doi.org/10.4236/ojapps.2013.32024
+   
   - added get.dyads.active function to facilitate looking up the vertex ids of the heads and tails of active edges of a non-hypergraphic network
+  - some refactoring of network.extract and network.collapse and get.vertex.attribute.active for speed improvements
   - reimplemented is.active in C to speed up operations on large networks with lots of time steps
   - added adjust.activity() function to transform the all of the known activity spell values in a networkDynamic object
-  - converted add.edges to add.edges.networkDynamic, add.edge to add.edge.networkDynamic and add.vertices to add.vertices.networkDynamic to more correctly use S3 dispatching
+  - converted add.edges to add.edges.networkDynamic, add.edge to add.edge.networkDynamic and add.vertices to add.vertices.networkDynamic to more correctly use S3 dispatching that was added in network v1.9
   - changed argument order of add.edges.active and add.vertices.active to avoid S3 warnings and implemented pass-through for additional arguments. 
+ Fixes:
+  - Added 'earlier' and 'latest' rules to additional functions for compatibility only: when testing for activity they evaluate the same as 'any'.
+  - fixed bug in get.edge.activity(...,as.SpellList=TRUE) that would unexpectedly censor onset and terminus times to net.obs.period if it existed. 
+  - add.vertices.active no longer gives an error if the number of vertices to add is zero. 
 
 v0.5.2 - Features & bug fixes
  New Features:
