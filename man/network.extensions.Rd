@@ -24,11 +24,11 @@
 }
 \usage{
 get.edgeIDs.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    alter = NULL, neighborhood = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"), 
-    na.omit = TRUE, active.default = TRUE)
+    alter = NULL, neighborhood = c("out", "in", "combined"), 
+    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
 get.edges.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    alter = NULL, neighborhood = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"),
-    na.omit = TRUE, active.default = TRUE)
+    alter = NULL, neighborhood = c("out", "in", "combined"), 
+    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
 get.neighborhood.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
     type = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"), 
     na.omit = TRUE, active.default = TRUE)
