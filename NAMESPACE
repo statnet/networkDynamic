@@ -1,5 +1,7 @@
 useDynLib(networkDynamic)
 
+import(statnet.common, network)
+
 export(
 networkDynamic,
 print.networkDynamic,
