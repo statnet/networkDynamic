@@ -59,8 +59,8 @@ expect_equal(unlist(get.vertex.activity(net,as.spellList=TRUE)[4:5,1:2]),c(1,1,2
 test_that({
   
   expect_error( get.dyads.active(network.initialize(3,hyper=TRUE),at=1),"does not currently support hypergraphic","error on hyper")
-  expect_equal( nrow(get.dyads.active(network.initialize(0),at=1)),0,"network size zero case")
-  expect_equal( nrow(get.dyads.active(network.initialize(3),at=1)),0,"zero edges case")
+  expect_equal( nrow(get.dyads.active(network.initialize(0),at=1)),0,info="network size zero case")
+  expect_equal( nrow(get.dyads.active(network.initialize(3),at=1)),0,info="zero edges case")
   
   test<-network.initialize(5)
   add.edges.active(test,tail=1,head=2,onset=0,terminus=1)
@@ -77,7 +77,7 @@ test_that({
   test2[1,2]<-1
   expect_equal(get.dyads.active(test2,onset=0,terminus=4),rbind(1:2))
   # test active default
-  expect_equal(get.dyads.active(test2,onset=0,terminus=4,active.default=FALSE),matrix(numeric(),ncol=2,nrow=0),check.attributes=FALSE, 'test active default arg')
+  expect_equal(get.dyads.active(test2,onset=0,terminus=4,active.default=FALSE),matrix(numeric(),ncol=2,nrow=0),check.attributes=FALSE, info='test active default arg')
   
   # deleted edges
   test2<-network.initialize(3)
@@ -85,7 +85,7 @@ test_that({
   test2[2,3]<-1
   test2[3,1]<-1
   delete.edges(test2,eid=2)
-  expect_equal(get.dyads.active(test2,at=1),rbind(1:2,c(3,1)),'deleted edge case')
+  expect_equal(get.dyads.active(test2,at=1),rbind(1:2,c(3,1)),info='deleted edge case')
   
 },"test get.dyads.active")
 
