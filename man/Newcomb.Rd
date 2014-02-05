@@ -38,7 +38,7 @@ edge values but is similar in structure to \code{newcomb.rank}
 and derived from it. Each network has a tie from the \eqn{i}th
 men to the \eqn{j}th man if \eqn{i} had a preference for
 \eqn{j} of 8 or less. Otherwise there is not tie from \eqn{i}
-to \eqn{j}.
+to \eqn{j}. Note that since these are ranks, the degree of each vertex (and the total number of edges) does not vary over time
 }
 \usage{data(newcomb)}
 \source{\url{http://vlado.fmf.uni-lj.si/pub/networks/pub/data/UciNet/UciData.htm#newfrat}}
