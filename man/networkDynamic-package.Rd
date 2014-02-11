@@ -30,6 +30,8 @@ LazyLoad: \tab yes\cr
 The \code{networkDynamic} package provides support for a simple family of dynamic extensions to the \code{\link[network]{network}} class; these employ the standard \code{network} attribute functionality (and hence the resulting objects are still compatible with all conventional routines), but greatly facilitate the practical storage, manipulation and query of dynamic network data. 
 
 The basis for the dynamic extensions is described in \link{activity.attribute}.  Other core routines can be found in the links below.
+
+Additional example data sets can be found in the \code{networkDynamicData} package. 
 }
 \author{
 Carter T. Butts \email{buttsc@uci.edu}, Ayn Leslie-Cook \email{aynlc3@uw.edu}, Zack Almquist \email{almquist@uci.edu}, Skye Bender-deMoll {skyebend@uw.edu}, Martina Morris
