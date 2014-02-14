@@ -42,6 +42,72 @@
 #the appropriate mark.  Edges without an "active" attribute are given one.
 activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
                            e=seq_along(x$mel)){
+  xn <- deparse(substitute(x))   # ?? # needed for proper assignment in calling environment
+  ev <- parent.frame() # ??
+  
+  # checks for proper inputs, translations into onset and terminus
+  if(!is.network(x)) 
+    stop("activate.edges requires an argument of class network.\n")
+  if(!is.null(at)) {
+    if(!is.vector(at) || !is.numeric(at))
+      stop("Activation times must be a numeric vector in activate.edges.\n")
+    if(!(is.null(onset) && is.null(terminus) && is.null(length)))
+      stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
+  } else {
+    if(!is.null(onset) && (!is.vector(onset) || !is.numeric(onset)))
+      stop("Onset times must be a numeric vector in activate.edges.\n")
+    if(!is.null(terminus) && (!is.vector(terminus) || !is.numeric(terminus)))
+      stop("Terminus times must be a numeric vector in activate.edges.\n")
+    if(!is.null(length) && (!is.vector(length) || !is.numeric(length) || any(length < 0)))
+      stop("Interval lengths must be a non-negative numeric vector in activate.edges.\n")
+    if(!is.null(onset)) {
+      if(!xor(is.null(terminus),is.null(length)))
+        stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
+    } else {
+      if(xor(is.null(terminus),is.null(length)))
+        stop("Spells must be specified by exactly 1 of {at, onset+terminus, onset+length, length+terminus}")
+    }
+  }
+  if(!is.vector(e) || !is.numeric(e))
+    stop("Edge ID's, e, must be a numeric vector in activate.edges.\n")
+  if(length(x$mel)>0) {
+    
+    if((min(e,Inf) < 1) || (max(e,-Inf) > x%n%"mnext"-1)) 
+      stop("Illegal edge in activate.edges.\n")
+    
+    # preliminaries
+    e <- e[!sapply(x$mel[e], is.null)]  #Filter out non-edges
+    if(!is.null(at)) {
+      onset <- terminus <- rep(at, length=length(e))
+    } else if (!is.null(onset)) {
+      onset <- rep(onset, length=length(e))
+      if(!is.null(terminus))
+        terminus <- rep(terminus, length=length(e))
+      else if (!is.null(length))
+        terminus <- onset + rep(length, length=length(e))
+    } else {
+      if (is.null(terminus)) {
+        onset <- rep(-Inf, length=length(e))
+        terminus <- rep(Inf, length=length(e))
+      } else {
+        terminus <- rep(terminus, length=length(e))
+        onset <- terminus - rep(length, length=length(e))
+      }
+    }
+    if(any(onset>terminus))
+      stop("Onset times must precede terminus times in activate.edges.\n")
+    
+    .Call("ActivateEdges_R", x, onset, terminus, e, FALSE)
+  }
+  set.nD.class(x)
+  if(exists(xn, envir=ev))
+    on.exit(assign(xn, x, pos=ev))
+  invisible(x)  
+}
+
+# The original pure R implementation, here for speed testing
+r.activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
+                           e=seq_along(x$mel)){
   xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
   ev <- parent.frame()
 
@@ -595,16 +661,6 @@ get.neighborhood.active<-function(x,v,onset=NULL,terminus=NULL,length=NULL, at=N
 #spell which begins at time -Inf should match -Inf onset times.  All this is
 #very annoying, and makes me wish that I'd just outlawed infinity.  But that's
 #how things are.
-
-#assign("debug.output", FALSE, envir = .GlobalEnv)
-#toggle.debug.output <- function( ndo = NA ) {
-#  if ( is.na(ndo) ) {
-#    assign("debug.output", ! get("debug.output", envir=.GlobalEnv), envir=.GlobalEnv);
-#  } else {
-#    assign("debug.output", ndo, envir=.GlobalEnv);
-#  }
-#}
-
 is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NULL,
                     rule=c("any","all"),active.default=TRUE){
   # checks for proper inputs
@@ -683,7 +739,7 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
     stop("Onset times must precede terminus times in is.active.\n")
 
 #  return(.Call('IsActiveInVector', onset, terminus, active, (match.arg(rule) == 'all'), active.default, get("debug.output", envir=.GlobalEnv)))
-  return(.Call('IsActiveInVector', onset, terminus, active, (match.arg(rule) == 'all'), active.default, FALSE))
+return(.Call('IsActiveInVector_R', onset, terminus, active, (match.arg(rule) == 'all'), active.default, FALSE))
 }
 
 #Variant of is.adjacent for networks with dynamic extensions.  Slow, but will
@@ -888,6 +944,9 @@ delete.vertex.activity <- function(x, v=seq_len(network.size(x))) {
 #    the updated spells
 #------------------------------------------------------------------
 insert.spell<-function(spells, onset=-Inf, terminus=Inf){
+  # forget all the below, do it in C
+  return(.Call('InsertSpell_R', spells, onset, terminus, FALSE));
+
   if (is.null(spells) || spells[1,1]== Inf || spells[1,2]==-Inf)
     new.spells <- matrix(c(onset, terminus), 1,2)
   else {

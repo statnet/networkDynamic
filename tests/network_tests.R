@@ -111,7 +111,7 @@ b23 = (bnet9%n%"n" == 4)
 b24 = (bnet9%n%"mnext" == 4)
 b25 = all(el9==matrix(c(1,2,2,2,3,2),3,2))
 b26 = identical(bnet9, bnet9.t)
-# a non-bipartite network, with loops, retain.all=F
+# a non-bipartite network, with loops, retain.all=T
 anet10 <- anet9
 bnet10=network.extract(anet10, at=Inf, retain.all.vertices=T)
 el10 = as.matrix(bnet10, matrix.type="edgelist")
