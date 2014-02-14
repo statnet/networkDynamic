@@ -284,7 +284,8 @@ void ActivateEdges_R(SEXP network, SEXP onset, SEXP terminus, SEXP e, SEXP debug
   double *onsets, *termini;
   Rboolean debug_output = asLogical(debug_output_s);
   SEXP mel, el, atl, active, new_active, e_i_vector, active_vector;
-
+  // need to induce copy of network object so we don't modify the wrong thing
+  network=duplicate(network);
   if ( debug_output )
     Rprintf("ActivateEdges_R\n");
 

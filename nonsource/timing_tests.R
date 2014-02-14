@@ -80,5 +80,29 @@ timing.test.activate.edges <- function() {
   } ) )
 }
 
+library(microbenchmark)
+
+anet<-network.initialize(1000, directed=TRUE)
+ne <- 10000
+add.edges(anet, sample.int(network.size(anet), size=ne, replace=TRUE),
+          sample.int(network.size(anet), size=ne, replace=TRUE))
+
+test.old.activate.edges<-function(anet,ntog=1000,ns=1000){
+  for(t in 1:ns){
+    anet<-r.activate.edges(anet,onset=t-1,terminus=t,e=sample(ntog,1:network.edgecount(anet)))
+  }
+}
+
+test.new.activate.edges<-function(anet,ntog=1000,ns=1000){
+  for(t in 1:ns){
+    anet<-activate.edges(anet,onset=t-1,terminus=t,e=sample(ntog,1:network.edgecount(anet)))
+  }
+}
+
+timing<-microbenchmark(test.old.activate.edges(network.copy(anet)),
+                       test.new.activate.edges(network.copy(anet)),
+                       times=10)
+
 #library('network')
 #timing.test.activate.edges()
+
