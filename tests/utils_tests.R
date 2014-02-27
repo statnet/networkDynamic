@@ -56,9 +56,9 @@ expect_equal(unlist(get.vertex.activity(net,as.spellList=TRUE)[4:5,1:2]),c(1,1,2
 
 
 # ---- tests for get.dyads.active ---
-test_that({
+test_that("get.dyads.active works",{
   
-  expect_error( get.dyads.active(network.initialize(3,hyper=TRUE),at=1),"does not currently support hypergraphic","error on hyper")
+  expect_error( get.dyads.active(network.initialize(3,hyper=TRUE),at=1),regexp="does not currently support hypergraphic",info="error on hyper")
   expect_equal( nrow(get.dyads.active(network.initialize(0),at=1)),0,info="network size zero case")
   expect_equal( nrow(get.dyads.active(network.initialize(3),at=1)),0,info="zero edges case")
   
@@ -87,5 +87,5 @@ test_that({
   delete.edges(test2,eid=2)
   expect_equal(get.dyads.active(test2,at=1),rbind(1:2,c(3,1)),info='deleted edge case')
   
-},"test get.dyads.active")
+})
 
