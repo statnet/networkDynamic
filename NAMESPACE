@@ -68,5 +68,7 @@ add.edge.networkDynamic,
 reconcile.vertex.activity,
 reconcile.edge.activity,
 adjust.activity,
-get.dyads.active
+get.dyads.active,
+when.vertex.attrs.match,
+when.edge.attrs.match
 )

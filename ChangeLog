@@ -1,10 +1,15 @@
 Change Log:
+v0.7
+  - Added when.vertex.attrs.match and when.edge.attrs.match functions for getting times at which TEA attributes of network elements match specified values according to specified operators.
+
+v0.6.3
+ - CRAN-request update to fix compatibility of test with testthat v0.8.1
+
+v0.6.2 - Minor fix
+ - CRAN-requested update to fix compatibility of test with R-trunk
+
 v0.6 - Features & bug fixes
  New Features:
-  - added aditional dynamc datasets:
-     * van DeBunt longitudinal student frindships from Van de Bunt, G.G., M.A.J. van Duijn, and T.A.B. Snijders. 1999. Friendship networks through time: An actor-oriented statistical network model. Computational and Mathematical Organization Theory, 5, 167-192.
-     * Harry Potter support networks of Goele Bossaert and Nadine Meidert from Goele Bossaert and Nadine Meidert (2013). 'We are only as strong as we are united, as weak as we are divided'. A dynamic analysis of the peer support networks in the Harry Potter books. Open Journal of Applied Sciences, Vol. 3 No. 2, pp. 174-185. http://dx.doi.org/10.4236/ojapps.2013.32024
-   
   - added get.dyads.active function to facilitate looking up the vertex ids of the heads and tails of active edges of a non-hypergraphic network
   - some refactoring of network.extract and network.collapse and get.vertex.attribute.active for speed improvements
   - reimplemented is.active in C to speed up operations on large networks with lots of time steps
