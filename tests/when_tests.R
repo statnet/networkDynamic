@@ -117,3 +117,16 @@ test2<-activate.edge.attribute(test2,'myValue',c(10,11,15),onset=2,terminus=3,e=
 test2<-activate.edge.attribute(test2,'myValue',c(-5,-4,-1),onset=5,terminus=12,e=c(1,2,5))
 expect_equal(when.edge.attrs.match(test2,attrname='myValue',value=3,match.op='<'),c(1,1,NA,NA,5))
 
+# ---- when.next.edge.change ----
+test<-network.initialize(5)
+add.edges.active(test,tail=1:5,head=c(2,3,4,5,1),onset=1:5,terminus=2:6)
+activate.edges(test,e=2,onset=6,terminus=100)
+add.edge(test,tail=4,head=5)
+expect_equal(when.next.edge.change(test,at=0),1)
+expect_equal(when.next.edge.change(test,at=2),3)
+expect_equal(when.next.edge.change(test,at=2,v=1),Inf)
+# test a query in the gap
+expect_equal(when.next.edge.change(test,at=3,v=2),6)  
+
+
+
