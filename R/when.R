@@ -94,3 +94,32 @@ when.edge.attrs.match<-function(nd,attrname,value,match.op='==',rule='earliest',
     stop("no matching methods implemented for rule '",rule,"'")
   }
 }
+
+
+# function to find the next time at which an edge involving the specified subset of vertices is activated or deactivated
+when.next.edge.change<-function(nd,at, v=seq_len(network.size(nd)),neighborhood = c("out", "in", "combined")){
+  # find ids of the set of edges we need to check
+  eids<-unique(unlist(sapply(v,function(v){
+    get.edgeIDs(nd,v=v,neighborhood=neighborhood) 
+  })))
+  # find which ones are currently active
+  nextTimes<-sapply(eids,function(e){
+    # if no activitey return inf
+    spls<-nd$mel[[e]]$atl$active
+    if (is.null(spls)){
+      return(Inf)
+    } 
+    splIndex<-spells.hit(needle=c(at,Inf),haystack=spls)
+    if (splIndex<0){
+      return(Inf)
+    }
+    # if the spell is active, return its terminus
+    if(spls[splIndex,1]<=at){
+      return(spls[splIndex,2])
+    } else {
+      # otherwise return its onset
+      return(spls[splIndex,1])
+    }
+  })
+  return(min(nextTimes))
+}
