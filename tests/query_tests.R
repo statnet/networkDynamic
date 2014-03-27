@@ -433,6 +433,128 @@ if(any(!c.results)){
 
 expect_false(is.adjacent.active(network.initialize(0),1))
 
+
+# ----- tests for spells.overlap ------
+
+  
+# |----|
+# |----|
+expect_true(spells.overlap(c(1,2),c(1,2)))
+
+#   |----|
+# |----|
+expect_true(spells.overlap(c(1,3),c(0,2)))
+
+# |----|
+#   |----|
+expect_true(spells.overlap(c(0,2),c(1,3)))
+
+# |----|
+#  |--|
+expect_true(spells.overlap(c(0,3),c(1,2)))
+
+#  |--|
+# |----|
+expect_true(spells.overlap(c(1,2),c(0,3)))
+
+#  |--|
+# |---|
+expect_true(spells.overlap(c(1,3),c(0,3)))
+
+# |---|
+#  |--|
+expect_true(spells.overlap(c(0,3),c(1,3)))
+
+# |--|
+# |---|
+expect_true(spells.overlap(c(0,2),c(0,3)))
+
+# |---|
+# |--|
+expect_true(spells.overlap(c(0,3),c(0,2)))
+
+
+# null spell
+# valid spell
+expect_false(spells.overlap(c(-Inf,-Inf),c(1,3)))
+expect_false(spells.overlap(c(Inf,Inf),c(1,3)))
+
+# valid spell
+# null spell
+expect_false(spells.overlap(c(1,3),c(-Inf,-Inf)))
+expect_false(spells.overlap(c(1,3),c(Inf,Inf)))
+
+# |---|
+#       |--|
+expect_false(spells.overlap(c(0,2),c(3,5)))
+
+#      |---|
+# |--|
+expect_false(spells.overlap(c(3,5),c(0,2)))
+
+#    |---|
+# |--|
+expect_false(spells.overlap(c(3,5),c(0,3)))
+
+# |---|
+#     |--|
+expect_false(spells.overlap(c(0,3),c(3,5)))
+
+# point queries
+
+# |
+#  |--|
+expect_false(spells.overlap(c(0,0),c(1,3)))
+
+#  |
+#  |--|
+expect_true(spells.overlap(c(1,1),c(1,3)))
+
+#   |
+#  |--|
+expect_true(spells.overlap(c(2,2),c(1,3)))
+
+#     |
+#  |--|
+expect_false(spells.overlap(c(3,3),c(1,3)))
+
+#       |
+#  |--|
+expect_false(spells.overlap(c(5,5),c(1,3)))
+
+# |
+#  |
+expect_false(spells.overlap(c(1,1),c(2,2)))
+
+#  |
+#  |
+expect_true(spells.overlap(c(1,1),c(1,1)))
+
+#   |
+#  |
+expect_false(spells.overlap(c(2,2),c(1,1)))
+
+#  |--|
+# |
+expect_false(spells.overlap(c(1,3),c(0,0)))
+
+#  |--|
+#  |
+expect_true(spells.overlap(c(1,3),c(1,1)))
+
+#  |--|
+#   |
+expect_true(spells.overlap(c(1,3),c(2,2)))
+
+#  |--|
+#     |
+expect_false(spells.overlap(c(1,3),c(3,3)))
+
+#  |--|
+#       |
+expect_false(spells.overlap(c(1,3),c(4,4)))
+
+
 cat("ok\n")
 
 

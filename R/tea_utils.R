@@ -382,6 +382,7 @@ activate.vertex.attribute <- function (x, prefix, value, onset=NULL, terminus=NU
       return(list(list(value[[n]]),matrix(c(onset[n],terminus[n]),nrow=1,ncol=2)))
     } else {
       return(insertSpellAndVal(timedlist[[n]][[1]],timedlist[[n]][[2]],value[[n]],onset[[n]],terminus[[n]]))
+      
     }
   })
   
@@ -640,17 +641,29 @@ spells.overlap <-function(s1,s2){
   if ((s1[1]==Inf & s1[2]==Inf) | (s2[1]==Inf & s2[2]==Inf)){
     return(FALSE)
   }
-	if (( s1[1] >= s2[1]) & (s1[1]<s2[2])){
-		return(TRUE)
-	} else if (( s1[2] > s2[1]) & (s1[2]<s2[2])){
-		return(TRUE)
-	} else if (( s1[1] <= s2[1]) & (s1[2]>s2[2])){
-		return(TRUE)
-	} else if (all(s1==s2)){
+  # check for equality (point -point and spell spell)
+  if (all(s1==s2)){
     return(TRUE) 
-	} else {
-		return(FALSE)
-	}
+  }
+  # point-spell comparisons
+  if (s1[1]==s1[2]){
+    if (s1[1] >= s2[1] & s1[1] < s2[2]){
+      return(TRUE)
+    }
+  } else if (s2[1]==s2[2]) {
+    if (s2[1] >= s1[1] & s2[1] < s1[2]){
+      return(TRUE)
+    }
+  }
+  
+  # interval comparisons
+  #start one < end two and end one > start 2
+  if (s1[1]<s2[2] & s1[2] > s2[1]){
+    return(TRUE)
+  }
+  
+	return(FALSE)  # non-overlapping
+	
 }
 
 #search an array of spells to see if any intersect
@@ -711,7 +724,18 @@ search.spell<-function(needle,haystack){
 #    the list of two elements, 1) the updated values, 2) the
 #    updated spells
 #------------------------------------------------------------------
-insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
+
+#for this version, try no testing, just do operation
+fastInsertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
+         terminus=Inf){
+  list(
+    c(cur.vals, list(val)),
+    matrix(c(cur.spells,onset,terminus),ncol=2,byrow=TRUE)
+  )
+}
+
+
+temp.insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
                        terminus=Inf){
      if (is.null(cur.spells) ||
          (is.infinite(cur.spells[1,1]) & cur.spells[1,1] > 0)) {
@@ -756,15 +780,16 @@ insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
       	  }
       	}
       	# construct new spell matrix and value vector
-      	new.spells <- matrix(c(onset, terminus),1,2)
-      	new.values <- list(val)
+      	#new.spells <- matrix(c(onset, terminus),1,2)
+      	#new.values <- list(val)
               if(double.entry){
                 new.spells <- rbind(new.spells, spell2)
                 new.values[[2]] <- val2
               }
       	if(spell.row > 1){
-      	  new.spells <- rbind(cur.spells[1:(spell.row-1),], new.spells)
-      	  new.values <- c(cur.vals[1:(spell.row-1)], new.values)
+      	  #new.spells <- rbind(cur.spells[1:(spell.row-1),], new.spells)
+          new.spells<-matrix(c(as.numeric(cur.spells[1:(spell.row-1),]),onset,terminus),nrow=spell.row,ncol=2,byrow=TRUE)
+      	  new.values <- c(cur.vals[1:(spell.row-1)], list(val))
       	}
       	if(retain.row <= ns) {
       	  new.spells <- rbind(new.spells, cur.spells[retain.row:ns,])
@@ -772,6 +797,69 @@ insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
       	}
     }
     list(new.values, new.spells)
+}
+
+insertSpellAndVal<-function(cur.vals, cur.spells, val, onset=-Inf,
+                            terminus=Inf){
+  if (is.null(cur.spells) ||
+        (is.infinite(cur.spells[1,1]) & cur.spells[1,1] > 0)) {
+    new.values <- list(val)
+    new.spells <- matrix(c(onset, terminus), 1,2)
+  } else {
+    double.entry=FALSE
+    ns <- NROW(cur.spells)
+    # find the row that this spell will go into
+    if(onset>cur.spells[ns,1]) {
+      spell.row <- ns+1
+    } else {
+      spell.row <- min(which(onset<=cur.spells[,1]))
+    }
+    # if the onset interrupts/continues an existing spell... 
+    if (spell.row > 1 && onset<=cur.spells[spell.row-1,2]) {
+      if(identical(val, cur.vals[[spell.row-1]])) {
+        spell.row <- spell.row-1
+        onset <- cur.spells[spell.row,1]   # back up onset to that of interrupted spell
+      } else {
+        if(terminus < cur.spells[spell.row-1,2]){  # this spells splits the interrupted spell in 2
+          double.entry<-TRUE
+          val2 <- cur.vals[[spell.row-1]]
+          spell2 <-matrix(c(terminus, cur.spells[spell.row-1,2]),1,2)
+        }
+        cur.spells[spell.row-1,2] <- onset   # truncate interrupted spell
+      }
+    }
+    # find the minimum spell that is retained (vs. spells that are overlapped/overwritten)
+    if(terminus>=cur.spells[ns, 2]){
+      retain.row <- ns+1
+    } else {
+      retain.row <- min(which(terminus<cur.spells[,2]))
+    }
+    # if the terminus interrupts/continues an existing spell...
+    if(retain.row <= ns && terminus>=cur.spells[retain.row,1]) {
+      if(identical(val,cur.vals[[retain.row]])) {
+        terminus <- cur.spells[retain.row,2]  # forward terminus to that of interrupted spell
+        retain.row <- retain.row+1
+      } else {
+        cur.spells[retain.row,1] <- terminus  # partial overwrite of interrupted spell
+      }
+    }
+    # construct new spell matrix and value vector
+    new.spells <- matrix(c(onset, terminus),1,2)
+    new.values <- list(val)
+    if(double.entry){
+      new.spells <- rbind(new.spells, spell2)
+      new.values[[2]] <- val2
+    }
+    if(spell.row > 1){
+      new.spells <- rbind(cur.spells[1:(spell.row-1),], new.spells)
+      new.values <- c(cur.vals[1:(spell.row-1)], new.values)
+    }
+    if(retain.row <= ns) {
+      new.spells <- rbind(new.spells, cur.spells[retain.row:ns,])
+      new.values <- c(new.values, cur.vals[retain.row:ns])
+    }
+  }
+  list(new.values, new.spells)
 }
 
 # define functions to use as match rules. These are interval comparison functions 
