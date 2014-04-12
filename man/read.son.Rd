@@ -11,23 +11,24 @@
 \alias{read.son}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Read .son (SoNIA) dynamic network input files to create a dynamic network object
+Read .son-formatted (SoNIA) input files containing longitudinal network data and  create a corresponding networkDynamic object
 }
 \description{
-A .son file is a tab seperated text file with two sections, the first describing node attribute events and the second arc attribute event. Each section has a set of defined column names.  
+A .son file is a tab-separated text file with two sections, the first describing node attribute events and the second arc attribute events. Each section has a set of defined column names as a header. See the SoNIA file specification for more information: \url{http://sourceforge.net/apps/mediawiki/sonia/index.php?title=Son_format}.
 }
 \usage{
-read.son(file)
+read.son(file, guess.TEA=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{file}{path to the file to be read}
+  \item{guess.TEA}{logical: should the parser guess that non-changing attribute values are intended to be static instead of TEAs?}
 }
 \details{
-For more details about the format, see the SoNIA file specification for more information: \url{http://sourceforge.net/apps/mediawiki/sonia/index.php?title=Son_format}. Uses \code{\link{as.networkDynamic}} internally to build a dynamic network out of an array of vertex spells and an array of edge spells. Does not currenctly support the \code{AlphaId} node index for permitting arbitrary node ids. 
+ Uses \code{\link{networkDynamic}} internally to build a dynamic network out of an array of vertex spells and an array of edge spells.  Vertex and edge attributes will be attached, usually as TEA.  However, If the values of an attribute never change, they will be attached as a static attribute.  This is convenient but will be incorrect if a value was intended to be defined for only a single spell matching with the vertex activation. Setting \code{guess.TEA=FALSE} will force all attributes to be loaded as TEAs (slower).
 }
 \value{
-A network dynamic object with vertex and edge durations corresponding the the spells defined in the input file. 
+A network dynamic object with vertex and edge durations and attributes corresponding the the spells defined in the input file. 
 }
 \references{
 \url{http://sourceforge.net/apps/mediawiki/sonia/index.php?title=Son_format}.
@@ -36,15 +37,15 @@ A network dynamic object with vertex and edge durations corresponding the the sp
 Skye Bender-deMoll
 }
 \note{
-The current version of this function does not support reading the (dynamic) node and arc attributes.
+The current version of this function does not support reading clusters.
 }
 
 
 \seealso{
-See Also \code{\link{as.networkDynamic}}
+See Also \code{\link{networkDynamic}}
 }
 \examples{
-# classroom<-read.son(system.file('extdata/cls33_10_16_96.son',package='networkDynamic'))
+classroom<-read.son(system.file('extdata/cls33_10_16_96.son',package='networkDynamic'))
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

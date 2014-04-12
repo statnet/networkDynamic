@@ -11,7 +11,7 @@ as.networkDynamic,
 as.network.networkDynamic,
 as.networkDynamic.networkDynamic,
 as.networkDynamic.network,
-#read.son,
+read.son,
 "%t%",
 network.extract,
 "%k%",
@@ -70,6 +70,6 @@ reconcile.edge.activity,
 adjust.activity,
 get.dyads.active,
 when.vertex.attrs.match,
-when.edge.attrs.match,
-when.next.edge.change
+when.edge.attrs.match
+#when.next.edge.change
 )
