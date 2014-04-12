@@ -13,27 +13,139 @@
 
 #load a .son format file
 #many features not supported yest
-read.son <- function(file){
+read.son <- function(file,guess.TEA=TRUE){
   
+  alphaIDs<-NULL
   #find the index of the header line
-  nodeStartLine <- grep("NodeId",readLines(file))
+  nodeStartLine <- grep("^NodeId",readLines(file))
   if (length(nodeStartLine) < 1){
     #try the other alternate
-    nodeStartLine <- grep("AlphaId",readLines(file))
-    stop("Reading AlphaIds in .son file not yet supported")
+    nodeStartLine <- grep("^AlphaId",readLines(file))
+    alphaIDs<-TRUE
+  }
+  if (nodeStartLine<1){
+    stop("Unable to locate the header line beginning with 'NodeId' or 'AlphaId'. Not a correctly formatted .son file")
   }
   #find the index of the edges split
   arcStartLine <- grep("FromId",readLines(file))
-  noderows <- read.table(file,header=TRUE,sep="\t",as.is=TRUE,skip=nodeStartLine-1,nrows=arcStartLine-(nodeStartLine+1))
-  arcrows <- read.table(file,header=TRUE,sep="\t",as.is=TRUE,skip=arcStartLine-1)
+  if (arcStartLine<1){
+    warning("Unable to locate an arc header line containing 'FromId'. Either this .son file is not correctly formatted or the network contains no edges")
+  }
+  # find the index of the (possible clusters split)
+  # clusters are not implemented, but we don't want the parser to break if they are there
+  clusterStartLine<-grep("^ClusterId",readLines(file))
+  nrows<- -1
+  if (length(clusterStartLine)>0){
+    warning('parsing of clusters is not currently implemented in read.son, clusters skipped')
+    nrows<-clusterStartLine-(arcStartLine+1)
+  }
+  
+  noderows <- read.table(file,header=TRUE,sep="\t",as.is=TRUE,skip=nodeStartLine-1,nrows=arcStartLine-(nodeStartLine+1),stringsAsFactors=FALSE)
+  arcrows <- read.table(file,header=TRUE,sep="\t",as.is=TRUE,skip=arcStartLine-1,nrows=nrows,stringsAsFactors=FALSE)
+  
+  # if we are doing alphaIds, collect them
+  if (!is.null(alphaIDs)){
+    alphaIDs<-unique(noderows$'AlphaId')
+  } else { # if not, verify numeric ids
+    idSet<-unique(noderows$'NodeId')
+    if(!all(idSet==1:length(idSet))){
+      stop("'NodeId' values must be a set of integers from 1 to the size of the network")
+    }
+  }
+  
+  
   #figure out the order of the node column headings
   idIndex <-1
   nodeStartIndex <- which(names(noderows)=="StartTime")
   nodeEndIndex <- which(names(noderows)=="EndTime")
+  if (length(nodeStartIndex)<1){
+    warning("Unable to locate a node column for 'StartTime' to provide vertex onset times")
+  }
+  if (length(nodeEndIndex)<1){
+    if (length(nodeStartIndex)>0){
+      # use start time as end time
+      message("Unable to locate a node column for 'EndTime' to provide vertex terminus times, using values from 'StartTime")
+      nodeEndIndex<-nodeStartIndex
+    } else {
+      stop("Unable to locate a node column for 'EndTime' to provide vertex terminus times")
+    }
+    
+  }
   #figure out the order of arc column headings
   fromIdIndex <-1
   toIdIndex <- 2
   arcStartIndex <- which(names(arcrows)=="StartTime")
   arcEndIndex <- which(names(arcrows)=="EndTime")
-  return(as.networkDynamic(arcrows[,c(arcStartIndex,arcEndIndex,fromIdIndex,toIdIndex)],noderows[,c(idIndex,nodeStartIndex,nodeEndIndex)]))
+  if (length(arcStartIndex)<1){
+    warning("Unable to locate an arc column for 'StartTime' to provide arc/edge onset times")
+  }
+  if (length(arcEndIndex)<1){
+    if(length(arcStartIndex)>0){
+    warning("Unable to locate an arc column for 'EndTime' to provide arc/edge terminus times, using values from 'StartTime")
+     arcEndIndex<-arcStartIndex
+    } else {
+      warning("Unable to locate an arc column for 'EndTime' to provide arc/edge terminus times")
+    }
+  }
+  # if doing alpha ids, replace the alphas with numeric values for vertices and edge records
+  if (!is.null(alphaIDs)){
+    noderows$'AlphaId'<-match(noderows$'AlphaId',alphaIDs)
+    arcrows[,fromIdIndex]<-match(arcrows[,fromIdIndex],alphaIDs)
+    arcrows[,toIdIndex]<-match(arcrows[,toIdIndex],alphaIDs)
+  }
+  #TODO: DANGER don't recreate edges caused by repeated attribute rows
+  dnet<-networkDynamic(edge.spells=arcrows[,c(arcStartIndex,arcEndIndex,fromIdIndex,toIdIndex)],vertex.spells=noderows[,c(nodeStartIndex,nodeEndIndex,idIndex)])
+  
+  # process the vertex attributes
+  # TODO: this is going to be slow, should do somehow inside the construction stage
+  vertAttrs<-colnames(noderows)[!colnames(noderows)%in%c('AlphaId','NodeId','StartTime','EndTime')]
+  for (vAttr in vertAttrs){
+    # determine if the attribute values change
+    attrIndex<-match(vAttr,colnames(noderows))
+    if(guess.TEA && nrow(unique(noderows[,c(idIndex,attrIndex)]))==length(unique(noderows[,idIndex]))){
+    # if they don't change, set as regular attribute
+      set.vertex.attribute(dnet,attrname=vAttr,value=noderows[,attrIndex],v=noderows[,idIndex])
+    } else {
+    # if they do change, loop and set as TEA
+    # this will be horribly slow  
+      for (r in seq.int(nrow(noderows))){
+        activate.vertex.attribute(dnet,prefix=vAttr,value=noderows[r,attrIndex],v=noderows[r,idIndex],onset=noderows[r,nodeStartIndex],terminus=noderows[r,nodeEndIndex])
+      }
+    }
+  }
+  
+  # process the edge attributes
+  edgeAttrs<-colnames(arcrows)[!colnames(arcrows)%in%c('FromId','ToId','StartTime','EndTime')]
+  
+  for (eAttr in edgeAttrs){
+    # determine if the attribute values change
+    attrIndex<-match(eAttr,colnames(arcrows))
+    collapsedDyads<-unique(arcrows[,c(fromIdIndex,toIdIndex,attrIndex)])
+    if(guess.TEA && nrow(collapsedDyads)==nrow(unique(arcrows[,c(fromIdIndex,toIdIndex)]))){
+      # if they don't change, set as regular attribute
+      # but still have to loop over edges to get eids :-(
+      for (r in seq.int(nrow(collapsedDyads))){
+        eid<-get.edgeIDs(dnet,v=collapsedDyads[r,1],alter=collapsedDyads[r,2])
+        set.edge.attribute(dnet,attrname=eAttr,value=collapsedDyads[r,3],e=eid)
+      }
+    } else {
+      # if they do change, loop and set as TEA
+      # this will be horribly slow  
+      for (r in seq.int(nrow(arcrows))){
+        eid<-get.edgeIDs(dnet,v=arcrows[r,fromIdIndex],alter=arcrows[r,toIdIndex])
+        activate.edge.attribute(dnet,prefix=eAttr,value=arcrows[r,attrIndex],e=eid,onset=arcrows[r,arcStartIndex],terminus=arcrows[r,arcEndIndex])
+      }
+    }
+  }
+  
+  
+  
+  # if doing alphaIds, set vertex names and pid.
+  if (!is.null(alphaIDs)){
+   #if label is not specified, use id as label
+   network.vertex.names(dnet)<-alphaIDs
+   dnet%n%'vertex.pid'<-'vertex.names'
+  }  
+  
+  return(dnet)
 }

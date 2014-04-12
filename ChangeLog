@@ -1,5 +1,6 @@
 Change Log:
 v0.7
+  - added read.son function for parsing SoNIA-formatted files with dynamic network data
   - added nd_test_nets dataset, a list networkDynamic objects with unusual configurations and parameters to be used for testing
   - fixed bug in spells.overlap and adding missing tests
   - Added when.vertex.attrs.match and when.edge.attrs.match functions for getting times at which TEA attributes of network elements match specified values according to specified operators.

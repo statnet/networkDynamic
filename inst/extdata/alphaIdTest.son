@@ -1,0 +1,10 @@
+//test file for parsing alpha ids and clusters
+AlphaId	Label	StartTime
+1	1	0
+2	2	0
+three	3	0
+FromId	ToId	StartTime
+1	2	0
+three	2	0
+ClusterId	NodeIds	StartTime
+A	{1}	0
