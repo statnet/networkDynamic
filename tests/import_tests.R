@@ -2,36 +2,46 @@
 require(networkDynamic)
 require(testthat)
 pkgpath<-path.package('networkDynamic') # for accessing test files
+# below is a work around for local-specific sort order bug in R CMD check 
+# that causes order of attributes in the list to be sorted differently
+Sys.setlocale("LC_COLLATE", "en_US.UTF-8")
 
 
 # ----- read.son import tests ---
 # try reading basic file containing alpha ids and with start time but no end time
 # also includes a fake cluster, just to mess with things
-expect_warning(alphaIdNet<-read.son(paste(pkgpath,'/extdata/alphaIdTest.son',sep='')),regexp="Unable to locate an arc column for 'EndTime'")
-expect_equal(as.data.frame(alphaIdNet)$onset,c(0,0))
-expect_equal(as.data.frame(alphaIdNet)$terminus,c(0,0))
-expect_equal(as.data.frame(alphaIdNet)$tail,c(1,3))
-expect_equal(as.data.frame(alphaIdNet)$head,c(2,2))
-# did it load pid
-expect_equal(alphaIdNet%n%'vertex.pid','vertex.names')
-expect_equal(alphaIdNet%v%'vertex.names',c('1','2','three'))
+test_that("file with alphaIds",{
+  expect_warning(alphaIdNet<-read.son(paste(pkgpath,'/extdata/alphaIdTest.son',sep='')),regexp="Unable to locate an arc column for 'EndTime'")
+  expect_equal(as.data.frame(alphaIdNet)$onset,c(0,0))
+  expect_equal(as.data.frame(alphaIdNet)$terminus,c(0,0))
+  expect_equal(as.data.frame(alphaIdNet)$tail,c(1,3))
+  expect_equal(as.data.frame(alphaIdNet)$head,c(2,2))
+  # did it load pid
+  expect_equal(alphaIdNet%n%'vertex.pid','vertex.names')
+  expect_equal(alphaIdNet%v%'vertex.names',c('1','2','three'))
+})
 
-
-# try reading the extra var test
-varsNet<-read.son(paste(pkgpath,'/extdata/extraVarTest.son',sep=''))
-# "unchanging" should be static, others active
-expect_equal(list.vertex.attributes(varsNet),c("active","Happiness.active","Label.active","na","Unchanging","vertex.names"))
-# ArcWeight should be loaded in as a static attriube             
-expect_equal(list.edge.attributes(varsNet),c("active","ArcWeight","na"))
+test_that('reading attributes as tea',{
+  # try reading the extra var test
+  varsNet<-read.son(paste(pkgpath,'/extdata/extraVarTest.son',sep=''))
+  # "unchanging" should be static, others active
+  
+  expect_equal(list.vertex.attributes(varsNet),c("active","Happiness.active","Label.active","na","Unchanging","vertex.names"))
+  # ArcWeight should be loaded in as a static attriube             
+  expect_equal(list.edge.attributes(varsNet),c("active","ArcWeight","na"))
+})
 
 # check behavior of guess.TEA
-varsNet2<-read.son(paste(pkgpath,'/extdata/extraVarTest.son',sep=''),guess.TEA=FALSE)
-# unchanging should be active
-expect_equal(list.vertex.attributes(varsNet2),c("active","Happiness.active","Label.active","na","Unchanging.active","vertex.names"))
-# ArcWeight should be loaded in as a TEA attriube             
-expect_equal(list.edge.attributes(varsNet2),c("active","ArcWeight.active","na"))
+test_that('guess.TEA flag works',{
+  varsNet2<-read.son(paste(pkgpath,'/extdata/extraVarTest.son',sep=''),guess.TEA=FALSE)
+  # unchanging should be active
+  expect_equal(list.vertex.attributes(varsNet2),c("active","Happiness.active","Label.active","na","Unchanging.active","vertex.names"))
+  # ArcWeight should be loaded in as a TEA attriube             
+  expect_equal(list.edge.attributes(varsNet2),c("active","ArcWeight.active","na"))
+})
 
 # try reading mcfarland classroom with attributes
+test_that('mcfarland classroom file',{
 cls33<-read.son(paste(pkgpath,'/extdata/cls33_10_16_96.son',sep=''))
 expect_equal(network.size(cls33),20)
 expect_equal(range(get.change.times(cls33)),c(0,49))
@@ -47,6 +57,23 @@ expect_equal(get.vertex.attribute(cls33,'NodeSize'),rep(5,20))
 
 # check that edge attributes parsed correctly
 expect_equal(list.edge.attributes(cls33),c("active","ArcWeight.active","ArcWidth.active","ColorName.active","na"))
+
+# check that a few specific edges have the correct values
+# and check edge attrs read correct values
+eid<-get.edgeIDs(cls33,v=14, alter=12)
+expect_equal(get.edge.activity(cls33,e=eid)[[1]][,1], c(0.125,1.167,4.667,9.964,21.0,37.737,41.553))
+expect_equal(unlist(get.edge.attribute(cls33,'ColorName.active',unlist=FALSE)[[eid]][[1]]),c("blue",  "black", "red",   "black", "red",   "black", "black"))
+
+eid<-get.edgeIDs(cls33,v=4, alter=5)
+expect_equal(get.edge.activity(cls33,e=eid)[[1]][,1], c(2.5,7.286,9.321,15.964,16.393,17.679,18.964,19.393,27.977,30.628,35.368,36.421))
+
+expect_equal(unlist(get.edge.attribute(cls33,'ColorName.active',unlist=FALSE)[[eid]][[1]]),c("blue",  "blue",  "black", "blue",  "blue",  "black", "blue",  "blue",  "black", "black", "black", "blue" ))
+eid<-get.edgeIDs(cls33,v=17, alter=6)
+expect_equal(get.edge.activity(cls33,e=eid)[[1]][,1], 44.0)
+expect_equal(unlist(get.edge.attribute(cls33,'ColorName.active',unlist=FALSE)[[eid]][[1]]),c("blue"))
+})
+
+
 
 
 # test file with no edges
