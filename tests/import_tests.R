@@ -4,7 +4,7 @@ require(testthat)
 pkgpath<-path.package('networkDynamic') # for accessing test files
 # below is a work around for local-specific sort order bug in R CMD check 
 # that causes order of attributes in the list to be sorted differently
-Sys.setlocale("LC_COLLATE", "en_US.UTF-8")
+Sys.setlocale("LC_COLLATE", "C")
 
 
 # ----- read.son import tests ---
@@ -26,18 +26,18 @@ test_that('reading attributes as tea',{
   varsNet<-read.son(paste(pkgpath,'/extdata/extraVarTest.son',sep=''))
   # "unchanging" should be static, others active
   
-  expect_equal(list.vertex.attributes(varsNet),c("active","Happiness.active","Label.active","na","Unchanging","vertex.names"))
+  expect_equal(list.vertex.attributes(varsNet),c("Happiness.active","Label.active","Unchanging","active","na","vertex.names"))
   # ArcWeight should be loaded in as a static attriube             
-  expect_equal(list.edge.attributes(varsNet),c("active","ArcWeight","na"))
+  expect_equal(list.edge.attributes(varsNet),c("ArcWeight","active","na"))
 })
 
 # check behavior of guess.TEA
 test_that('guess.TEA flag works',{
   varsNet2<-read.son(paste(pkgpath,'/extdata/extraVarTest.son',sep=''),guess.TEA=FALSE)
   # unchanging should be active
-  expect_equal(list.vertex.attributes(varsNet2),c("active","Happiness.active","Label.active","na","Unchanging.active","vertex.names"))
+  expect_equal(list.vertex.attributes(varsNet2),c("Happiness.active","Label.active","Unchanging.active","active","na","vertex.names"))
   # ArcWeight should be loaded in as a TEA attriube             
-  expect_equal(list.edge.attributes(varsNet2),c("active","ArcWeight.active","na"))
+  expect_equal(list.edge.attributes(varsNet2),c("ArcWeight.active","active","na"))
 })
 
 # try reading mcfarland classroom with attributes
@@ -45,7 +45,7 @@ test_that('mcfarland classroom file',{
 cls33<-read.son(paste(pkgpath,'/extdata/cls33_10_16_96.son',sep=''))
 expect_equal(network.size(cls33),20)
 expect_equal(range(get.change.times(cls33)),c(0,49))
-expect_equal(list.vertex.attributes(cls33),c("active","BorderColor", "BorderWidth", "ColorName",   "Label", "na", "NodeShape", "NodeSize","vertex.names"))
+expect_equal(list.vertex.attributes(cls33),c("BorderColor", "BorderWidth", "ColorName",   "Label", "NodeShape", "NodeSize","active","na","vertex.names"))
 
 # check that vertex attributes were parsed correctly
 expect_equal(get.vertex.attribute(cls33,'BorderColor'),rep('black',20))
@@ -56,7 +56,7 @@ expect_equal(get.vertex.attribute(cls33,'NodeShape'),c("ellipse", "rect",    "re
 expect_equal(get.vertex.attribute(cls33,'NodeSize'),rep(5,20))
 
 # check that edge attributes parsed correctly
-expect_equal(list.edge.attributes(cls33),c("active","ArcWeight.active","ArcWidth.active","ColorName.active","na"))
+expect_equal(list.edge.attributes(cls33),c("ArcWeight.active","ArcWidth.active","ColorName.active","active","na"))
 
 # check that a few specific edges have the correct values
 # and check edge attrs read correct values
