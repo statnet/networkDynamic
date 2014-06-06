@@ -74,12 +74,58 @@ expect_equal(unlist(get.edge.attribute(cls33,'ColorName.active',unlist=FALSE)[[e
 })
 
 
-
-
 # test file with no edges
+# no arcs header
+testContent<-"NodeId\tLabel\tStartTime\tEndTime\n1\tA\t0\t1\n2\tB\t0\t1\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+expect_warning(testNet<-read.son(tempFile),regexp='Unable to locate an arc header line')
+expect_true(network.size(testNet)==2 & network.edgecount(testNet)==0)
+
+# has arcs header, but no arc rows
+testContent<-"NodeId\tLabel\tStartTime\tEndTime\n1\tA\t0\t1\n2\tB\t0\t1\nFromId\tToId\tStartTime\tEndTime\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+testNet<-read.son(tempFile)
+expect_true(network.size(testNet)==2 & network.edgecount(testNet)==0)
+
+# test conversion of Label attribute to vertex.names
+testContent<-"NodeId\tLabel\tStartTime\tEndTime\n1\tA\t0\t1\n2\tB\t0\t1\nFromId\tToId\tStartTime\tEndTime\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+testNet<-read.son(tempFile)
+expect_equal(network.vertex.names(testNet),c('A','B'))
+
+testContent<-"NodeId\tLabel\tStartTime\tEndTime\n1\tA\t0\t1\n1\tB\t1\t2\nFromId\tToId\tStartTime\tEndTime\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+testNet<-read.son(tempFile)
+expect_equal(network.vertex.names(testNet),1) # Label is TEA so not copied to vertex names
+
+
+# test file with multiple attribute rows doesn't create multiple edges. 
+testContent<-"NodeId\tLabel\tStartTime\tEndTime\n1\tA\t0\t10\n1\tB\t0\t10\nFromId\tToId\tStartTime\tEndTime\tValue\n1\t2\t0\t1\tA\n1\t2\t1\t5\tB\n1\t2\t5\t10\tC\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+testNet<-read.son(tempFile)
+expect_equal(network.edgecount(testNet),1) # only one edge created despite 3 rows
+expect_equal(get.edge.attribute.active(testNet,'Value',at=5),"C")
 
 # test file with missing header
+testContent<-"1\tA\t0\t10\n1\tB\t0\t10\nFromId\tToId\tStartTime\tEndTime\tValue\n1\t2\t0\t1\tA\n1\t2\t1\t5\tB\n1\t2\t5\t10\tC\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+expect_error(read.son(tempFile),regexp='Unable to locate the header line')
 
 # test missing start time
+testContent<-"NodeId\tLabel\tEndTime\n1\tA\t10\n1\tB\t10\nFromId\tToId\tStartTime\tEndTime\tValue\n1\t2\t0\t1\tA\n1\t2\t1\t5\tB\n1\t2\t5\t10\tC\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+expect_error(read.son(tempFile),regexp="Unable to locate a node column for 'StartTime'")
 
-# test missing end time
+# test missing end time (start time should be duplicated)
+testContent<-"NodeId\tLabel\tStartTime\n1\tA\t10\n2\tB\t10\nFromId\tToId\tStartTime\tEndTime\tValue\n1\t2\t0\t1\tA\n1\t2\t1\t5\tB\n1\t2\t5\t10\tC\n"
+tempFile<-tempfile()
+cat(testContent,file=tempFile)
+expect_message(testNet<-read.son(tempFile),regexp="Unable to locate a node column for 'EndTime'")
+expect_equal(unlist(get.vertex.activity(testNet)),c(10,10,10,10))
