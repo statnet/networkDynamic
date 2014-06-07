@@ -43,15 +43,15 @@ whenMatchLatest<-function(tea,value,match.op='==',no.match=Inf){
 
 # function to determine when a TEA vertex attribute takes on a specific value
 
-when.vertex.attrs.match<-function(nd,attrname,value,match.op='==',rule='earliest',no.match=Inf,v=seq_len(network.size(nd))){
+match.vertex.attrs<-function(nd,attrname,value,match.op='==',rule='earliest',no.match=Inf,v=seq_len(network.size(nd))){
   if(missing(nd) || !is.networkDynamic(nd)){
-    stop('when.vertex.attrs.match requires its first argument to be a networkDynamic object')
+    stop('match.vertex.attrs requires its first argument to be a networkDynamic object')
   }
   if(missing(value)){
-    stop("when.vertex.attrs.match requires providing a 'value' argument for comparison")
+    stop("match.vertex.attrs requires providing a 'value' argument for comparison")
   }
   if(missing(attrname)){
-    stop("when.vertex.attrs.match requires providing an 'attrname' argument giving the name of the vertex attribute to be compared")
+    stop("match.vertex.attrs requires providing an 'attrname' argument giving the name of the vertex attribute to be compared")
   }
   
   # search for the .active version of the name
@@ -71,15 +71,15 @@ when.vertex.attrs.match<-function(nd,attrname,value,match.op='==',rule='earliest
 
 # function to determine when a TEA edge attribute takes on a specific value
 
-when.edge.attrs.match<-function(nd,attrname,value,match.op='==',rule='earliest',no.match=Inf,e=seq_along(nd$mel)){
+match.edge.attrs<-function(nd,attrname,value,match.op='==',rule='earliest',no.match=Inf,e=seq_along(nd$mel)){
   if(missing(nd) || !is.networkDynamic(nd)){
-    stop('when.vedge.attrs.match requires its first argument to be a networkDynamic object')
+    stop('match.edge.attrs requires its first argument to be a networkDynamic object')
   }
   if(missing(value)){
-    stop("when.edge.attrs.match requires providing a 'value' argument for comparison")
+    stop("match.edge.attrs requires providing a 'value' argument for comparison")
   }
   if(missing(attrname)){
-    stop("when.edge.attrs.match requires providing an 'attrname' argument giving the name of the edge attribute to be compared")
+    stop("match.edge.attrs requires providing an 'attrname' argument giving the name of the edge attribute to be compared")
   }
   
   # search for the .active version of the name

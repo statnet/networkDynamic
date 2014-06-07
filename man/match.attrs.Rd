@@ -1,6 +1,6 @@
-\name{when.vertex.attrs.match}
-\alias{when.vertex.attrs.match}
-\alias{when.edge.attrs.match}
+\name{match.vertex.attrs}
+\alias{match.vertex.attrs}
+\alias{match.edge.attrs}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
  return the times at which the TEA attributes of elements of a network match a value
@@ -9,10 +9,10 @@
 The functions query the TEA attributes of network elements (vertices or edges) and return the time that each element matches the specified value.  The match operator defaults to '==', but other binary comparison operators that return logical, such as '>' or even '\%in\%' can be used as well. 
 }
 \usage{
-when.vertex.attrs.match(nd, attrname, value, match.op = "==", rule = "earliest", 
+match.vertex.attrs(nd, attrname, value, match.op = "==", rule = "earliest", 
                         no.match = Inf, v = seq_len(network.size(nd)))
                         
-when.edge.attrs.match(nd, attrname, value, match.op = "==", rule = "earliest", 
+match.edge.attrs(nd, attrname, value, match.op = "==", rule = "earliest", 
                         no.match = Inf, e = seq_along(nd$mel))                        
 }
 %- maybe also 'usage' for other objects documented here.
@@ -72,13 +72,13 @@ net<-activate.vertex.attribute(net,'weight',0,onset=-Inf,terminus=Inf)
 net<-activate.vertex.attribute(net,'weight',-1,at=6,v=2)
 
 # when does 'test' take the value 'B' for each vertex?
-when.vertex.attrs.match(net,'test',value='B')
+match.vertex.attrs(net,'test',value='B')
 
 # when is the terminus of when 'test' takes a value 'A' or 'C'?
-when.vertex.attrs.match(net,'test',value=c('A','C'),match.op='\%in\%',rule='latest')
+match.vertex.attrs(net,'test',value=c('A','C'),match.op='\%in\%',rule='latest')
 
 # when does 'weight' first take a value less than 0?
-when.vertex.attrs.match(net,'weight',value=0,match.op='<')
+match.vertex.attrs(net,'weight',value=0,match.op='<')
 
 }
 

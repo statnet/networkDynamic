@@ -69,7 +69,6 @@ reconcile.vertex.activity,
 reconcile.edge.activity,
 adjust.activity,
 get.dyads.active,
-when.vertex.attrs.match,
-when.edge.attrs.match
-#when.next.edge.change
+match.vertex.attrs,
+match.edge.attrs
 )
