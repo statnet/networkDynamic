@@ -13,8 +13,8 @@ reconcile.vertex.activity<-function(net,mode=c("expand.to.edges","match.to.edges
   if (!is.networkDynamic(net)){
     stop("reconcile.vertex.activity can only be applied to networkDynamic objects")
   }
-  xn <- deparse(substitute(net))
-  ev <- parent.frame()
+  xn <- substitute(net)
+
   v<-seq_len(network.size(net))
   mode<-match.arg(mode)
   if(mode=='match.to.edges'){
@@ -98,8 +98,8 @@ reconcile.vertex.activity<-function(net,mode=c("expand.to.edges","match.to.edges
   } else {
     stop('reconcile vertex activity mode ', mode, ' not supported')
   }
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, net, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, net)))
   invisible(net)
 }
 
@@ -108,8 +108,8 @@ reconcile.edge.activity<-function(net,mode=c("match.to.vertices","reduce.to.vert
   if (!is.networkDynamic(net)){
     stop("reconcile.edge.activity can only be applied to networkDynamic objects")
   }
-  xn <- deparse(substitute(net))
-  ev <- parent.frame()
+  xn <- substitute(net)
+
   mode<-match.arg(mode)
   v<-seq_len(network.size(net))
   
@@ -184,8 +184,8 @@ reconcile.edge.activity<-function(net,mode=c("match.to.vertices","reduce.to.vert
   } else {
     stop('reconcile edge activity mode ', mode, ' not supported')
   }
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, net, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, net)))
   invisible(net)
 }
 
