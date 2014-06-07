@@ -907,11 +907,10 @@ as.network.networkDynamic<-function(x,...){
 # otherwise, modify it in its parent frame
 set.nD.class <- function(x){
   if(!is.networkDynamic(x)) {
-    xn <- deparse(substitute(x))
-    ev <- parent.frame()
+    xn <- substitute(x)
     class(x) <- c("networkDynamic", class(x))
-    if(exists(xn, envir=ev))
-      on.exit(assign(xn, x, pos=ev))
+    if(.validLHS(xn, parent.frame()))
+      on.exit(eval.parent(call('<-',xn, x)))
     return(invisible(x))
   }
   return(x)
@@ -1028,8 +1027,7 @@ adjust.activity <-function(nd,offset=0,factor=1){
   if (!is.numeric(factor)){
     stop("the factor argument must be a positive or negative numeric value giving the amount of the time should be multiplied by")
   }
-  xn <- deparse(substitute(nd))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(nd)   # needed for proper assignment in calling environment
   
   # change all the vertex spells
   nd$val<-lapply(nd$val, function(v){
@@ -1088,8 +1086,8 @@ adjust.activity <-function(nd,offset=0,factor=1){
     obs$time.increment<-obs$time.increment*factor
     nd%n%'net.obs.period'<-obs
   }
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, nd, pos = ev)) # remap to parent environmnet
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, nd)))
   invisible(nd)
 }
 

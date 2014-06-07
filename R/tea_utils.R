@@ -49,8 +49,7 @@ activate.network.attribute <- function (x, prefix, value, onset=NULL, terminus=N
   if(!is.logical(dynamic.only)){
     stop("dynamic.only flag must be a logical in activate.vertex.attribute.\n")
   }
-  xn <- deparse(substitute(x)) #this stuff is for modifying network inplace
-  ev <- parent.frame()
+  xn <- substitute(x) #this stuff is for modifying network inplace
   
   # figure out onset and terminus from at and length if necessary
   if(!is.null(at)) {
@@ -89,8 +88,8 @@ activate.network.attribute <- function (x, prefix, value, onset=NULL, terminus=N
   }
   x <- set.network.attribute(x,attrname,value=timed)
   set.nD.class(x)
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev)) # remap to parent environmnet
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)	
 }
 
@@ -330,8 +329,7 @@ activate.vertex.attribute <- function (x, prefix, value, onset=NULL, terminus=NU
   if((min(v,Inf) < 1) || (max(v,-Inf) > network.size(x))){  # combinatorial breakage:
     stop("Illegal vertex id specified in v in activate.edge.attribute.\n")
   }
-  xn <- deparse(substitute(x)) #this stuff is for modifying network inplace
-  ev <- parent.frame()
+  xn <- substitute(x) #this stuff is for modifying network inplace
   
   # convert at and lenth options to onsets, and possibly replicate
   if(!is.null(at)) {
@@ -388,9 +386,8 @@ activate.vertex.attribute <- function (x, prefix, value, onset=NULL, terminus=NU
   
   x <- set.vertex.attribute(x,attrname,value=timedlist,v=v)
   set.nD.class(x)
-  if (exists(xn, envir = ev)){
-    on.exit(assign(xn, x, pos = ev)) # remap to parent environmnet
-  }
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)	
 }
 
@@ -410,8 +407,7 @@ activate.edge.value<-function(x, prefix, value, onset=NULL, terminus=NULL,length
   }
   if ((min(e) < 1) | (max(e) > length(x$mel))) 
     stop("Illegal edge in activate.edge.value.\n")
-  xn <- deparse(substitute(x))
-  ev <- parent.frame()
+  xn <- substitute(x)
   
   # remove e corresponding to NULL edge values (deleted edges)
   e<-e[!sapply(x$mel[e],is.null)]
@@ -422,8 +418,8 @@ activate.edge.value<-function(x, prefix, value, onset=NULL, terminus=NULL,length
   })
   
   x<-activate.edge.attribute(x=x,prefix=prefix,value=evals, onset=onset,terminus=terminus,length=length,at=at,e=e,dynamic.only=dynamic.only)
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)
   
 }
@@ -479,10 +475,7 @@ activate.edge.attribute <-function(x, prefix, value, onset=NULL, terminus=NULL,l
     }
   }
   
-  xn <- deparse(substitute(x)) #this stuff is for modifying network inplace
-  ev <- parent.frame()
-  
- 
+  xn <- substitute(x) #this stuff is for modifying network inplace
   
   # possibly convert at and length or replicated onsets
   if(!is.null(at)) {
@@ -539,8 +532,8 @@ activate.edge.attribute <-function(x, prefix, value, onset=NULL, terminus=NULL,l
   })
   set.edge.attribute(x,attrname,timedlist,e=e)
 	set.nD.class(x)
-	if (exists(xn, envir = ev)) 
-	  on.exit(assign(xn, x, pos = ev)) # remap to parent environmnet
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
 	invisible(x)
 }
 
@@ -1019,8 +1012,7 @@ deactivate.vertex.attribute <- function (x, prefix, onset=NULL, terminus=NULL,le
   if((min(v,Inf) < 1) || (max(v,-Inf) > network.size(x))){  # combinatorial breakage:
     stop("Illegal vertex id specified in v in deactivate.vertex.attribute.\n")
   }
-  xn <- deparse(substitute(x)) #this stuff is for modifying network inplace
-  ev <- parent.frame()
+  xn <- substitute(x) #this stuff is for modifying network inplace
   
   # convert at and lenth options to onsets, and possibly replicate
   if(!is.null(at)) {
@@ -1078,9 +1070,8 @@ deactivate.vertex.attribute <- function (x, prefix, onset=NULL, terminus=NULL,le
   
   x <- set.vertex.attribute(x,attrname,value=timedlist,v=v)
   set.nD.class(x)
-  if (exists(xn, envir = ev)){
-    on.exit(assign(xn, x, pos = ev)) # remap to parent environmnet
-  }
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -1196,8 +1187,7 @@ deactivate.edge.attribute <-function(x, prefix, onset=NULL, terminus=NULL,length
     }
   }
   
-  xn <- deparse(substitute(x)) #this stuff is for modifying network inplace
-  ev <- parent.frame()
+  xn <- substitute(x) #this stuff is for modifying network inplace
   
   #Filter out non-edges caused by edge deletion
   e <- e[!sapply(x$mel[e], is.null)]  
@@ -1260,8 +1250,8 @@ deactivate.edge.attribute <-function(x, prefix, onset=NULL, terminus=NULL,length
   
   set.edge.attribute(x,attrname,timedlist,e=e)
   set.nD.class(x)
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev)) # remap to parent environmnet
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)
 }
 
@@ -1306,8 +1296,7 @@ deactivate.network.attribute <- function (x, prefix, onset=NULL, terminus=NULL, 
   if(!is.logical(dynamic.only)){
     stop("dynamic.only flag must be a logical in deactivate.network.attribute.\n")
   }
-  xn <- deparse(substitute(x)) #this stuff is for modifying network inplace
-  ev <- parent.frame()
+  xn <- substitute(x) #this stuff is for modifying network inplace
   
   # figure out onset and terminus from at and length if necessary
   if(!is.null(at)) {
@@ -1346,8 +1335,8 @@ deactivate.network.attribute <- function (x, prefix, onset=NULL, terminus=NULL, 
   
   x <- set.network.attribute(x,attrname,value=timed)
   set.nD.class(x)
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev)) # remap to parent environmnet
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 

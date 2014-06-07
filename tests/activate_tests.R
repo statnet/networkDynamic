@@ -2230,5 +2230,18 @@ activate.vertices(net,at=5)
 deactivate.vertices(net,onset=-Inf,terminus=5)
 expect_equal(as.numeric(get.vertex.activity(net)[[1]]),c(5,5))
 
+# Assignment to networks as list elements
+net <- list()
+net[[1]] <- network.initialize(2)
+activate.vertices(net[[1]],v=1,at=1)
+activate.vertices(net[[1]],v=2,at=2)
+expect_equal(
+  c(
+    network.vertex.names(network.extract(net[[1]],at=1)),
+    network.vertex.names(network.extract(net[[1]],at=2))
+  ),
+  c(1,2)
+)
+
 cat("ok\n")
 

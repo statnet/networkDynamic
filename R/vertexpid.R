@@ -113,8 +113,7 @@ add.vertices.networkDynamic <- function(x, nv, vattr=NULL, last.mode=TRUE, verte
   # todo: test x is net
   
   # for modify in place
-  xn <- deparse(substitute(x))
-  ev <- parent.frame()
+  xn <- substitute(x)
   
   if (last.mode || !is.bipartite(x)) {
     n <- get.network.attribute(x, "n")
@@ -154,16 +153,15 @@ add.vertices.networkDynamic <- function(x, nv, vattr=NULL, last.mode=TRUE, verte
   }
   
   # modify-in-place voodo
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)
 }
 
 # override add.edges in network to manage pid stuff
 add.edges.networkDynamic<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.pid=NULL,...){
   # for modify in place
-  xn <- deparse(substitute(x))
-  ev <- parent.frame()
+  xn <- substitute(x)
   
   mnextOrig<-x%n%'mnext'
   x<-add.edges.network(x=x,tail=tail,head=head,names.eval=names.eval,vals.eval=vals.eval,...=...)
@@ -193,15 +191,15 @@ add.edges.networkDynamic<-function(x, tail, head, names.eval=NULL, vals.eval=NUL
   }
   
   # modify-in-place voodo
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)
 }
 
 # override add.edges in network to manage pid stuff
 add.edge.networkDynamic<-function(x, tail, head, names.eval=NULL, vals.eval=NULL,edge.check=FALSE,edge.pid=NULL,...){
   # for modify in place
-  xn <- deparse(substitute(x))
+  xn <- substitute(x)
   ev <- parent.frame()
   
   mnextOrig<-x%n%'mnext'
@@ -228,8 +226,8 @@ add.edge.networkDynamic<-function(x, tail, head, names.eval=NULL, vals.eval=NULL
   }
   
   # modify-in-place voodo
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, x, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)
 }
 
@@ -251,8 +249,7 @@ initialize.pids<-function(nd){
     stop("Persistant ids can not be added to objects that are not networks")
   }
   # for modify in place
-  xn <- deparse(substitute(nd))
-  ev <- parent.frame()
+  xn <- substitute(nd)
   
   if (is.null(nd%n%'vertex.pid')){
     vpids<-generatePids(network.size(nd))
@@ -269,7 +266,7 @@ initialize.pids<-function(nd){
     warning("Network already contains a edge.pid attribute, no new persistant ids were generated for edges")
   }
   # modify-in-place voodo
-  if (exists(xn, envir = ev)) 
-    on.exit(assign(xn, nd, pos = ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, nd)))
   invisible(nd)
 }

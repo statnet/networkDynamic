@@ -40,8 +40,7 @@
 #the appropriate mark.  Edges without an "active" attribute are given one.
 activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
                            e=seq_along(x$mel)){
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
 
   # checks for proper inputs, translations into onset and terminus
   if(!is.network(x)) 
@@ -114,8 +113,8 @@ activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
   }
   
   set.nD.class(x)
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -125,8 +124,7 @@ activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
 #the appropriate mark.  Vertices without an "active" attribute are given one.
 activate.vertices <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
                               v=seq_len(network.size(x))) {
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
   
   # checks for proper inputs
   if(!is.network(x)) 
@@ -198,8 +196,8 @@ activate.vertices <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL
   }
 
   set.nD.class(x)
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -209,8 +207,7 @@ activate.vertices <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL
 #the appropriate mark.  Edges without an "active" attribute are given one.
 deactivate.edges<-function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
                            e=seq_along(x$mel)){
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
 
   # checks for proper inputs
   if(!is.network(x)) 
@@ -284,8 +281,8 @@ deactivate.edges<-function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
   }
   
   set.nD.class(x)
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -296,8 +293,7 @@ deactivate.edges<-function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
 #one.
 deactivate.vertices<-function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
                                v=seq_len(network.size(x)), deactivate.edges=FALSE){
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
 
   # checks for proper inputs
   if(!is.network(x)) 
@@ -382,16 +378,15 @@ deactivate.vertices<-function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL
   }
   
   set.nD.class(x)
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
 
 # adds new edges, active at the given time
 add.edges.active <- function(x, tail, head, names.eval=NULL, vals.eval=NULL, onset=NULL, terminus=NULL, length=NULL, at=NULL, ...) {
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
 
   if(!is.network(x))
     stop("add.edges.active requires an argument of class network.\n")
@@ -410,8 +405,8 @@ add.edges.active <- function(x, tail, head, names.eval=NULL, vals.eval=NULL, ons
 
   add.edges(x, tail, head,names.eval,vals.eval)
   activate.edges(x, onset, terminus, length, at, e=seq(x%n%"mnext"-n, x%n%"mnext"-1))
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -423,8 +418,8 @@ add.vertices.active <- function(x, nv, vattr=NULL, last.mode=TRUE, onset=NULL, t
     stop("add.vertices.active requires an argument of class network.\n")
   if(!is.numeric(nv))
     stop("The number of vertices given in 'nv' must be numeric in add.verices.active.\n")
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
+
   if (nv>0){
     add.vertices(x, nv,vattr,last.mode)
     activate.vertices(x, onset, terminus, length, at, v=seq(x%n%"n"-nv+1, x%n%"n"))
@@ -433,8 +428,8 @@ add.vertices.active <- function(x, nv, vattr=NULL, last.mode=TRUE, onset=NULL, t
       x<-set.nD.class(x)
     }
   }
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -802,8 +797,7 @@ network.size.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
 #    the networkDynamic object without the spell matrices of 'e'
 #------------------------------------------------------------------
 delete.edge.activity <- function(x, e=seq_along(x$mel)) {
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
   
   if(!is.network(x))
     stop("The remove.activity function requires that x be a network object.\n")
@@ -824,8 +818,8 @@ delete.edge.activity <- function(x, e=seq_along(x$mel)) {
     set.edge.attribute(x, "active", left.activity, leave.active)
   }
   
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
@@ -843,8 +837,7 @@ delete.edge.activity <- function(x, e=seq_along(x$mel)) {
 #    the networkDynamic object without the spell matrices of 'v'
 #------------------------------------------------------------------
 delete.vertex.activity <- function(x, v=seq_len(network.size(x))) {
-  xn <- deparse(substitute(x))   # needed for proper assignment in calling environment
-  ev <- parent.frame()
+  xn <- substitute(x)   # needed for proper assignment in calling environment
   
   if(!is.network(x))
     stop("The remove.activity function requires that x be a network object.\n")
@@ -865,8 +858,8 @@ delete.vertex.activity <- function(x, v=seq_len(network.size(x))) {
     set.vertex.attribute(x, "active", left.activity, leave.active)
   }
 
-  if(exists(xn, envir=ev))
-    on.exit(assign(xn, x, pos=ev))
+  if(.validLHS(xn, parent.frame()))
+    on.exit(eval.parent(call('<-',xn, x)))
   invisible(x)  
 }
 
