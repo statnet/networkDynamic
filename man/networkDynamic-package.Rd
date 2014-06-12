@@ -14,14 +14,14 @@
 Dynamic Extensions for Network Objects
 }
 \description{
-Simple interface routines to facilitate the handling of dynamic network objects with different types of temporal data.  This allows the user to create, store and query networks that change over time.  Changes include edges that form and dissolve over time, and vertices that enter or leave the network.  In this initial release there is no support for temporally changing attributes (of either vertices or edges); that will be included in an update soon.
+Simple interface routines to facilitate the handling of dynamic network objects with different types of temporal data.  This allows the user to create, store and query networks that change over time.  Changes include edges that form and dissolve over time, and vertices that enter or leave the network.  The package also includes support for defining and querying temporally changing attributes of vertices, edges, and network properties. 
 }
 \details{
 \tabular{ll}{
 Package: \tab networkDynamic\cr
 Type: \tab Package\cr
-Version: \tab 0.5\cr
-Date: \tab 2013-08-29\cr
+Version: \tab 0.7\cr
+Date: \tab 2014-06-12\cr
 Depends: \tab network\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
@@ -29,7 +29,7 @@ LazyLoad: \tab yes\cr
 
 The \code{networkDynamic} package provides support for a simple family of dynamic extensions to the \code{\link[network]{network}} class; these employ the standard \code{network} attribute functionality (and hence the resulting objects are still compatible with all conventional routines), but greatly facilitate the practical storage, manipulation and query of dynamic network data. 
 
-The basis for the dynamic extensions is described in \link{activity.attribute}.  Other core routines can be found in the links below.
+The basis for the dynamic extensions is described in \link{activity.attribute}.  Dynamic attributese are explained in \link{attribute.activity.functions}.  Id systems which are persistent throughout manipulations and changes in network size are explained in \link{persistent.ids}. Other core routines can be found in the links below.
 
 Additional example data sets can be found in the \code{networkDynamicData} package. 
 }
