@@ -270,30 +270,3 @@ initialize.pids<-function(nd){
     on.exit(eval.parent(call('<-',xn, nd)))
   invisible(nd)
 }
-
-destroy.pids <- function(x){
-  if(!is.network(x)){
-    stop("Argument not a network")
-  }
-  # for modify in place
-  xn <- substitute(x)
-
-  pidName <- x%n%'vertex.pid'
-  if (!is.null(pidName)){
-    delete.network.attribute(x,'vertex.pid')
-    if (pidName != 'vertex.names')
-      delete.vertex.attribute(x,pidName)
-  } 
-
-  pidName <- x%n%'edge.pid'
-  if (!is.null(pidName)){
-    delete.network.attribute(nd,'edge.pid')
-    if (pidName != 'vertex.names')
-      delete.edge.attribute(nd,pidName)
-  }
-
-  # modify-in-place voodo
-  if(.validLHS(xn, parent.frame()))
-    on.exit(eval.parent(call('<-',xn, x)))
-  invisible(x)
-}

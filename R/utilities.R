@@ -898,7 +898,6 @@ as.networkDynamic.network<- function(object,...){
 as.network.networkDynamic<-function(x,...){
   if(is.networkDynamic(x)){
     class(x)<-class(x)[class(x)!='networkDynamic']
-    destroy.pids(x)
   }
   return(x)
 }
