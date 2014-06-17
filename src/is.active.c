@@ -25,7 +25,7 @@ Rboolean IsSpellActive_int(double onset, double terminus, SEXP spell_list, Rbool
   SEXP spell_dim;
   PROTECT(spell_dim = getAttrib(spell_list, R_DimSymbol));
   int *dimp = INTEGER(spell_dim);
-  int n_spells = dimp[0], spells_dim2 = dimp[1];
+  int n_spells = dimp[0];
   UNPROTECT(1); /* spell_dim */
   double *onsets = REAL(spell_list);
   double *termini = onsets + n_spells;
