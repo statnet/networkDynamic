@@ -21,7 +21,8 @@ networkDynamic(base.net = NULL, edge.toggles = NULL, vertex.toggles =NULL,
                  edge.changes = NULL, vertex.changes = NULL,
                  network.list = NULL, onsets = NULL, termini = NULL,
                  vertex.pid = NULL, start = NULL, end = NULL, 
-                 net.obs.period=NULL,verbose=TRUE,create.TEAs = FALSE,...)
+                 net.obs.period=NULL,verbose=TRUE,create.TEAs = FALSE,
+                 edge.TEA.names=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -29,7 +30,7 @@ networkDynamic(base.net = NULL, edge.toggles = NULL, vertex.toggles =NULL,
  A network (or network-coearceable) object which will be used to define network-level properties (directedness,etc) of the output network. When constructing from toggles, the edges in base.net give the initially active set of edges and vertices that the activity states will be toggled from. Network and vertex attributes of \code{base.net} will be copied to output (unless they are overwritten by dynamic attributes with the same names) 
 }
   \item{edge.spells}{
-A matrix or data.frame of spells specifying edge timing. Assumed to be [onset,terminus,tail vertex.id, head vertex.id]
+A matrix or data.frame of spells specifying edge timing. Assumed to be [onset,terminus,tail vertex.id, head vertex.id]. Any additional columns can loaded as dynamic attributes (see \code{edge.TEA.names})
 }
   \item{vertex.spells}{
 A matrix or data.frame of spells specifying vertex timing. Assumed to be [onset,terminus,vertex.id]
@@ -74,6 +75,8 @@ Optional argument to indicate the latest time at which any changes in the networ
  \item{create.TEAs}{If TRUE, Dynamic TEA attributes will be created corresponding to the static attributes appear on the network elements of \code{network.list}
  
  }
+ \item{edge.TEA.names}{an optional vector of names for the dynamic (TEA) edge attributes to be imported from the extra columns of \code{edge.spells}
+ }
   \item{\dots}{
 Additional arguments controlling the creating of the network or processing of attached data objects.
 }
@@ -85,7 +88,10 @@ If the timing information is provided in the form of a lists of networks (specif
 
 Alternatively, timing information for edges and vertices can be provided separately as matrices or data.frames in the forms of tables of spells, changes, or toggles.  For vertices, the arguments are \code{vertex.spells}, \code{vertex.changes} or \code{vertex.toggles}. The columns for each argument have a specific order and function, indicated in the argument definitions above. Edge arguments are named similarly \code{edge.spells}, \code{edge.changes} or \code{edge.toggles}. The vertex ids and `head' and `tail' ids must be integer index ids.   Network properties (number of vertices, bipartite, directedness, etc) can currently be specified by including a \code{base.net} argument to be used as a template, network and vertex attributes will be copied from \code{base.net} as well.  If only edge information is provided, the network size will be imputed from the set of edge endpoints.  In the \code{edge.toggles} case, the edges present in \code{base.net} provide the initial state to be toggled from. 
 
-When constructing a network with separate sources of data for vertex and edge timing, edge and vertex activity will not be made consistent if input date is inconsistent -- edges may be active when their incident vertices are inactive, etc.  These situations can be detected using the \code{\link{network.dynamic.check}} function and possible resolved using one of the \code{\link{reconcile.activity}} functions.
+When constructing a network with separate sources of data for vertex and edge timing, edge and vertex activity will not be made consistent if input data is inconsistent -- edges may be active when their incident vertices are inactive, etc.  These situations can be detected using the \code{\link{network.dynamic.check}} function and possible resolved using one of the \code{\link{reconcile.activity}} functions.
+
+Curently, dynamic attributes (TEAs, see \code{\link{
+attribute.activity.functions}}) for edges (with onset and termination times matching those of the edge) can be loaded in by including additional columns in the \code{edge.spells} argument and specifying a vector of names for the attributes with \code{edge.TEA.names}. Note that when using a \code{\link{data.frame}} to pass in non-numeric attributes, the default behavior of converting strings to factors should be avoided. 
 
 
 Specification is located at \url{https://statnet.csde.washington.edu/trac/wiki/NetworkDynamicConverterFunctions}

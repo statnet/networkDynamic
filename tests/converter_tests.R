@@ -471,6 +471,62 @@ dyn<-networkDynamic(network.list=netlist,create.TEAs=TRUE)
 expect_equal(unlist(get.network.attribute.active(dyn,'netname',onset=-Inf,terminus=Inf,return.tea=TRUE)[[1]]),c("first",  "second", "third",  "forth"))
 
 
+# -------- networkDynamic edge spell tea tests ---------
+
+# test dyad eid lookup
+test<-network.initialize(6,loops=TRUE)
+add.edges(test,tail=1:3,head=2:4)
+add.edges(test,tail=5,head=5)
+
+# dyads with no edge should return NA
+expect_equal(networkDynamic:::get.dyads.eids(test,1,1),NA) 
+# get eids back
+expect_equal(networkDynamic:::get.dyads.eids(test,1:3,2:4),1:3)
+# self loops work
+expect_equal(networkDynamic:::get.dyads.eids(test,5,5),4)  
+# error if lengths of head and tails differ
+expect_error(networkDynamic:::get.dyads.eids(test,1,1:3),regexp = 'length of the tails and heads parameters must be the same') 
+
+# test for multiplex throws warning
+add.edges(test,tail=1,head=2)
+expect_warning(expect_equal(networkDynamic:::get.dyads.eids(test,1,2),1), regexp = 'only smallest eid returned')
+
+# ok, now test edge eids
+
+
+# create an edge spell matrix where the last two columns will be TEA vals
+testnumbers<-matrix(c(1,2,1,2, 1, 0.5,
+                                    3,4,1,2, 2, 0.1,
+                                    4,5,1,2, 0, 0.1,
+                                    5,7,2,3, 3, -1,
+                                    5,7,3,4, 4, 1.5),ncol=6,byrow=TRUE)
+
+testnet<-networkDynamic(edge.spells=testnumbers,create.TEAs = TRUE,edge.TEA.names = c('value','weight'))
+
+expect_true('value.active'%in%list.edge.attributes(testnet))
+expect_true('weight.active'%in%list.edge.attributes(testnet))
+
+expect_equal(get.edge.attribute.active(testnet,'value',at=1),c(1,NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=4),c(0,NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=5),c(NA,3,4))
+expect_equal(get.edge.attribute.active(testnet,'weight',at=5),c(NA,-1,1.5))
+
+# test for mismatch between number of cols and number of names
+expect_error(testnet<-networkDynamic(edge.spells=testnumbers,create.TEAs = TRUE,edge.TEA.names = c('value','weight','foo')),regexp = 'edge.TEA.names must match the number of remaining columns in edge')
+
+# now try with a non-numeric value
+testletters<-data.frame(onset=c(1,2,5,5),
+                    terminus=c(2,4,7,7),
+                        head=c(1,1,2,3),
+                        tail=c(2,2,3,4),
+                      value=c('A','B','C','D'),stringsAsFactors=FALSE)
+testnet<-networkDynamic(edge.spells=testletters,create.TEAs = TRUE,edge.TEA.names = c('value'))
+
+# careful, these tests fail if character vector in data frame is converted to a factor
+expect_equal(get.edge.attribute.active(testnet,'value',at=1),c('A',NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=2),c('B',NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=5),c(NA,'C','D'))
+
 # ----------- as.networkDynamic.data.frame tests -------
 
 # check correct spells printed for edges

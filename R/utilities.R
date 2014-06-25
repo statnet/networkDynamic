@@ -21,7 +21,7 @@
 
 networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
                   edge.spells=NULL,vertex.spells=NULL,edge.changes=NULL,vertex.changes=NULL,
-                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,...) {
+                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,edge.TEA.names=NULL,...) {
   
   
   if (!is.null(start) && !is.null(end)) {
@@ -604,6 +604,40 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           
         }
       } # end of non-spell edge creation
+      
+      # begin vertex TEA stuff
+      # only do TEAs under certain conditions
+      if (!is.null(edge.spells) & (!is.null(edge.TEA.names)&length(edge.TEA.names)>0)){
+        # check that the length of edge TEA names matches extra columns given
+        
+        if (ncol(edge.spells)-4 != length(edge.TEA.names)){
+          stop('the vector of edge.TEA.names must match the number of remaining columns in edge.')
+        }
+        # get the vector of eids corresponding to the edges that have been created
+        eids<-get.dyads.eids(base.net,tails=edge.spells[,3],heads=edge.spells[,4])
+        
+        # loop for each attribute
+        for (attrIndex in seq_along(edge.TEA.names)){
+          
+          # need to do the activation in several stages because we can't activate
+          # multiple values for the same edge in the same call
+
+          # find all of the singletons and first element of duplicates
+          rowsToActivate<-!duplicated(eids)
+          # keep looping until no more duplicates
+          while (any(rowsToActivate)){
+            activate.edge.attribute(base.net,edge.TEA.names[attrIndex],value=edge.spells[rowsToActivate,4+attrIndex],onset=edge.spells[rowsToActivate,1], terminus=edge.spells[rowsToActivate,2], e=eids[rowsToActivate] )
+            # update the vector of rows that need updating, checking only non-updated rows for duplicates
+            rowsToActivate<-!duplicated(eids[!rowsToActivate])
+          }
+        }
+        
+        # debug
+        if (verbose){
+          cat('activated TEA edge attributes: ',edge.TEA.names)
+        }
+      }
+      
     } # end edge data
     
   } # end non-network.list part
@@ -611,25 +645,26 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
   # if only base net is specified, set.nD.class on it and return. 
   return(set.nD.class(base.net))
   
-  
-  # temporariy kludge, call other hidden package functions
-  #  if (!is.null(edge.toggles) & !is.null(base.net)){
-  #    if (is.null(start)){
-  #      start<-min(edge.toggles[,1])-1
-  #    }
-  #    if (is.null(end)){
-  #      end<-max(edge.toggles[,1])
-  #    }
-  #    return (as.networkDynamic.network(base.net,toggles=edge.toggles,start=start,end=end))
-  #    
-  #  }
-  
-  
 }
 
-################
-### start networkDynamic-> other formats
-################
+# draft of internal function for retriving batch set of eids associated with dyads
+
+get.dyads.eids<-function(net, tails, heads){
+  if(length(tails)!=length(heads)){
+    stop('the length of the tails and heads parameters must be the same to define the set of dyads to check')
+  }
+  sapply(seq_len(length(tails)),function(e){
+    eids<-get.edgeIDs(net,v=tails[e],heads[e])
+    if (length(eids)>1){
+      warning('get.dyads.eids found multiple edges for given dyad (multiplex network), only smallest eid returned')
+      eids<-min(eids)
+    }
+    if (length(eids)<1){
+      eids<-NA
+    }
+    return(eids)
+    })
+}
 
 # Get activity functions
 
