@@ -21,7 +21,7 @@
 
 networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
                   edge.spells=NULL,vertex.spells=NULL,edge.changes=NULL,vertex.changes=NULL,
-                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,edge.TEA.names=NULL,...) {
+                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,edge.TEA.names=NULL,vertex.TEA.names=NULL,...) {
   
   
   if (!is.null(start) && !is.null(end)) {
@@ -530,8 +530,48 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       # initialize
       if (!is.null(vertex.toggles)) activate.vertices(base.net, onset=-Inf, terminus=Inf)
       
-      if (!is.null(vertex.spells)) {
+      if (!is.null(vertex.spells)) { # doing vertex spell data
         activate.vertices(base.net, v=vertex.data[,'vertex.id'], onset=vertex.data[,'onset'], terminus=vertex.data[,'terminus'])
+        
+        # vertex TEA stuff
+        if (create.TEAs){
+          
+          # if vertex.TEA.names is missing, try to read in col names from vertex.spells
+          if (is.null(vertex.TEA.names)){
+            vertex.TEA.names<-colnames(vertex.spells)
+            if(!is.null(vertex.TEA.names)){
+              # remove the first four names because they are onset, terminus, etc.
+              vertex.TEA.names<-tail(vertex.TEA.names,-3)
+            }
+          }
+          
+          # check that the length of vertex TEA names matches extra columns given
+          if (ncol(vertex.spells)-3 != length(vertex.TEA.names)){
+            stop('the vector of vertex.TEA.names must match the number of remaining columns in vertex.spells')
+          }
+          vids<-vertex.spells[,3] # the ids of the vertices in each row
+          # loop for each attribute
+          for (attrIndex in seq_along(vertex.TEA.names)){
+            
+            # need to do the activation in several stages because we can't activate
+            # multiple values for the same vertex in the same call
+            
+            # find all of the singletons and first element of duplicates
+            rowsToActivate<-!duplicated(vids)
+            # keep looping until no more duplicates
+            while (any(rowsToActivate)){
+              activate.vertex.attribute(base.net,vertex.TEA.names[attrIndex],value=vertex.spells[rowsToActivate,3+attrIndex],onset=vertex.spells[rowsToActivate,1], terminus=vertex.spells[rowsToActivate,2], v=vids[rowsToActivate] )
+              # update the vector of rows that need updating, checking only non-updated rows for duplicates
+              rowsToActivate<-!duplicated(vids[!rowsToActivate])
+            }
+          }
+          
+          # debug
+          if (verbose & length(vertex.TEA.names)>0){
+            cat('Activated TEA vertex attributes: ',paste(vertex.TEA.names,collapse=', '))
+          }
+        }
+        
       } else {
         for (i in seq_len(nrow(vertex.data))) {
           # todo: maybe do this in try catch so we can give appropriate line numbers for errors?
@@ -605,13 +645,22 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         }
       } # end of non-spell edge creation
       
-      # begin vertex TEA stuff
-      # only do TEAs under certain conditions
-      if (!is.null(edge.spells) & (!is.null(edge.TEA.names)&length(edge.TEA.names)>0)){
-        # check that the length of edge TEA names matches extra columns given
+      # begin edge TEA stuff
+      # only do TEAs for edge spells
+      if (!is.null(edge.spells) & create.TEAs){
         
+        # if edge.TEA.names is missing, try to read in col names from edge.spells
+        if (is.null(edge.TEA.names)){
+          edge.TEA.names<-colnames(edge.spells)
+          if(!is.null(edge.TEA.names)){
+            # remove the first four names because they are onset, terminus, etc.
+            edge.TEA.names<-tail(edge.TEA.names,-4)
+          }
+        }
+        
+        # check that the length of edge TEA names matches extra columns given
         if (ncol(edge.spells)-4 != length(edge.TEA.names)){
-          stop('the vector of edge.TEA.names must match the number of remaining columns in edge.')
+          stop('the vector of edge.TEA.names must match the number of remaining columns in edge.spells')
         }
         # get the vector of eids corresponding to the edges that have been created
         eids<-get.dyads.eids(base.net,tails=edge.spells[,3],heads=edge.spells[,4])
@@ -633,8 +682,8 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         }
         
         # debug
-        if (verbose){
-          cat('activated TEA edge attributes: ',edge.TEA.names)
+        if (verbose & length(edge.TEA.names)>0){
+          cat('Activated TEA edge attributes: ',paste(edge.TEA.names,collapse=', '))
         }
       }
       

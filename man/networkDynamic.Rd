@@ -22,7 +22,7 @@ networkDynamic(base.net = NULL, edge.toggles = NULL, vertex.toggles =NULL,
                  network.list = NULL, onsets = NULL, termini = NULL,
                  vertex.pid = NULL, start = NULL, end = NULL, 
                  net.obs.period=NULL,verbose=TRUE,create.TEAs = FALSE,
-                 edge.TEA.names=NULL,...)
+                 edge.TEA.names=NULL,vertex.TEA.names=NULL,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -48,7 +48,7 @@ A matrix or data.frame of toggles giving a sequence of activation and deactivati
   A matrix or data.frame of vertex changes with at least 3 columns, assumed to be [time, vertex.id,direction]
  }
  \item{network.list}{
-  a list of network objects assumed to describe sequential panels of network observations. Network sizes may vary if some vertices are only active in certain panels. See onsets, termini, vertex.pid. If base.net not specified, first element of list will be used as base.net. Network, vertex, and edge attributes will be converted to TEAs. 
+  a list of network objects assumed to describe sequential panels of network observations. Network sizes may vary if some vertices are only active in certain panels. See onsets, termini, vertex.pid. If base.net not specified, first element of list will be used as base.net. Network, vertex, and edge attributes will be converted to TEAs if \code{create.TEAs=TRUE}. 
  }
  \item{onsets}{
  an optional array of onset times to be assigned to the network panels of network.list. defaults to seq(from=0,length=length(network.list)-1) 
@@ -75,7 +75,9 @@ Optional argument to indicate the latest time at which any changes in the networ
  \item{create.TEAs}{If TRUE, Dynamic TEA attributes will be created corresponding to the static attributes appear on the network elements of \code{network.list}
  
  }
- \item{edge.TEA.names}{an optional vector of names for the dynamic (TEA) edge attributes to be imported from the extra columns of \code{edge.spells}
+ \item{edge.TEA.names}{an optional vector of names for the dynamic (TEA) edge attributes to be imported from the extra columns of \code{edge.spells} (if \code{create.TEAs=TRUE})
+ }
+ \item{vertex.TEA.names}{an optional vector of names for the dynamic (TEA) vertex attributes to be imported from the extra columns of \code{vertex.spells} (if \code{create.TEAs=TRUE})
  }
   \item{\dots}{
 Additional arguments controlling the creating of the network or processing of attached data objects.
@@ -91,7 +93,7 @@ Alternatively, timing information for edges and vertices can be provided separat
 When constructing a network with separate sources of data for vertex and edge timing, edge and vertex activity will not be made consistent if input data is inconsistent -- edges may be active when their incident vertices are inactive, etc.  These situations can be detected using the \code{\link{network.dynamic.check}} function and possible resolved using one of the \code{\link{reconcile.activity}} functions.
 
 Curently, dynamic attributes (TEAs, see \code{\link{
-attribute.activity.functions}}) for edges (with onset and termination times matching those of the edge) can be loaded in by including additional columns in the \code{edge.spells} argument and specifying a vector of names for the attributes with \code{edge.TEA.names}. Note that when using a \code{\link{data.frame}} to pass in non-numeric attributes, the default behavior of converting strings to factors should be avoided. 
+attribute.activity.functions}}) for edges or vertices(with onset and termination times matching those of the edge or vertex spell) can be loaded in by by setting \code{create.TEAs=TRUE} and including additional columns in the \code{edge.spells} or \code{vertex.spells} argument and specifying a vector of names for the attributes with \code{edge.TEA.names} or \code{vertex.TEA.names}. Note that when using a \code{\link{data.frame}} to pass in non-numeric attributes, the default behavior of converting strings to factors should be avoided. 
 
 
 Specification is located at \url{https://statnet.csde.washington.edu/trac/wiki/NetworkDynamicConverterFunctions}
@@ -106,7 +108,7 @@ A networkDynamic object with vertex and edge timing specified by the input data.
  Li Wang lxwang@uw.edu, skyebend, statnet team
 }
 \note{
-This function provides the features that were formerly (in versions < 0.4) called using as.networkDynamic.* syntax.  This version does not yet handle importing TEA attributes using additional columns of input data.frames.
+This function provides the features that were formerly (in versions < 0.4) called using as.networkDynamic.* syntax. 
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

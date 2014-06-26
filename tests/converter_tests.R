@@ -471,7 +471,7 @@ dyn<-networkDynamic(network.list=netlist,create.TEAs=TRUE)
 expect_equal(unlist(get.network.attribute.active(dyn,'netname',onset=-Inf,terminus=Inf,return.tea=TRUE)[[1]]),c("first",  "second", "third",  "forth"))
 
 
-# -------- networkDynamic edge spell tea tests ---------
+# -------- networkDynamic() edge spell tea tests ---------
 
 # test dyad eid lookup
 test<-network.initialize(6,loops=TRUE)
@@ -526,6 +526,55 @@ testnet<-networkDynamic(edge.spells=testletters,create.TEAs = TRUE,edge.TEA.name
 expect_equal(get.edge.attribute.active(testnet,'value',at=1),c('A',NA,NA))
 expect_equal(get.edge.attribute.active(testnet,'value',at=2),c('B',NA,NA))
 expect_equal(get.edge.attribute.active(testnet,'value',at=5),c(NA,'C','D'))
+
+# test guessing col names from data.frame
+testnet<-networkDynamic(edge.spells=testletters,create.TEAs = TRUE,edge.TEA.names = c('value'))
+expect_true('value.active'%in%list.edge.attributes(testnet))
+
+testnet<-networkDynamic(edge.spells=testletters,create.TEAs = FALSE)
+expect_false('value.active'%in%list.edge.attributes(testnet))
+
+#-------- networkDynamic() vertex spell tea tests ---------
+  
+# create an vertex spell matrix where the last two columns will be TEA vals
+testnumbers<-matrix(c(1,2,1, 1, 0.5,
+                      3,4,1, 2, 0.1,
+                      4,5,1, 0, 0.1,
+                      5,7,2, 3, -1,
+                      5,7,3, 4, 1.5),ncol=5,byrow=TRUE)
+
+testnet<-networkDynamic(vertex.spells=testnumbers,create.TEAs = TRUE,vertex.TEA.names = c('value','weight'))
+
+expect_true('value.active'%in%list.vertex.attributes(testnet))
+expect_true('weight.active'%in%list.vertex.attributes(testnet))
+
+expect_equal(get.vertex.attribute.active(testnet,'value',at=1),c(1,NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=4),c(0,NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=5),c(NA,3,4))
+expect_equal(get.vertex.attribute.active(testnet,'weight',at=5),c(NA,-1,1.5))
+
+# test for mismatch between number of cols and number of names
+expect_error(testnet<-networkDynamic(vertex.spells=testnumbers,create.TEAs = TRUE,vertex.TEA.names = c('value','weight','foo')),regexp = 'vertex.TEA.names must match the number of remaining columns in vertex')
+
+# now try with a non-numeric value
+testletters<-data.frame(onset=c(1,2,5,5),
+                        terminus=c(2,4,7,7),
+                        vid=c(1,1,2,3),
+                        value=c('A','B','C','D'),stringsAsFactors=FALSE)
+testnet<-networkDynamic(vertex.spells=testletters,create.TEAs = TRUE,vertex.TEA.names = c('value'))
+
+# careful, these tests fail if character vector in data frame is converted to a factor
+expect_equal(get.vertex.attribute.active(testnet,'value',at=1),c('A',NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=2),c('B',NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=5),c(NA,'C','D'))
+
+# test guessing col names from data.frame
+testnet<-networkDynamic(vertex.spells=testletters,create.TEAs = TRUE,vertex.TEA.names = c('value'))
+expect_true('value.active'%in%list.vertex.attributes(testnet))
+
+# make sure it doesn't create if instructed not to
+testnet<-networkDynamic(vertex.spells=testletters,create.TEAs = FALSE)
+expect_false('value.active'%in%list.vertex.attributes(testnet))
 
 # ----------- as.networkDynamic.data.frame tests -------
 

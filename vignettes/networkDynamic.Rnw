@@ -334,7 +334,7 @@ Currently, the \verb@networkDynamic()@ conversion function importing edge and ve
 
 \begin{description}
 \item[lists of networks]{A list of network objects assumed to describe sequential panels of network observations. Network sizes may vary if some vertices are only active in certain panels.}
-\item[spells]{A matrix or data.frame of spells specifying edge timing. Assumed to be  \verb@[onset,terminus,vertex.id]@ for vertices and \verb@[onset,terminus,tail vertex.id, head vertex.id]@ for edges. }
+\item[spells]{A matrix or data.frame of spells specifying edge timing. Assumed to be  \verb@[onset,terminus,vertex.id]@ for vertices and \verb@[onset,terminus,tail vertex.id, head vertex.id]@ for edges. Dynamic attributes can be included as extra columns.}
 \item[toggles]{A matrix or data.frame of toggles giving a sequence of activation and deactivation times for toggles. Columns are assumed to be \verb@[toggle time,vertex.id]@ for vertices and \verb@[toggle time, tail vertex id of the edge, head vertex id of the edge]@ for edges.}
 \item[changes]{Like toggles, but with an additional \verb@direction@ column indicating \verb@1@ if the toggle should change the element state to active and \verb@0@ if it should be deactivated.}
 \end{description}
@@ -444,6 +444,15 @@ The conversion printed out summary of the (optional) network observation period 
 get.change.times(classDyn)[1:10]
 @
 
+If we wanted to include the \verb@weight@ and \verb@interaction_type@ variable in the edge data as dynamic edge attributes, we can include them as extra columns and set some additional parameters.
+<<assemble_mcfarland_TEA>>==
+# this is slow
+#classDyn <- networkDynamic(vertex.spells=vertexData[,c(3,4,1)],
+#              edge.spells=edgeData[,c(3,4,1,2,5,6)],
+#              create.TEAs=TRUE,edge.TEA.names=c('weight','type'))
+@
+
+
 We can also store the time units for the network, just in case we (or someone else) needs to know them later
 
 <<alterNetObs>>==
@@ -464,6 +473,7 @@ set.vertex.attribute(classDyn,"data_id",vertexData$data_id)
 set.vertex.attribute(classDyn,"sex",as.character(vertexData$sex))
 set.vertex.attribute(classDyn,"role",as.character(vertexData$role))
 @
+
 
 To run standard network measures we will need to first ``bin'' or ``slice'' the network up into static networks. Using the \verb@get.networks@ function we will collapse the classroom data into series of networks, each of which aggregates 5 minutes of streaming interactions. 
 
@@ -869,6 +879,7 @@ We can see that the rumor started at v1, our seed vertex, which has a little loo
 \section{Related packages and other coming attractions}
 The statnet team is releasing several packages that work closely with the \verb@networkDynamic@ package to provide additional features. 
 \begin{itemize}
+ \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/web/packages/networkDynamicData}
  \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}
 \item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format. 
 \end{itemize}
