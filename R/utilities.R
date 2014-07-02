@@ -550,20 +550,32 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
             stop('the vector of vertex.TEA.names must match the number of remaining columns in vertex.spells')
           }
           vids<-vertex.spells[,3] # the ids of the vertices in each row
+          uniqueVids<-unique(vids)
           # loop for each attribute
           for (attrIndex in seq_along(vertex.TEA.names)){
             
-            # need to do the activation in several stages because we can't activate
-            # multiple values for the same vertex in the same call
-            
-            # find all of the singletons and first element of duplicates
-            rowsToActivate<-!duplicated(vids)
-            # keep looping until no more duplicates
-            while (any(rowsToActivate)){
-              activate.vertex.attribute(base.net,vertex.TEA.names[attrIndex],value=vertex.spells[rowsToActivate,3+attrIndex],onset=vertex.spells[rowsToActivate,1], terminus=vertex.spells[rowsToActivate,2], v=vids[rowsToActivate] )
-              # update the vector of rows that need updating, checking only non-updated rows for duplicates
-              rowsToActivate<-!duplicated(vids[!rowsToActivate])
-            }
+            # construct the edge TEA directly using list operations
+            # because the API methods are orders of magnitude too slow
+            # NOTE: this makes the assumption that values always change
+            # in other words, adjacent spells with the same value will not be merged,
+            # where they would be using the activate. methods
+            toBeTEA<-lapply(uniqueVids,function(vid){
+              # find index of all spells that need to associated to this id
+              rows<-which(vids==vid)
+              # set sort order
+              rows<-rows[order(vertex.spells[rows,1])]
+              # construct values list
+              vals<-as.list(vertex.spells[rows,3+attrIndex])
+              spls<-as.matrix(vertex.spells[rows,1:2,drop=FALSE])
+              dimnames(spls)<-NULL
+              # veryify spell matrix consistency
+              if(!all(chkspellmat(spls))){
+                warning("vertex spell data induced an invalid spell matrix for vertex TEA '",vertex.TEA.names[attrIndex],"' for vertex id ", vid)
+              }
+              
+              list(vals,spls)
+            })
+            set.vertex.attribute(base.net,attrname=paste(vertex.TEA.names[attrIndex],'active',sep='.'),value=toBeTEA, v=uniqueVids )
           }
           
           # debug
@@ -664,21 +676,31 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         }
         # get the vector of eids corresponding to the edges that have been created
         eids<-get.dyads.eids(base.net,tails=edge.spells[,3],heads=edge.spells[,4])
-        
+        uniqueEids<-unique(eids)
         # loop for each attribute
         for (attrIndex in seq_along(edge.TEA.names)){
+          # construct the edge TEA directly using list operations because the API methods 
+          # are orders of magnitude slower for this use case
+          # NOTE: this makes the assumption that values always change
+          # in other words, exactly adjacent spells with the same value will not be merged,
+          # where they would be using the activate. methods
+          toBeTEA<-lapply(uniqueEids,function(eid){
+            # grab all of the spells that need to associated to this id
+            rows<-which(eids==eid)
+            # set sort order for spells
+            rows<-rows[order(edge.spells[rows,1])]
+            # construct values list
+            vals<-as.list(edge.spells[rows,4+attrIndex])
+            spls<-as.matrix(edge.spells[rows,1:2,drop=FALSE])
+            dimnames(spls)<-NULL
+            # veryify spell matrix consistency
+            if(!all(chkspellmat(spls))){
+              warning("edge spell data induced an invalid spell matrix for edge TEA '",edge.TEA.names[attrIndex],"' for edge id ", eid)
+            }
+            list(vals,spls)
+          })
+          set.edge.attribute(base.net,attrname=paste(edge.TEA.names[attrIndex],'active',sep='.'),value=toBeTEA,e =uniqueEids )
           
-          # need to do the activation in several stages because we can't activate
-          # multiple values for the same edge in the same call
-
-          # find all of the singletons and first element of duplicates
-          rowsToActivate<-!duplicated(eids)
-          # keep looping until no more duplicates
-          while (any(rowsToActivate)){
-            activate.edge.attribute(base.net,edge.TEA.names[attrIndex],value=edge.spells[rowsToActivate,4+attrIndex],onset=edge.spells[rowsToActivate,1], terminus=edge.spells[rowsToActivate,2], e=eids[rowsToActivate] )
-            # update the vector of rows that need updating, checking only non-updated rows for duplicates
-            rowsToActivate<-!duplicated(eids[!rowsToActivate])
-          }
         }
         
         # debug
