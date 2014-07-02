@@ -21,7 +21,7 @@
 
 networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
                   edge.spells=NULL,vertex.spells=NULL,edge.changes=NULL,vertex.changes=NULL,
-                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,...) {
+                  network.list=NULL,onsets=NULL,termini=NULL,vertex.pid=NULL,start=NULL,end=NULL,net.obs.period=NULL,verbose=TRUE,create.TEAs=FALSE,edge.TEA.names=NULL,vertex.TEA.names=NULL,...) {
   
   
   if (!is.null(start) && !is.null(end)) {
@@ -530,8 +530,60 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       # initialize
       if (!is.null(vertex.toggles)) activate.vertices(base.net, onset=-Inf, terminus=Inf)
       
-      if (!is.null(vertex.spells)) {
+      if (!is.null(vertex.spells)) { # doing vertex spell data
         activate.vertices(base.net, v=vertex.data[,'vertex.id'], onset=vertex.data[,'onset'], terminus=vertex.data[,'terminus'])
+        
+        # vertex TEA stuff
+        if (create.TEAs){
+          
+          # if vertex.TEA.names is missing, try to read in col names from vertex.spells
+          if (is.null(vertex.TEA.names)){
+            vertex.TEA.names<-colnames(vertex.spells)
+            if(!is.null(vertex.TEA.names)){
+              # remove the first four names because they are onset, terminus, etc.
+              vertex.TEA.names<-tail(vertex.TEA.names,-3)
+            }
+          }
+          
+          # check that the length of vertex TEA names matches extra columns given
+          if (ncol(vertex.spells)-3 != length(vertex.TEA.names)){
+            stop('the vector of vertex.TEA.names must match the number of remaining columns in vertex.spells')
+          }
+          vids<-vertex.spells[,3] # the ids of the vertices in each row
+          uniqueVids<-unique(vids)
+          # loop for each attribute
+          for (attrIndex in seq_along(vertex.TEA.names)){
+            
+            # construct the edge TEA directly using list operations
+            # because the API methods are orders of magnitude too slow
+            # NOTE: this makes the assumption that values always change
+            # in other words, adjacent spells with the same value will not be merged,
+            # where they would be using the activate. methods
+            toBeTEA<-lapply(uniqueVids,function(vid){
+              # find index of all spells that need to associated to this id
+              rows<-which(vids==vid)
+              # set sort order
+              rows<-rows[order(vertex.spells[rows,1])]
+              # construct values list
+              vals<-as.list(vertex.spells[rows,3+attrIndex])
+              spls<-as.matrix(vertex.spells[rows,1:2,drop=FALSE])
+              dimnames(spls)<-NULL
+              # veryify spell matrix consistency
+              if(!all(chkspellmat(spls))){
+                warning("vertex spell data induced an invalid spell matrix for vertex TEA '",vertex.TEA.names[attrIndex],"' for vertex id ", vid)
+              }
+              
+              list(vals,spls)
+            })
+            set.vertex.attribute(base.net,attrname=paste(vertex.TEA.names[attrIndex],'active',sep='.'),value=toBeTEA, v=uniqueVids )
+          }
+          
+          # debug
+          if (verbose & length(vertex.TEA.names)>0){
+            cat('Activated TEA vertex attributes: ',paste(vertex.TEA.names,collapse=', '))
+          }
+        }
+        
       } else {
         for (i in seq_len(nrow(vertex.data))) {
           # todo: maybe do this in try catch so we can give appropriate line numbers for errors?
@@ -604,6 +656,59 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           
         }
       } # end of non-spell edge creation
+      
+      # begin edge TEA stuff
+      # only do TEAs for edge spells
+      if (!is.null(edge.spells) & create.TEAs){
+        
+        # if edge.TEA.names is missing, try to read in col names from edge.spells
+        if (is.null(edge.TEA.names)){
+          edge.TEA.names<-colnames(edge.spells)
+          if(!is.null(edge.TEA.names)){
+            # remove the first four names because they are onset, terminus, etc.
+            edge.TEA.names<-tail(edge.TEA.names,-4)
+          }
+        }
+        
+        # check that the length of edge TEA names matches extra columns given
+        if (ncol(edge.spells)-4 != length(edge.TEA.names)){
+          stop('the vector of edge.TEA.names must match the number of remaining columns in edge.spells')
+        }
+        # get the vector of eids corresponding to the edges that have been created
+        eids<-get.dyads.eids(base.net,tails=edge.spells[,3],heads=edge.spells[,4])
+        uniqueEids<-unique(eids)
+        # loop for each attribute
+        for (attrIndex in seq_along(edge.TEA.names)){
+          # construct the edge TEA directly using list operations because the API methods 
+          # are orders of magnitude slower for this use case
+          # NOTE: this makes the assumption that values always change
+          # in other words, exactly adjacent spells with the same value will not be merged,
+          # where they would be using the activate. methods
+          toBeTEA<-lapply(uniqueEids,function(eid){
+            # grab all of the spells that need to associated to this id
+            rows<-which(eids==eid)
+            # set sort order for spells
+            rows<-rows[order(edge.spells[rows,1])]
+            # construct values list
+            vals<-as.list(edge.spells[rows,4+attrIndex])
+            spls<-as.matrix(edge.spells[rows,1:2,drop=FALSE])
+            dimnames(spls)<-NULL
+            # veryify spell matrix consistency
+            if(!all(chkspellmat(spls))){
+              warning("edge spell data induced an invalid spell matrix for edge TEA '",edge.TEA.names[attrIndex],"' for edge id ", eid)
+            }
+            list(vals,spls)
+          })
+          set.edge.attribute(base.net,attrname=paste(edge.TEA.names[attrIndex],'active',sep='.'),value=toBeTEA,e =uniqueEids )
+          
+        }
+        
+        # debug
+        if (verbose & length(edge.TEA.names)>0){
+          cat('Activated TEA edge attributes: ',paste(edge.TEA.names,collapse=', '))
+        }
+      }
+      
     } # end edge data
     
   } # end non-network.list part
@@ -611,25 +716,26 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
   # if only base net is specified, set.nD.class on it and return. 
   return(set.nD.class(base.net))
   
-  
-  # temporariy kludge, call other hidden package functions
-  #  if (!is.null(edge.toggles) & !is.null(base.net)){
-  #    if (is.null(start)){
-  #      start<-min(edge.toggles[,1])-1
-  #    }
-  #    if (is.null(end)){
-  #      end<-max(edge.toggles[,1])
-  #    }
-  #    return (as.networkDynamic.network(base.net,toggles=edge.toggles,start=start,end=end))
-  #    
-  #  }
-  
-  
 }
 
-################
-### start networkDynamic-> other formats
-################
+# draft of internal function for retriving batch set of eids associated with dyads
+
+get.dyads.eids<-function(net, tails, heads){
+  if(length(tails)!=length(heads)){
+    stop('the length of the tails and heads parameters must be the same to define the set of dyads to check')
+  }
+  sapply(seq_len(length(tails)),function(e){
+    eids<-get.edgeIDs(net,v=tails[e],heads[e])
+    if (length(eids)>1){
+      warning('get.dyads.eids found multiple edges for given dyad (multiplex network), only smallest eid returned')
+      eids<-min(eids)
+    }
+    if (length(eids)<1){
+      eids<-NA
+    }
+    return(eids)
+    })
+}
 
 # Get activity functions
 
