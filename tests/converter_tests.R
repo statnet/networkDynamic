@@ -471,6 +471,159 @@ dyn<-networkDynamic(network.list=netlist,create.TEAs=TRUE)
 expect_equal(unlist(get.network.attribute.active(dyn,'netname',onset=-Inf,terminus=Inf,return.tea=TRUE)[[1]]),c("first",  "second", "third",  "forth"))
 
 
+# -------- networkDynamic() edge spell tea tests ---------
+
+# test dyad eid lookup
+test<-network.initialize(6,loops=TRUE)
+add.edges(test,tail=1:3,head=2:4)
+add.edges(test,tail=5,head=5)
+
+# dyads with no edge should return NA
+expect_equal(networkDynamic:::get.dyads.eids(test,1,1),NA) 
+# get eids back
+expect_equal(networkDynamic:::get.dyads.eids(test,1:3,2:4),1:3)
+# self loops work
+expect_equal(networkDynamic:::get.dyads.eids(test,5,5),4)  
+# error if lengths of head and tails differ
+expect_error(networkDynamic:::get.dyads.eids(test,1,1:3),regexp = 'length of the tails and heads parameters must be the same') 
+
+# test for multiplex throws warning
+add.edges(test,tail=1,head=2)
+expect_warning(expect_equal(networkDynamic:::get.dyads.eids(test,1,2),1), regexp = 'only smallest eid returned')
+
+# ok, now test edge eids
+
+
+# create an edge spell matrix where the last two columns will be TEA vals
+testnumbers<-matrix(c(1,2,1,2, 1, 0.5,
+                      3,4,1,2, 2, 0.1,
+                      4,5,1,2, 0, 0.1,
+                      5,7,2,3, 3, -1,
+                      5,7,3,4, 4, 1.5),ncol=6,byrow=TRUE)
+
+testnet<-networkDynamic(edge.spells=testnumbers,create.TEAs = TRUE,edge.TEA.names = c('value','weight'))
+
+
+expect_true('value.active'%in%list.edge.attributes(testnet))
+expect_true('weight.active'%in%list.edge.attributes(testnet))
+
+expect_equal(get.edge.attribute.active(testnet,'value',at=1),c(1,NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=4),c(0,NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=5),c(NA,3,4))
+expect_equal(get.edge.attribute.active(testnet,'weight',at=5),c(NA,-1,1.5))
+
+# test for mismatch between number of cols and number of names
+expect_error(testnet<-networkDynamic(edge.spells=testnumbers,create.TEAs = TRUE,edge.TEA.names = c('value','weight','foo')),regexp = 'edge.TEA.names must match the number of remaining columns in edge')
+
+# now try with a non-numeric value
+testletters<-data.frame(onset=c(1,2,5,5),
+                    terminus=c(2,4,7,7),
+                        head=c(1,1,2,3),
+                        tail=c(2,2,3,4),
+                      value=c('A','B','C','D'),stringsAsFactors=FALSE)
+testnet<-networkDynamic(edge.spells=testletters,create.TEAs = TRUE,edge.TEA.names = c('value'))
+
+# careful, these tests fail if character vector in data frame is converted to a factor
+expect_equal(get.edge.attribute.active(testnet,'value',at=1),c('A',NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=2),c('B',NA,NA))
+expect_equal(get.edge.attribute.active(testnet,'value',at=5),c(NA,'C','D'))
+
+# test guessing col names from data.frame
+testnet<-networkDynamic(edge.spells=testletters,create.TEAs = TRUE,edge.TEA.names = c('value'))
+expect_true('value.active'%in%list.edge.attributes(testnet))
+
+testnet<-networkDynamic(edge.spells=testletters,create.TEAs = FALSE)
+expect_false('value.active'%in%list.edge.attributes(testnet))
+
+# run test on a smallish realistic dataset
+vertexData <-read.table(system.file('extdata/cls33_10_16_96_vertices.tsv', 
+                                    package='networkDynamic'),header=TRUE,stringsAsFactors=FALSE)
+edgeData <-read.table(system.file('extdata/cls33_10_16_96_edges.tsv', 
+                                  package='networkDynamic'),header=TRUE,stringsAsFactors=FALSE)
+classDyn <- networkDynamic(vertex.spells=vertexData[,c(3,4,1)],
+                             edge.spells=edgeData[,c(3,4,1,2,5,6)],
+                             create.TEAs=TRUE,edge.TEA.names=c('weight','type'))
+expect_equal(c('weight.active','type.active')%in%list.edge.attributes(classDyn),c(TRUE,TRUE))
+# check that it actually stored some values
+expect_equal(get.edge.attribute.active(classDyn,'weight',onset=0,terminus=5,rule='earliest'),c(1, 1, 1, 1, 1, 1, 1, 1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2,  0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2,  0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2,  0.2, 0.2, 0.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA))
+
+expect_equal(get.edge.attribute.active(classDyn,'type',onset=0,terminus=5,rule='earliest'),c("social", "social", "sanction", "sanction", "sanction", "sanction",  "task", "task", "task", "task", "task", "task", "task", "task",  "task", "task", "task", "task", "task", "task", "task", "task",  "task", "task", "task", "task", "task", "task", "task", "task",  "task", "task", "task", "task", "task", "task", "task", "task",  "task", "task", "task", "task", "task", "task", "social", "social",  "social", "social", "social", "social", "social", "social", "social",  "social", "social", "social", NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  NA))
+
+
+# check a perverse case with unsorted values
+testnumbers<-matrix(c(3,4,1,2, 2, 0.1,
+                      1,2,1,2, 1, 0.5,
+                      4,5,1,2, 0, 0.1),ncol=6,byrow=TRUE)
+
+testnet<-networkDynamic(edge.spells=testnumbers,create.TEAs = TRUE,edge.TEA.names = c('value','weight'))
+expect_equal(testnet$mel[[1]]$atl$value.active[[2]], structure(c(1, 3, 4, 2, 4, 5), .Dim = c(3L, 2L)))
+
+# check a perverse case with intersecting values
+testnumbers<-matrix(c(3,9,1,2, 2, 0.1,
+                      1,4,1,2, 1, 0.5,
+                      4,6,1,2, 0, 0.1),ncol=6,byrow=TRUE)
+
+expect_warning(networkDynamic(edge.spells=testnumbers,create.TEAs = TRUE,edge.TEA.names = c('value','weight')),regexp = 'invalid spell matrix for edge TEA')
+
+
+#-------- networkDynamic() vertex spell tea tests ---------
+  
+# create an vertex spell matrix where the last two columns will be TEA vals
+testnumbers<-matrix(c(1,2,1, 1, 0.5,
+                      3,4,1, 2, 0.1,
+                      4,5,1, 0, 0.1,
+                      5,7,2, 3, -1,
+                      5,7,3, 4, 1.5),ncol=5,byrow=TRUE)
+
+testnet<-networkDynamic(vertex.spells=testnumbers,create.TEAs = TRUE,vertex.TEA.names = c('value','weight'))
+
+expect_true('value.active'%in%list.vertex.attributes(testnet))
+expect_true('weight.active'%in%list.vertex.attributes(testnet))
+
+expect_equal(get.vertex.attribute.active(testnet,'value',at=1),c(1,NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=4),c(0,NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=5),c(NA,3,4))
+expect_equal(get.vertex.attribute.active(testnet,'weight',at=5),c(NA,-1,1.5))
+
+# test for mismatch between number of cols and number of names
+expect_error(testnet<-networkDynamic(vertex.spells=testnumbers,create.TEAs = TRUE,vertex.TEA.names = c('value','weight','foo')),regexp = 'vertex.TEA.names must match the number of remaining columns in vertex')
+
+# now try with a non-numeric value
+testletters<-data.frame(onset=c(1,2,5,5),
+                        terminus=c(2,4,7,7),
+                        vid=c(1,1,2,3),
+                        value=c('A','B','C','D'),stringsAsFactors=FALSE)
+testnet<-networkDynamic(vertex.spells=testletters,create.TEAs = TRUE,vertex.TEA.names = c('value'))
+
+# careful, these tests fail if character vector in data frame is converted to a factor
+expect_equal(get.vertex.attribute.active(testnet,'value',at=1),c('A',NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=2),c('B',NA,NA))
+expect_equal(get.vertex.attribute.active(testnet,'value',at=5),c(NA,'C','D'))
+
+# test guessing col names from data.frame
+testnet<-networkDynamic(vertex.spells=testletters,create.TEAs = TRUE,vertex.TEA.names = c('value'))
+expect_true('value.active'%in%list.vertex.attributes(testnet))
+
+# make sure it doesn't create if instructed not to
+testnet<-networkDynamic(vertex.spells=testletters,create.TEAs = FALSE)
+expect_false('value.active'%in%list.vertex.attributes(testnet))
+
+
+# check a perverse case with unsorted values
+testnumbers<-matrix(c(3,4,1, 2, 0.1,
+                      1,2,1, 1, 0.5,
+                      4,5,1, 0, 0.1),ncol=5,byrow=TRUE)
+
+testnet<-networkDynamic(vertex.spells=testnumbers,create.TEAs = TRUE,vertex.TEA.names = c('value','weight'))
+expect_equal(testnet$val[[1]]$value.active[[2]], structure(c(1, 3, 4, 2, 4, 5), .Dim = c(3L, 2L)))
+
+# check a perverse case with intersecting values
+testnumbers<-matrix(c(3,9,1, 2, 0.1,
+                      1,4,1, 1, 0.5,
+                      4,6,1, 0, 0.1),ncol=5,byrow=TRUE)
+
+expect_warning(networkDynamic(vertex.spells=testnumbers,create.TEAs = TRUE,vertex.TEA.names = c('value','weight')),regexp = 'invalid spell matrix for vertex TEA')
+
 # ----------- as.networkDynamic.data.frame tests -------
 
 # check correct spells printed for edges

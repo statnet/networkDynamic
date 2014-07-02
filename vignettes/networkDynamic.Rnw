@@ -334,7 +334,7 @@ Currently, the \verb@networkDynamic()@ conversion function importing edge and ve
 
 \begin{description}
 \item[lists of networks]{A list of network objects assumed to describe sequential panels of network observations. Network sizes may vary if some vertices are only active in certain panels.}
-\item[spells]{A matrix or data.frame of spells specifying edge timing. Assumed to be  \verb@[onset,terminus,vertex.id]@ for vertices and \verb@[onset,terminus,tail vertex.id, head vertex.id]@ for edges. }
+\item[spells]{A matrix or data.frame of spells specifying edge timing. Assumed to be  \verb@[onset,terminus,vertex.id]@ for vertices and \verb@[onset,terminus,tail vertex.id, head vertex.id]@ for edges. Dynamic attributes can be included as extra columns.}
 \item[toggles]{A matrix or data.frame of toggles giving a sequence of activation and deactivation times for toggles. Columns are assumed to be \verb@[toggle time,vertex.id]@ for vertices and \verb@[toggle time, tail vertex id of the edge, head vertex id of the edge]@ for edges.}
 \item[changes]{Like toggles, but with an additional \verb@direction@ column indicating \verb@1@ if the toggle should change the element state to active and \verb@0@ if it should be deactivated.}
 \end{description}
@@ -417,7 +417,7 @@ plot(nEdgesActive,xlab='timestep',ylab='number of active edges')
 This shows us that it took a few hundred time steps of ``burn in'' for the network to move from its initial extreme (the zero-edges condition) to a sort of equilibrium state. After which there were enough active edges that some of them started getting toggled off again, and it continues to wobble around a value of about 50 edges until the end. 
 
 \subsection{Batteries and tergm example not included}
-Unfortunately we can't include a real live \verb@tergm@ model example here, because the \verb@tergm@ package depends on \verb@networkDynamic@, and we don't want to create a circular package dependency.  But are nice examples located in the \verb@term@ and \verb@ndtv@ package vignettes. 
+Unfortunately we can't include a real live \verb@tergm@ model example here, because the \verb@tergm@ package depends on \verb@networkDynamic@, and we don't want to create a circular package dependency.  But are nice examples located in the \verb@tegrm@ and \verb@ndtv@ package vignettes. 
 
 \subsection{Converting a stream of spells: McFarland's classroom interactions}
 
@@ -426,10 +426,10 @@ Not surprisingly, the \verb@networkDynamic()@ function can create \verb@networkD
 
 <<file_spells>>=
 vertexData <-read.table(system.file('extdata/cls33_10_16_96_vertices.tsv', 
-            package='networkDynamic'),,header=T)
+            package='networkDynamic'),header=TRUE,stringsAsFactors=FALSE)
 vertexData[1:5,] # peek
 edgeData <-read.table(system.file('extdata/cls33_10_16_96_edges.tsv', 
-            package='networkDynamic'),header=T)
+            package='networkDynamic'),header=TRUE,stringsAsFactors=FALSE)
 edgeData[1:5,] # peek
 @
 
@@ -443,6 +443,14 @@ The conversion printed out summary of the (optional) network observation period 
 <<checkDiscrete>>=
 get.change.times(classDyn)[1:10]
 @
+
+If we wanted to include the \verb@weight@ and \verb@interaction_type@ variable in the edge data as dynamic edge attributes, we can include them as extra columns and set some additional parameters.
+<<assemble_mcfarland_TEA>>==
+classDyn <- networkDynamic(vertex.spells=vertexData[,c(3,4,1)],
+              edge.spells=edgeData[,c(3,4,1,2,5,6)],
+              create.TEAs=TRUE,edge.TEA.names=c('weight','type'))
+@
+
 
 We can also store the time units for the network, just in case we (or someone else) needs to know them later
 
@@ -869,7 +877,9 @@ We can see that the rumor started at v1, our seed vertex, which has a little loo
 \section{Related packages and other coming attractions}
 The statnet team is releasing several packages that work closely with the \verb@networkDynamic@ package to provide additional features. 
 \begin{itemize}
- \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}
+ \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/web/packages/networkDynamicData}
+ \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}. 
+ \item A longer tutorial demonstrating features of \verb@ndtv@ and \verb@networkDynamic@ data import is located at \url{http://statnet.csde.washington.edu/workshops/SUNBELT/current/ndtv/ndtv_workshop.pdf}
 \item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format. 
 \end{itemize}
 
