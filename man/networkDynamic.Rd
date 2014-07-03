@@ -92,8 +92,7 @@ Alternatively, timing information for edges and vertices can be provided separat
 
 When constructing a network with separate sources of data for vertex and edge timing, edge and vertex activity will not be made consistent if input data is inconsistent -- edges may be active when their incident vertices are inactive, etc.  These situations can be detected using the \code{\link{network.dynamic.check}} function and possible resolved using one of the \code{\link{reconcile.activity}} functions.
 
-Curently, dynamic attributes (TEAs, see \code{\link{
-attribute.activity.functions}}) for edges or vertices(with onset and termination times matching those of the edge or vertex spell) can be loaded in by by setting \code{create.TEAs=TRUE} and including additional columns in the \code{edge.spells} or \code{vertex.spells} argument and specifying a vector of names for the attributes with \code{edge.TEA.names} or \code{vertex.TEA.names}. Note that when using a \code{\link{data.frame}} to pass in non-numeric attributes, the default behavior of converting strings to factors should be avoided. 
+Curently, dynamic attributes (TEAs, see \code{\link{attribute.activity.functions}}) for edges or vertices(with onset and termination times matching those of the edge or vertex spell) can be loaded in by by setting \code{create.TEAs=TRUE} and including additional columns in the \code{edge.spells} or \code{vertex.spells} argument and specifying a vector of names for the attributes with \code{edge.TEA.names} or \code{vertex.TEA.names}. Note that when using a \code{\link{data.frame}} to pass in non-numeric attributes, the default behavior of converting strings to factors should be avoided. 
 
 
 Specification is located at \url{https://statnet.csde.washington.edu/trac/wiki/NetworkDynamicConverterFunctions}
