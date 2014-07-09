@@ -1,4 +1,4 @@
-useDynLib(networkDynamic)
+useDynLib(networkDynamic, .registration = TRUE)
 
 import(statnet.common, network)
 

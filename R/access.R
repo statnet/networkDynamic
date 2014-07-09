@@ -93,23 +93,7 @@ activate.edges <- function(x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
     if(any(onset>terminus))
       stop("Onset times must precede terminus times in activate.edges.\n")
     
-    # choosing to ignore activation requests of (Inf,Inf) or (-Inf, -Inf)
-    ignore <- (onset==Inf) | (terminus==-Inf)
-    if(any(ignore)){
-      onset<-onset[!ignore]; terminus<-terminus[!ignore]; e<-e[!ignore]
-    }
-    if(length(e)==0)  return(invisible(set.nD.class(x)))
-
-    uniqueE<-unique(e)
-    # get current active matrices and insert spells
-    active <- lapply(lapply(x$mel[uniqueE], "[[", "atl"), "[[", "active")
-    infMat<-matrix(c(-Inf,Inf),1,2) # declare here to speed comparisons
-    for(i in seq_len(length(e))){
-      eIndex<-which(uniqueE==e[i])
-      if(!(identical(active[[eIndex]], infMat)))
-        active[[eIndex]] <- insert.spell(active[[eIndex]], onset[i], terminus[i])
-    }
-    set.edge.attribute(x, "active", active, e=uniqueE)
+    x <- .Call(ActivateEdges_R, x, onset, terminus, e, FALSE)
   }
   
   set.nD.class(x)
@@ -674,7 +658,7 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
     stop("Onset times must precede terminus times in is.active.\n")
 
 #  return(.Call('IsActiveInVector', onset, terminus, active, (match.arg(rule) == 'all'), active.default, get("debug.output", envir=.GlobalEnv)))
-  return(.Call('IsActiveInVector', onset, terminus, active, (match.arg(rule) == 'all'), active.default, FALSE))
+  return(.Call(IsActiveInVector_R, onset, terminus, active, (match.arg(rule) == 'all'), active.default, FALSE))
 }
 
 
@@ -881,6 +865,9 @@ delete.vertex.activity <- function(x, v=seq_len(network.size(x))) {
 #    the updated spells
 #------------------------------------------------------------------
 insert.spell<-function(spells, onset=-Inf, terminus=Inf){
+  # forget all the below, do it in C
+  return(.Call(InsertSpell_R, spells, onset, terminus, FALSE));
+
   if (is.null(spells) || spells[1,1]== Inf || spells[1,2]==-Inf)
     new.spells <- matrix(c(onset, terminus), 1,2)
   else {

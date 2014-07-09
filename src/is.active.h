@@ -15,8 +15,8 @@
 #include <Rinternals.h>
 
 /* Function prototypes */
-SEXP IsSpellActive (SEXP onset_s, SEXP terminus_s, SEXP spell_list, SEXP all_s, SEXP debug_output);
+SEXP IsSpellActive_R (SEXP onset_s, SEXP terminus_s, SEXP spell_list, SEXP all_s, SEXP debug_output);
 
-SEXP IsActiveInVector (SEXP onset_s, SEXP terminus_s, SEXP spell_lists, SEXP all_s, SEXP active_default_s, SEXP debug_output);
+SEXP IsActiveInVector_R (SEXP onset_s, SEXP terminus_s, SEXP spell_lists, SEXP all_s, SEXP active_default_s, SEXP debug_output);
 
 #endif

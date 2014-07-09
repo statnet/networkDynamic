@@ -6,6 +6,7 @@ Type: Package
 Depends: R (>= 3.0.0), network (>= 1.9)
 Imports: statnet.common
 Suggests: testthat
+LinkingTo: network
 Authors@R:c(
     person("Carter T.", "Butts", role=c("aut"), email="buttsc@uci.edu"),
 		person("Ayn", "Leslie-Cook", role=c("aut"), email="aynlc3@uw.edu"),
