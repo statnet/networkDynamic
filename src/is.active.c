@@ -66,7 +66,7 @@ Rboolean IsSpellActive_int(double onset, double terminus, SEXP spell_list, Rbool
   return FALSE;
 }
 
-SEXP IsSpellActive (SEXP onset_s, SEXP terminus_s, SEXP spell_list, SEXP all_s, SEXP debug_output_s) {
+SEXP IsSpellActive_R (SEXP onset_s, SEXP terminus_s, SEXP spell_list, SEXP all_s, SEXP debug_output_s) {
   double onset = asReal(onset_s), terminus = asReal(terminus_s);
   Rboolean all = asLogical(all_s);
   Rboolean debug_output = asLogical(debug_output_s);
@@ -86,7 +86,7 @@ for each element if it is active during the specified spell
  active_default_s = logical, should elements with no spell matrix be considered active by default
  debug_output_s = logical, print debugging messages. 
 */
-SEXP IsActiveInVector (SEXP onset_s, SEXP terminus_s, SEXP spell_lists, SEXP all_s, SEXP active_default_s, SEXP debug_output_s) {
+SEXP IsActiveInVector_R (SEXP onset_s, SEXP terminus_s, SEXP spell_lists, SEXP all_s, SEXP active_default_s, SEXP debug_output_s) {
   double onset = asReal(onset_s), terminus = asReal(terminus_s);
   Rboolean all = asLogical(all_s);
   Rboolean active_default = asLogical(active_default_s);
