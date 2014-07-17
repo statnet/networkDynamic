@@ -20,7 +20,7 @@
 #include "spellfunctions.h"
 #include "is.active.h"
 #include "diagnostics.h"
-#include "network_init.h"
+#include "netregistration.h"
 
 #define CALLDEF(name, n) {#name,(DL_FUNC) &name, n}
 static R_CallMethodDef CallEntries[] = {
@@ -44,5 +44,6 @@ void R_init_networkDynamic(DllInfo *dll)
    /* Callable functions from other packages' C code */
 #define RREGDEF(name) R_RegisterCCallable("network", #name, (DL_FUNC) name)
 
-   import_network_functions();
+  /* Register network functions */
+   netRegisterFunctions();
 }
