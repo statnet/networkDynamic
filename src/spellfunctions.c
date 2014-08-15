@@ -183,7 +183,7 @@ SEXP ActivateEdges_R(SEXP network, SEXP onset, SEXP terminus, SEXP e, SEXP debug
   Rboolean debug_output = asLogical(debug_output_s);
   SEXP mel, el, atl, active, new_active;
   // need to induce copy of network object so we don't modify the wrong thing
-  network=duplicate(network);
+  PROTECT(network=duplicate(network)); ++pc;
   if ( debug_output )
     Rprintf("ActivateEdges_R\n");
 
