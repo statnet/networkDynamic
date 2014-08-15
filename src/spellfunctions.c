@@ -25,7 +25,7 @@ SEXP InsertSpell(SEXP spell_list, double onset, double terminus, Rboolean debug_
   int n_old_spells, spells_dim2, n_new_spells;
   int s, t, first_to_copy_before = 0, last_to_copy_before = -1, 
     first_to_copy_after, last_to_copy_after;
-  spell_list_internal_t old_spells, new_spells;
+  spell_list_internal_t old_spells={NULL,NULL}, new_spells={NULL,NULL};
   SEXP new_spell_list;
 
   if (isNull(spell_list)) {
