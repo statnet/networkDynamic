@@ -21,7 +21,7 @@ Simple interface routines to facilitate the handling of dynamic network objects 
 Package: \tab networkDynamic\cr
 Type: \tab Package\cr
 Version: \tab 0.7\cr
-Date: \tab 2014-06-12\cr
+Date: \tab 2014-09-25\cr
 Depends: \tab network\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
@@ -34,9 +34,25 @@ The basis for the dynamic extensions is described in \link{activity.attribute}. 
 Additional example data sets can be found in the \code{networkDynamicData} package. 
 }
 \author{
-Carter T. Butts \email{buttsc@uci.edu}, Ayn Leslie-Cook \email{aynlc3@uw.edu}, Zack Almquist \email{almquist@uci.edu}, Skye Bender-deMoll {skyebend@uw.edu}, Martina Morris
+Originally created by Carter T. Butts \email{buttsc@uci.edu}, 
 
-Maintainer: Skye Bender-deMoll {skyebend@uw.edu}, Carter T. Butts \email{buttsc@uci.edu}
+Current Maintainer: Skye Bender-deMoll {skyebend@uw.edu}
+
+Contributions from: 
+Pavel Krivitsky \email(pavel@uow.edu.au),
+Ayn Leslie-Cook \email{aynlc3@uw.edu}, 
+David Hunter \email{dhunter@stat.psu.edu},
+Li Wang \email{lxwang@gmail.com},
+Kirk Li \email{kirkli@uw.edu},
+StevenGoodreau \email{goodreau@uw.edu},
+Zack Almquist \email{almquist@uci.edu}, 
+Jeffrey Horner \email{jeffrey.horner@gmail.com},
+Martina Morris \email{morrism@u.washington.edu"}
+
+With support from the statnet team \url{statnet.org}
+
+
+
 }
 %\references{
 %~~ Literature or other references for background information ~~
