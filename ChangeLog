@@ -1,10 +1,14 @@
 Change Log:
 v0.7
+  - networkDynamic now uses (and requires) C-api exported by the network package
+  - additional spell operations moved to C level
   - the networkDynamic() data conversion function as additional arguments "edge.TEA.names"" and "vertex.TEA.names" and can now load dynamic edge or vertex attributes included as extra columns to edge.spells and vertex.spells.
+  - pids will now be removed by as.network.networkDynamic()
   - added read.son function for parsing SoNIA-formatted files with dynamic network data
   - added nd_test_nets dataset, a list networkDynamic objects with unusual configurations and parameters to be used for testing
   - fixed bug in spells.overlap and adding missing tests
-  - Added when.vertex.attrs.match and when.edge.attrs.match functions for getting times at which TEA attributes of network elements match specified values according to specified operators.
+  - added when.vertex.attrs.match and when.edge.attrs.match functions for getting times at which TEA attributes of network elements match specified values according to specified operators.
+  - added nd_test_nets dataset, a list networkDynamic objects with unusual configurations and parameters to be used for testing 
 
 v0.6.3
  - CRAN-request update to fix compatibility of test with testthat v0.8.1
