@@ -426,10 +426,10 @@ Not surprisingly, the \verb@networkDynamic()@ function can create \verb@networkD
 
 <<file_spells>>=
 vertexData <-read.table(system.file('extdata/cls33_10_16_96_vertices.tsv', 
-            package='networkDynamic'),,header=T)
+            package='networkDynamic'),header=TRUE,stringsAsFactors=FALSE)
 vertexData[1:5,] # peek
 edgeData <-read.table(system.file('extdata/cls33_10_16_96_edges.tsv', 
-            package='networkDynamic'),header=T)
+            package='networkDynamic'),header=TRUE,stringsAsFactors=FALSE)
 edgeData[1:5,] # peek
 @
 
@@ -446,10 +446,9 @@ get.change.times(classDyn)[1:10]
 
 If we wanted to include the \verb@weight@ and \verb@interaction_type@ variable in the edge data as dynamic edge attributes, we can include them as extra columns and set some additional parameters.
 <<assemble_mcfarland_TEA>>==
-# this is slow
-#classDyn <- networkDynamic(vertex.spells=vertexData[,c(3,4,1)],
-#              edge.spells=edgeData[,c(3,4,1,2,5,6)],
-#              create.TEAs=TRUE,edge.TEA.names=c('weight','type'))
+classDyn <- networkDynamic(vertex.spells=vertexData[,c(3,4,1)],
+              edge.spells=edgeData[,c(3,4,1,2,5,6)],
+              create.TEAs=TRUE,edge.TEA.names=c('weight','type'))
 @
 
 
