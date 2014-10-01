@@ -39,7 +39,7 @@ Originally created by Carter T. Butts \email{buttsc@uci.edu},
 Current Maintainer: Skye Bender-deMoll {skyebend@uw.edu}
 
 Contributions from: 
-Pavel Krivitsky \email(pavel@uow.edu.au),
+Pavel Krivitsky \email{pavel@uow.edu.au},
 Ayn Leslie-Cook \email{aynlc3@uw.edu}, 
 David Hunter \email{dhunter@stat.psu.edu},
 Li Wang \email{lxwang@gmail.com},
