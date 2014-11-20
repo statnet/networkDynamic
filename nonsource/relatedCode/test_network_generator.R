@@ -169,6 +169,11 @@ nd_test_nets[['non-numeric vertex and edge pids']]<-net24
 
 # network with two components
 
+# network with missing (na) edges
+
+# network with missing (na) vertices
+
+
 save(nd_test_nets,file='../networkDynamic/data/nd_test_nets.rda')
 
 
