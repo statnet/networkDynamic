@@ -610,13 +610,13 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
     if(!is.vector(v) || !is.numeric(v))
       stop("Vertex ID's, v, must be a numeric vector in is.active.\n")
     if((min(v) < 1) || (max(v) > network.size(x))) 
-      stop("Illegal vertex in activate.vertices.\n")
+      stop("Vertex ID's, v, must be in the range from 1 to the size of the network in is.active.\n")
   }
   if(!is.null(e)){
     if(!is.vector(e) || !is.numeric(e))
       stop("Edge ID's, e, must be a numeric vector in is.active.\n")
     if((min(e,Inf) < 1) || (max(e,-Inf) > x%n%"mnext"-1)) 
-      stop("Illegal edge in is.active.\n")
+      stop("Edge ID's in is.active e argument must be in the range from 1 to the number of edges in the network.\n")
   }
 
   # vertices or edges?
