@@ -19,7 +19,7 @@ Authors@R:c(
     person("Steven M.","Goodreau",role=c("ctb"),email="goodreau@uw.edu"),
     person("Jeffrey", "Horner", role=c("ctb"), email="jeffrey.horner@gmail.com"),
   	person("Martina", "Morris", role=c("ctb"), email="morrism@u.washington.edu"))
-Description: Simple interface routines to facilitate the handling of network objects with complex intertemporal data. "networkDynamic" is a part of the "statnet" suite of packages for network analysis.
+Description: Simple interface routines to facilitate the handling of network objects with complex intertemporal data. This is a part of the "statnet" suite of packages for network analysis.
 License: GPL-3
 LazyLoad: yes
 URL: http://statnet.org
