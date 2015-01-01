@@ -73,6 +73,12 @@ when.vertex.attrs.match,
 when.edge.attrs.match,
 edges.age.at,
 dyads.age.at,
-vertices.age.at
+vertices.age.at,
+et.initialize,
+et.copy,
+et.print,
+et.add.edges,
+et.delete.edges,
+et.find.ith.edge
 #when.next.edge.change
 )

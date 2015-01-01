@@ -36,7 +36,7 @@ void Prevalence (int *nnodes,
   int bipartite = *nfem;
   int *sinfected;
   double beta=*betarate;
-  Network nw;
+  Network *nw;
   
   sinfected = (int *) malloc(sizeof(int) * (*nnodes));
 //    Rprintf("initial bipartite %d edges %d tails[i] %f heads[i] %f\n", bipartite,ne,
@@ -46,8 +46,8 @@ void Prevalence (int *nnodes,
     /* R's serialization of matrixes is column-major, so this works: */
    nw = NetworkInitialize(edge, edge+*nedge, ne,
                           *nnodes, 0, bipartite, 0, 0, NULL);
-   /*id=nw.indegree;
-     od=nw.outdegree; */
+   /*id=nw->indegree;
+     od=nw->outdegree; */
    ndyads = bipartite*(*nnodes-bipartite);
    if(*randomseeds){
       // Sample numdissolved edges without replacement
@@ -77,9 +77,9 @@ void Prevalence (int *nnodes,
     for (i=0; i < *nfem; i++) {
      /* step through outedges of i  */
      if(sinfected[i]){
-      for(e = EdgetreeMinimum(nw.outedges, i+1);
-	(alter = nw.outedges[e].value) != 0;
-	e = EdgetreeSuccessor(nw.outedges, e)){
+      for(e = EdgetreeMinimum(nw->outedges, i+1);
+	(alter = nw->outedges[e].value) != 0;
+	e = EdgetreeSuccessor(nw->outedges, e)){
 	     if(!sinfected[alter-1]){
  	       if(unif_rand() < beta){
 //  Rprintf("f time %d i %d sinfected %d alter %d sinfected %d beta %f\n",time,i,sinfected[i],alter,sinfected[alter],beta);
@@ -94,9 +94,9 @@ void Prevalence (int *nnodes,
 //    Rprintf("males time %d i %d sinfected %d\n",time,i,sinfected[i]);
     /* step through outedges of i  */
     if(sinfected[i]){
-     for(e = EdgetreeMinimum(nw.inedges, i+1);
-       (alter = nw.inedges[e].value) != 0;
-       e = EdgetreeSuccessor(nw.inedges, e)){
+     for(e = EdgetreeMinimum(nw->inedges, i+1);
+       (alter = nw->inedges[e].value) != 0;
+       e = EdgetreeSuccessor(nw->inedges, e)){
           if(!sinfected[alter-1]){
 //          if(unif_rand() < beta/id[i]){sinfected[alter-1]=1;}
             if(unif_rand() < beta){
@@ -110,13 +110,13 @@ void Prevalence (int *nnodes,
     /* Toggle the edges at this timestep */
     if (time < *ntimestep) {
      for(; CHANGE(j,0) == time; j++) {
-        ToggleEdge(CHANGE(j, 1), CHANGE(j, 2), &nw); 
+        ToggleEdge(CHANGE(j, 1), CHANGE(j, 2), nw); 
      }
      // End time step toggle
     }
    // End of time step 
    }
-   NetworkDestroy (&nw);
+   NetworkDestroy (nw);
    // Next k
    for (i=0; i < *nnodes; i++) {
      prev[k]=prev[k]+sinfected[i];
@@ -124,12 +124,12 @@ void Prevalence (int *nnodes,
    for (i=0; i < *nnodes; i++) {
      totinfected[i] = totinfected[i] + sinfected[i];
    }
-//   Rprintf("k %d edges %d prev %d \n",k,nw.nedges,prev[k]);
+//   Rprintf("k %d edges %d prev %d \n",k,nw->nedges,prev[k]);
 // if (k < *nsim) {
-//  NetworkDestroy (&nw);
+//  NetworkDestroy (nw);
 //  nw = NetworkInitialize(tails, heads, ne, maxedges, *nnodes, 0, bipartite);
-//  id=nw.indegree;
-//  od=nw.outdegree;
+//  id=nw->indegree;
+//  od=nw->outdegree;
 // }
   }
   for (i=0; i < *nnodes; i++) {
@@ -137,7 +137,7 @@ void Prevalence (int *nnodes,
   }
   /* Free memory used by network object before returning */  
   free (sinfected);
-//NetworkDestroy (&nw);
+//NetworkDestroy (nw);
 }
 void PrevalenceWithBernoulliOption(int *nnodes,
       int *nedge, int *edge, int *ntimestep, int *nfem,
@@ -152,7 +152,7 @@ void PrevalenceWithBernoulliOption(int *nnodes,
   Vertex *btails, *bheads;
   int *sinfected, *bsort;
   double beta=*betarate;
-  Network nw, nws;
+  Network *nw, *nws;
   
   sinfected = (int *) malloc(sizeof(int) * (*nnodes));
 //    Rprintf("initial bipartite %d edges %d tails[i] %f heads[i] %f\n", bipartite,ne,
@@ -165,9 +165,9 @@ void PrevalenceWithBernoulliOption(int *nnodes,
   }else{
     nw = nws;
   }
-  id=nw.indegree;
-  od=nw.outdegree;
-  ndyads = bipartite*(nws.nnodes-bipartite);
+  id=nw->indegree;
+  od=nw->outdegree;
+  ndyads = bipartite*(nws->nnodes-bipartite);
   bsort = (int *) malloc(sizeof(int) * ndyads);
 
   for (k=0; k < *nsim; k++) {
@@ -182,9 +182,9 @@ void PrevalenceWithBernoulliOption(int *nnodes,
     for (i=0; i < *nfem; i++) {
      /* step through outedges of i  */
      if(sinfected[i]){
-      for(e = EdgetreeMinimum(nw.outedges, i+1);
-	(alter = nw.outedges[e].value) != 0;
-	e = EdgetreeSuccessor(nw.outedges, e)){
+      for(e = EdgetreeMinimum(nw->outedges, i+1);
+	(alter = nw->outedges[e].value) != 0;
+	e = EdgetreeSuccessor(nw->outedges, e)){
 	     if(!sinfected[alter-1]){
 //  Rprintf("time %d i %d sinfected %d alter %d sinfected %d beta %f\n",time,i,sinfected[i],alter,sinfected[alter],beta);
  	       if(unif_rand() < beta/od[i+1]){sinfected[alter-1]=1;}
@@ -197,9 +197,9 @@ void PrevalenceWithBernoulliOption(int *nnodes,
 //    Rprintf("males time %d i %d sinfected %d\n",time,i,sinfected[i]);
     /* step through outedges of i  */
     if(sinfected[i]){
-     for(e = EdgetreeMinimum(nw.inedges, i+1);
-       (alter = nw.inedges[e].value) != 0;
-       e = EdgetreeSuccessor(nw.inedges, e)){
+     for(e = EdgetreeMinimum(nw->inedges, i+1);
+       (alter = nw->inedges[e].value) != 0;
+       e = EdgetreeSuccessor(nw->inedges, e)){
 //    Rprintf("time %d i %d sinfected %d alter %d sinfected %d beta %f\n",time,i,sinfected[i],alter,sinfected[alter],beta);
           if(!sinfected[alter-1]){
 //    Rprintf("time %d i %d sinfected %d alter %d sinfected %d beta %f\n",time,i,sinfected[i],alter,sinfected[alter],beta);
@@ -212,36 +212,36 @@ void PrevalenceWithBernoulliOption(int *nnodes,
     /* Toggle the edges at this timestep */
     if (time < *ntimestep) {
      for(; CHANGE(j,0) == time; j++) {
-        ToggleEdge(CHANGE(j, 1), CHANGE(j, 2), &nws); 
+        ToggleEdge(CHANGE(j, 1), CHANGE(j, 2), nws); 
      }
      if(*bernoulli){
       // Sample numdissolved edges without replacement
-      ndyads = bipartite*(nws.nnodes-bipartite);
-      btails = (Vertex *) malloc(sizeof(Vertex) * nws.nedges);
-      bheads = (Vertex *) malloc(sizeof(Vertex) * nws.nedges);
+      ndyads = bipartite*(nws->nnodes-bipartite);
+      btails = (Vertex *) malloc(sizeof(Vertex) * nws->nedges);
+      bheads = (Vertex *) malloc(sizeof(Vertex) * nws->nedges);
       for (i = 0; i < ndyads; i++){bsort[i] = i;}
-      for (i = 0; i < nws.nedges; i++) {
+      for (i = 0; i < nws->nedges; i++) {
 	rane = ndyads * unif_rand();
 	bheads[i] = bsort[rane] + 1;
 	bsort[rane] = bsort[--ndyads];
       }
-      for (i=0; i < nws.nedges; i++) {
+      for (i=0; i < nws->nedges; i++) {
 //    Rprintf("i %d sort[i] %f ",i, bheads[i]);
 	rane = (double)(((Vertex)(bheads[i]/bipartite)));
 	btails[i] = bheads[i] - bipartite*rane;
 	bheads[i] = rane + bipartite;
 //    Rprintf("i %d btails[i] %f bheads[i] %f\n",i, btails[i],bheads[i]);
       }
-//    Rprintf("final k %d time %d bipartite %d edges %d btails[i] %f bheads[i] %f\n",k, time, bipartite,nws.nedges,
+//    Rprintf("final k %d time %d bipartite %d edges %d btails[i] %f bheads[i] %f\n",k, time, bipartite,nws->nedges,
 //		           btails[i-1],bheads[i-1]);
-      NetworkDestroy (&nw);
-      nwedge=nws.nedges;
-      Network nw;
+      NetworkDestroy (nw);
+      nwedge=nws->nedges;
+      Network *nw;
       nw = NetworkInitialize(btails, bheads, nwedge,
                              *nnodes, 0, bipartite, 0, 0, NULL);
-//    Rprintf("network reinitalized for Bernoulli bipartite %d edges %d\n", bipartite,nw.nedges);
-      id=nw.indegree;
-      od=nw.outdegree;
+//    Rprintf("network reinitalized for Bernoulli bipartite %d edges %d\n", bipartite,nw->nedges);
+      id=nw->indegree;
+      od=nw->outdegree;
       free (btails);
       free (bheads);
      }
@@ -253,16 +253,16 @@ void PrevalenceWithBernoulliOption(int *nnodes,
    for (i=0; i < *nnodes; i++) {
      prev[k]=prev[k]+sinfected[i];
    }
-//   Rprintf("k %d edges %d prev %d \n",k,nw.nedges,prev[k]);
+//   Rprintf("k %d edges %d prev %d \n",k,nw->nedges,prev[k]);
    if (k < *nsim) {
-    NetworkDestroy (&nw);
+    NetworkDestroy (nw);
     nw = NetworkInitialize(edge, edge+*nedge, ne,
                            *nnodes, 0, bipartite, 0, 0, NULL);
-    id=nw.indegree;
-    od=nw.outdegree;
+    id=nw->indegree;
+    od=nw->outdegree;
    }
   }
   /* Free memory used by network object before returning */  
   free (sinfected);
-  NetworkDestroy (&nw);
+  NetworkDestroy (nw);
 }

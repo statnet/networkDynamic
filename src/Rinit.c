@@ -21,6 +21,7 @@
 #include "is.active.h"
 #include "diagnostics.h"
 #include "netregistration.h"
+#include "edgetree_R.h"
 
 #define CALLDEF(name, n) {#name,(DL_FUNC) &name, n}
 static R_CallMethodDef CallEntries[] = {
@@ -28,6 +29,11 @@ static R_CallMethodDef CallEntries[] = {
   CALLDEF(IsSpellActive_R,5),
   CALLDEF(IsActiveInVector_R,6),
   CALLDEF(InsertSpell_R,4),
+  CALLDEF(NetworkInitialize_R,9),
+  CALLDEF(NetworkCopy_R,1),
+  CALLDEF(NetworkEdgeList_R,1),
+  CALLDEF(AddDelEdgeToTrees_R,4),
+  CALLDEF(FindithEdge_R,2),
   {NULL,NULL,0}
 };
 

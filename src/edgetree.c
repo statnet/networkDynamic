@@ -24,46 +24,47 @@
 *******************/
 /* *** don't forget, tail -> head */
 
-Network NetworkInitialize(Vertex *tails, Vertex *heads, Edge nedges, 
+Network *NetworkInitialize(Vertex *tails, Vertex *heads, Edge nedges, 
 			  Vertex nnodes, int directed_flag, Vertex bipartite,
 			  int lasttoggle_flag, int time, int *lasttoggle) {
 
-  Network nw;
+  Network *nw;
 
-  nw.next_inedge = nw.next_outedge = (Edge)nnodes+1;
+  nw = (Network *) calloc(1,sizeof(Network));
+  nw->next_inedge = nw->next_outedge = (Edge)nnodes+1;
   /* Calloc will zero the allocated memory for us, probably a lot
      faster. */
-  nw.outdegree = (Vertex *) calloc((nnodes+1),sizeof(Vertex));
-  nw.indegree  = (Vertex *) calloc((nnodes+1),sizeof(Vertex));
-  nw.maxedges = MAX(nedges,1)+nnodes+2; /* Maybe larger than needed? */
-  nw.inedges = (TreeNode *) calloc(nw.maxedges,sizeof(TreeNode));
-  nw.outedges = (TreeNode *) calloc(nw.maxedges,sizeof(TreeNode));
+  nw->outdegree = (Vertex *) calloc((nnodes+1),sizeof(Vertex));
+  nw->indegree  = (Vertex *) calloc((nnodes+1),sizeof(Vertex));
+  nw->maxedges = MAX(nedges,1)+nnodes+2; /* Maybe larger than needed? */
+  nw->inedges = (TreeNode *) calloc(nw->maxedges,sizeof(TreeNode));
+  nw->outedges = (TreeNode *) calloc(nw->maxedges,sizeof(TreeNode));
 
   GetRNGstate();  /* R function enabling uniform RNG */
 
   if(lasttoggle_flag){
     unsigned int ndyads = directed_flag? nnodes*(nnodes-1) : (nnodes*(nnodes-1))/2;
-    nw.duration_info.MCMCtimer=time;
-    nw.duration_info.lasttoggle = (int *) calloc(ndyads, sizeof(int));
+    nw->duration_info.MCMCtimer=time;
+    nw->duration_info.lasttoggle = (int *) calloc(ndyads, sizeof(int));
     if(lasttoggle)
-      memcpy(nw.duration_info.lasttoggle, lasttoggle, ndyads * sizeof(int));
+      memcpy(nw->duration_info.lasttoggle, lasttoggle, ndyads * sizeof(int));
   }
-  else nw.duration_info.lasttoggle = NULL;
+  else nw->duration_info.lasttoggle = NULL;
 
   /*Configure a Network*/
-  nw.nnodes = nnodes;
-  nw.nedges = 0; /* Edges will be added one by one */
-  nw.directed_flag=directed_flag;
-  nw.bipartite=bipartite;
+  nw->nnodes = nnodes;
+  nw->nedges = 0; /* Edges will be added one by one */
+  nw->directed_flag=directed_flag;
+  nw->bipartite=bipartite;
 
   ShuffleEdges(tails,heads,nedges); /* shuffle to avoid worst-case performance */
 
   for(Edge i = 0; i < nedges; i++) {
     Vertex tail=tails[i], head=heads[i];
     if (!directed_flag && tail > head) 
-      AddEdgeToTrees(head,tail,&nw); /* Undir edges always have tail < head */ 
+      AddEdgeToTrees(head,tail,nw); /* Undir edges always have tail < head */ 
     else 
-      AddEdgeToTrees(tail,head,&nw);
+      AddEdgeToTrees(tail,head,nw);
   }
   PutRNGstate();
   return nw;
@@ -75,7 +76,7 @@ Network NetworkInitialize(Vertex *tails, Vertex *heads, Edge nedges,
        in before heads */
 
 /*Takes vectors of doubles for edges; used only when constructing from inputparams. */
-Network NetworkInitializeD(double *tails, double *heads, Edge nedges,
+Network *NetworkInitializeD(double *tails, double *heads, Edge nedges,
 			  Vertex nnodes, int directed_flag, Vertex bipartite,
 			  int lasttoggle_flag, int time, int *lasttoggle) {
 
@@ -89,7 +90,7 @@ Network NetworkInitializeD(double *tails, double *heads, Edge nedges,
     iheads[i]=heads[i];
   }
 
-  Network nw=NetworkInitialize(itails,iheads,nedges,nnodes,directed_flag,bipartite,lasttoggle_flag, time, lasttoggle);
+  Network *nw=NetworkInitialize(itails,iheads,nedges,nnodes,directed_flag,bipartite,lasttoggle_flag, time, lasttoggle);
 
   free(itails);
   free(iheads);
@@ -108,6 +109,7 @@ void NetworkDestroy(Network *nwp) {
     free (nwp->duration_info.lasttoggle);
     nwp->duration_info.lasttoggle=NULL;
   }
+  free(nwp);
 }
 
 /******************
