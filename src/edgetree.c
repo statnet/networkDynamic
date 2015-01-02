@@ -567,7 +567,7 @@ void NetworkEdgeList(Network *nwp) {
 void InOrderTreeWalk(TreeNode *edges, Edge x) {
   if (x != 0) {
     InOrderTreeWalk(edges, (edges+x)->left);
-    /*    printedge(x, edges); */
+    printedge(x, edges);
     Rprintf(" %d ",(edges+x)->value); 
     InOrderTreeWalk(edges, (edges+x)->right);
   }

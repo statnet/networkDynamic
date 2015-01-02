@@ -180,3 +180,110 @@ SEXP FindithEdge_R(SEXP i, SEXP nw){
   UNPROTECT(1);
   return(ans);
 }
+
+SEXP EdgetreeIsDirected_R(SEXP nw){
+  SEXP ans;
+
+  PROTECT(ans = allocVector(LGLSXP, 1));
+  LOGICAL(ans)[0] = FALSE;
+
+  if (!IS_EDGETREE_PTR(nw)) {
+    UNPROTECT(1);
+    return ans;
+  } 
+
+  if ( ((Network *)R_ExternalPtrAddr(nw))->directed_flag != 0)
+    LOGICAL(ans)[0] = TRUE;
+
+  UNPROTECT(1);
+  return ans;
+}
+
+void EdgeTreeWalk(TreeNode *tree, Edge x, 
+                  void (*fn)(TreeNode *tree, void *ctx), void *ctx){
+  if (x == 0) return;
+
+  EdgeTreeWalk(tree, (tree+x)->left, fn, ctx);
+  if (fn) (*fn)(tree+x, ctx);
+  EdgeTreeWalk(tree, (tree+x)->right, fn, ctx);
+}
+
+void TreeNodeCount_fn(TreeNode *tree, void *ctx){
+  if (tree->value==0) return;
+  (*(int *)ctx)++;
+}
+int TreeNodeCount(TreeNode *tree, Edge x){
+  int sum=0;
+
+  EdgeTreeWalk(tree,x,&TreeNodeCount_fn,&sum);
+
+  return sum;
+}
+
+struct Vertices {
+  int i;
+  Vertex *v;
+};
+void Tree2Vertices_fn(TreeNode *tree, void *ctx){
+  struct Vertices *v;
+
+  v = (struct Vertices *)ctx;
+  if (tree->value==0) return;
+  v->v[v->i] = tree->value;
+  (v->i)++;
+}
+Vertex *Tree2Vertices(TreeNode *tree, Edge x, int *len){
+  struct Vertices v;
+  *len = TreeNodeCount(tree, x);
+
+  v.i = 0;
+  v.v = calloc(*len, sizeof(Vertex));
+
+  EdgeTreeWalk(tree, x, &Tree2Vertices_fn, &v);
+
+  return v.v;
+}
+
+/* type: 1=out, 2=in, 3=combined */
+SEXP GetNeighborhood_R(SEXP nw, SEXP vertex, SEXP type){
+  SEXP ans=R_NilValue;
+  Vertex *pvertex, *out=NULL, *in=NULL;
+  Network *pnw;
+  int t, outlen=0, inlen=0, i;
+
+  if (!IS_EDGETREE_PTR(nw)) return ans;
+  pnw = R_ExternalPtrAddr(nw);
+
+  if (!isInteger(type)) return ans;
+  t = INTEGER(type)[0];
+
+  pvertex = copyVertex(vertex, 1);
+
+  if (pvertex == NULL) return ans;
+
+  if (!pnw->directed_flag) t = 3;
+
+  if (t == 1 || t == 3)
+    out = Tree2Vertices(pnw->outedges,*pvertex,&outlen);
+  if (t == 2 || t == 3)
+    in = Tree2Vertices(pnw->inedges,*pvertex, &inlen);
+
+  free(pvertex);
+
+  if ((outlen + inlen) == 0) return ans;
+
+  PROTECT(ans = allocVector(INTSXP,outlen+inlen));
+  i=0;
+  if (out){
+    for (t = 0; t < outlen; t++) INTEGER(ans)[i++] = out[t];
+    free(out);
+  }
+  if (in){
+    for (t = 0; t < inlen; t++) INTEGER(ans)[i++] = in[t];
+    free(in);
+  }
+
+  UNPROTECT(1);
+  return ans;
+
+}

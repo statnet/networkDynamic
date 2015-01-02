@@ -34,3 +34,7 @@ et.add.edges <- function(tail, head, nw) invisible(.Call(AddDelEdgeToTrees_R, ta
 et.delete.edges <- function(tail, head, nw) invisible(.Call(AddDelEdgeToTrees_R, tail, head, nw, FALSE))
 
 et.find.ith.edge <- function(i, nw) .Call(FindithEdge_R, i, nw)
+
+et.is.directed <- function(nw) .Call(EdgetreeIsDirected_R, nw)
+
+et.get.neighborhood <- function(nw, x, type) .Call(GetNeighborhood_R, nw, x, as.integer(type))

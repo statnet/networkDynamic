@@ -79,6 +79,8 @@ et.copy,
 et.print,
 et.add.edges,
 et.delete.edges,
-et.find.ith.edge
+et.find.ith.edge,
+et.is.directed,
+et.get.neighborhood
 #when.next.edge.change
 )
