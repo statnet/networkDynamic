@@ -26,7 +26,7 @@ SEXP NetworkCopy_R(SEXP nw);
 //Edge EdgetreePredecessor (TreeNode *edges, Edge x);
 //Edge EdgetreeMinimum (TreeNode *edges, Edge x);
 //Edge EdgetreeMaximum (TreeNode *edges, Edge x);
-SEXP EdgetreeIsDirected_R(SEXP nw);
+SEXP EdgetreeInfo_R(SEXP nw);
 SEXP GetNeighborhood_R(SEXP nw, SEXP vertex, SEXP type);
 
 /* Modifiers. */

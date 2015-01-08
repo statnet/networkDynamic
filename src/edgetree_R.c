@@ -157,45 +157,57 @@ SEXP AddDelEdgeToTrees_R( SEXP tail, SEXP head, SEXP nw, SEXP add){
 
 SEXP FindithEdge_R(SEXP i, SEXP nw){
   SEXP ans;
-  Edge *edge;
-  int *pans;
+  Edge *eid;
+  int *edge;
 
   PROTECT(ans = allocVector(INTSXP,2));
-  pans = INTEGER(ans);
-  pans[0] = pans[1] = 0L;
+  edge = INTEGER(ans);
+  edge[0] = edge[1] = 0L;
 
   if (!IS_EDGETREE_PTR(nw)) {
     UNPROTECT(1);
     return ans;
   } 
 
-  edge = copyEdge(i,length(i)); 
+  eid = copyEdge(i,length(i)); 
 
-  if (edge==NULL){
+  if (eid==NULL){
     UNPROTECT(1);
     return ans;
   }
 
-  FindithEdge(pans,pans+1,edge[0], R_ExternalPtrAddr(nw));
+  FindithEdge(edge,edge+1,eid[0], R_ExternalPtrAddr(nw));
+  free(eid);
   UNPROTECT(1);
   return(ans);
 }
 
-SEXP EdgetreeIsDirected_R(SEXP nw){
-  SEXP ans;
-
-  PROTECT(ans = allocVector(LGLSXP, 1));
-  LOGICAL(ans)[0] = FALSE;
+SEXP EdgetreeInfo_R(SEXP nw){
+  SEXP ans=R_NilValue, nms;
+  Network *pnw;
 
   if (!IS_EDGETREE_PTR(nw)) {
-    UNPROTECT(1);
     return ans;
   } 
 
-  if ( ((Network *)R_ExternalPtrAddr(nw))->directed_flag != 0)
-    LOGICAL(ans)[0] = TRUE;
+  pnw = (Network *)R_ExternalPtrAddr(nw);
 
-  UNPROTECT(1);
+  PROTECT(ans = allocVector(VECSXP, 5));
+  PROTECT(nms = allocVector(STRSXP, 5));
+  SET_STRING_ELT(nms, 0, mkChar("directed_flag"));
+  SET_STRING_ELT(nms, 1, mkChar("bipartite"));
+  SET_STRING_ELT(nms, 2, mkChar("nnodes"));
+  SET_STRING_ELT(nms, 3, mkChar("nedges"));
+  SET_STRING_ELT(nms, 4, mkChar("maxedges"));
+
+  SET_VECTOR_ELT(ans, 0, ScalarInteger(pnw->directed_flag));
+  SET_VECTOR_ELT(ans, 1, ScalarInteger(pnw->bipartite));
+  SET_VECTOR_ELT(ans, 2, ScalarInteger(pnw->nnodes));
+  SET_VECTOR_ELT(ans, 3, ScalarInteger(pnw->nedges));
+  SET_VECTOR_ELT(ans, 4, ScalarInteger(pnw->maxedges));
+  setAttrib(ans, R_NamesSymbol, nms);
+  UNPROTECT(2);
+
   return ans;
 }
 
@@ -208,23 +220,11 @@ void EdgeTreeWalk(TreeNode *tree, Edge x,
   EdgeTreeWalk(tree, (tree+x)->right, fn, ctx);
 }
 
-void TreeNodeCount_fn(TreeNode *tree, void *ctx){
-  if (tree->value==0) return;
-  (*(int *)ctx)++;
-}
-int TreeNodeCount(TreeNode *tree, Edge x){
-  int sum=0;
-
-  EdgeTreeWalk(tree,x,&TreeNodeCount_fn,&sum);
-
-  return sum;
-}
-
 struct Vertices {
   int i;
   Vertex *v;
 };
-void Tree2Vertices_fn(TreeNode *tree, void *ctx){
+void AdjacencyList_fn(TreeNode *tree, void *ctx){
   struct Vertices *v;
 
   v = (struct Vertices *)ctx;
@@ -232,14 +232,18 @@ void Tree2Vertices_fn(TreeNode *tree, void *ctx){
   v->v[v->i] = tree->value;
   (v->i)++;
 }
-Vertex *Tree2Vertices(TreeNode *tree, Edge x, int *len){
+Vertex *AdjacencyList(Network *nw, Edge x, int inout, int *len){
   struct Vertices v;
-  *len = TreeNodeCount(tree, x);
+
+  *len = (inout==0) ?  nw->indegree[x] : nw->outdegree[x];
 
   v.i = 0;
   v.v = calloc(*len, sizeof(Vertex));
 
-  EdgeTreeWalk(tree, x, &Tree2Vertices_fn, &v);
+  if (inout==0)
+    EdgeTreeWalk(nw->inedges, x, &AdjacencyList_fn, &v);
+  else 
+    EdgeTreeWalk(nw->outedges, x, &AdjacencyList_fn, &v);
 
   return v.v;
 }
@@ -264,9 +268,9 @@ SEXP GetNeighborhood_R(SEXP nw, SEXP vertex, SEXP type){
   if (!pnw->directed_flag) t = 3;
 
   if (t == 1 || t == 3)
-    out = Tree2Vertices(pnw->outedges,*pvertex,&outlen);
+    out = AdjacencyList(pnw,*pvertex,1, &outlen);
   if (t == 2 || t == 3)
-    in = Tree2Vertices(pnw->inedges,*pvertex, &inlen);
+    in = AdjacencyList(pnw,*pvertex, 0, &inlen);
 
   free(pvertex);
 

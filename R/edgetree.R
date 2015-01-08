@@ -13,8 +13,8 @@
 #
 ######################################################################
 
-et.initialize <- function(tails, heads, nedges, nnodes, directed_flag, bipartite,
-                        lasttoggle_flag, time, lasttoggle){
+et.initialize <- function(tails, heads, nedges, nnodes, directed_flag=0L, bipartite=0L,
+                        lasttoggle_flag=0L, time=0L, lasttoggle=0L){
 
   .Call(NetworkInitialize_R, tails, heads, 
         as.integer(nedges), 
@@ -35,6 +35,12 @@ et.delete.edges <- function(tail, head, nw) invisible(.Call(AddDelEdgeToTrees_R,
 
 et.find.ith.edge <- function(i, nw) .Call(FindithEdge_R, i, nw)
 
-et.is.directed <- function(nw) .Call(EdgetreeIsDirected_R, nw)
 
-et.get.neighborhood <- function(nw, x, type) .Call(GetNeighborhood_R, nw, x, as.integer(type))
+et.info <- function(nw) .Call(EdgetreeInfo_R,nw)
+et.network.size <- function(nw) .Call(EdgetreeInfo_R,nw)$nnodes
+et.is.directed <- function(nw) .Call(EdgetreeInfo_R, nw)$directed_flag==1
+
+# type: 1=out, 2=in, 3=combined
+et.get.neighborhood <- function(nw, x, type=1L){
+   unique(sort(.Call(GetNeighborhood_R, nw, x, as.integer(type))))
+}

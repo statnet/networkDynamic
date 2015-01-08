@@ -34,7 +34,7 @@ static R_CallMethodDef CallEntries[] = {
   CALLDEF(NetworkEdgeList_R,1),
   CALLDEF(AddDelEdgeToTrees_R,4),
   CALLDEF(FindithEdge_R,2),
-  CALLDEF(EdgetreeIsDirected_R,1),
+  CALLDEF(EdgetreeInfo_R,1),
   CALLDEF(GetNeighborhood_R,3),
   {NULL,NULL,0}
 };
