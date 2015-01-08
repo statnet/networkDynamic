@@ -134,7 +134,6 @@ runSim.nD.NC <- function(){
   nD <- net.add.edges.active(nD,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSimNoConvert(nD))
 }
-microbenchmark(runSim.nD.NC(),times = 10)
 
 # Run network-type ndCache
 runSim.ndCache.NC <- function(){
