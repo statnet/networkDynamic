@@ -31,6 +31,7 @@ Network *NetworkInitialize(Vertex *tails, Vertex *heads, Edge nedges,
   Network *nw;
 
   nw = (Network *) calloc(1,sizeof(Network));
+  nw->eid_counter = 1;
   nw->next_inedge = nw->next_outedge = (Edge)nnodes+1;
   /* Calloc will zero the allocated memory for us, probably a lot
      faster. */
@@ -57,14 +58,16 @@ Network *NetworkInitialize(Vertex *tails, Vertex *heads, Edge nedges,
   nw->directed_flag=directed_flag;
   nw->bipartite=bipartite;
 
-  ShuffleEdges(tails,heads,nedges); /* shuffle to avoid worst-case performance */
+  if (nedges > 0){
+    ShuffleEdges(tails,heads,nedges); /* shuffle to avoid worst-case performance */
 
-  for(Edge i = 0; i < nedges; i++) {
-    Vertex tail=tails[i], head=heads[i];
-    if (!directed_flag && tail > head) 
-      AddEdgeToTrees(head,tail,nw); /* Undir edges always have tail < head */ 
-    else 
-      AddEdgeToTrees(tail,head,nw);
+    for(Edge i = 0; i < nedges; i++) {
+      Vertex tail=tails[i], head=heads[i];
+      if (!directed_flag && tail > head) 
+        AddEdgeToTrees(head,tail,nw); /* Undir edges always have tail < head */ 
+      else 
+        AddEdgeToTrees(tail,head,nw);
+    }
   }
   PutRNGstate();
   return nw;
@@ -393,7 +396,8 @@ void TouchEdge(Vertex tail, Vertex head, Network *nwp){
 
 int AddEdgeToTrees(Vertex tail, Vertex head, Network *nwp){
   if (EdgetreeSearch(tail, head, nwp->outedges) == 0) {
-    AddHalfedgeToTree(tail, head, nwp->outedges, nwp->next_outedge);
+    /* AddHalfedgeToTree(tail, head, nwp->outedges, nwp->next_outedge); */
+    AddHalfedgeWithEid(tail, head, nwp);
     AddHalfedgeToTree(head, tail, nwp->inedges, nwp->next_inedge);
     ++nwp->outdegree[tail];
     ++nwp->indegree[head];
@@ -403,6 +407,34 @@ int AddEdgeToTrees(Vertex tail, Vertex head, Network *nwp){
     return 1;
   }
   return 0;
+}
+
+/*****************
+ void AddHalfedgeWithEid:  Only called by AddEdgeToTrees
+*****************/
+void AddHalfedgeWithEid (Vertex a, Vertex b, Network *nwp){
+  TreeNode *eptr, *edges, *newnode;
+  Edge e, next_edge;
+
+  edges = nwp->outedges;
+  next_edge = nwp->next_outedge;
+  eptr = edges+a;
+
+  if (eptr->value==0) { /* This is the first edge for vertex a. */
+    eptr->value=b;
+    eptr->eid = nwp->eid_counter++;
+    return;
+  }
+  (newnode = edges + next_edge)->value=b;  
+  newnode->left = newnode->right = 0;
+  newnode->eid = nwp->eid_counter++;
+  /* Now find the parent of this new edge */
+  for (e=a; e!=0; e=(b < (eptr=edges+e)->value) ? eptr->left : eptr->right);
+  newnode->parent=eptr-edges;  /* Point from the new edge to the parent... */
+  if (b < eptr->value)  /* ...and have the parent point back. */
+    eptr->left=next_edge; 
+  else
+    eptr->right=next_edge;
 }
 
 /*****************
@@ -542,6 +574,7 @@ void printedge(Edge e, TreeNode *edges){
   Rprintf("\t.parent=%d\n",edges[e].parent);
   Rprintf("\t.left=%d\n",edges[e].left);
   Rprintf("\t.right=%d\n",edges[e].right);
+  Rprintf("\t.eid=%d\n",edges[e].eid);
 }
 
 /*****************
@@ -620,6 +653,40 @@ int FindithEdge (Vertex *tail, Vertex *head, Edge i, Network *nwp) {
   *tail = taili;
   *head = nwp->outedges[e].value;
   return 1;
+}
+
+void EdgeTreeWalk(TreeNode *tree, Edge x, 
+                  int (*fn)(TreeNode *tree, void *ctx), void *ctx){
+  if (x == 0) return;
+
+  EdgeTreeWalk(tree, (tree+x)->left, fn, ctx);
+  if (fn) if ((*fn)(tree+x, ctx)) return;
+  EdgeTreeWalk(tree, (tree+x)->right, fn, ctx);
+}
+
+struct eid_struct {
+  int eid;
+  Vertex head;
+};
+
+int GetEid_fn(TreeNode *tree, void *ctx){
+  struct eid_struct *e= (struct eid_struct *)ctx;
+
+  if (tree->value==e->head){
+    e->eid = tree->eid;
+    return 1;
+  }
+
+  return 0;
+}
+int GetEid(Vertex tail, Vertex head, Network *nwp){
+  struct eid_struct e;
+  e.eid = 0;
+  e.head = head;
+
+  EdgeTreeWalk(nwp->outedges, tail, &GetEid_fn, &e);
+
+  return e.eid;
 }
 
 /*****************
@@ -715,6 +782,48 @@ Edge EdgeTree2EdgeList(Vertex *tails, Vertex *heads, Network *nwp, Edge nmax){
       nwp->outedges[e].value != 0 && nextedge < nmax;
       e = EdgetreeSuccessor(nwp->outedges, e)){
         Vertex k = nwp->outedges[e].value;
+        if(v < k){
+          tails[nextedge] = k;
+          heads[nextedge] = v;
+          nextedge++;
+        }else{
+          tails[nextedge] = v;
+          heads[nextedge] = k;
+          nextedge++;
+        }
+      }
+    }
+  }
+  return nextedge;
+}
+/****************
+ Edge EdgeTree2EdgeList
+
+ Write the edgelist of a network into tail and head arrays.
+ Returns the number of edges in the network.
+****************/
+Edge EdgeTree2EdgeListWithEid(Vertex *tails, Vertex *heads, Edge *eids, Network *nwp, Edge nmax){
+  Edge nextedge=0;
+
+  /* *** don't forget,  tail -> head */
+  if (nwp->directed_flag) {
+    for (Vertex v=1; v<=nwp->nnodes; v++){
+      for(Vertex e = EdgetreeMinimum(nwp->outedges, v);
+      nwp->outedges[e].value != 0 && nextedge < nmax;
+      e = EdgetreeSuccessor(nwp->outedges, e)){
+        tails[nextedge] = v;
+        heads[nextedge] = nwp->outedges[e].value;
+        eids[nextedge] = nwp->outedges[e].eid;
+        nextedge++;
+      }
+    }
+  }else{
+    for (Vertex v=1; v<=nwp->nnodes; v++){
+      for(Vertex e = EdgetreeMinimum(nwp->outedges, v);
+      nwp->outedges[e].value != 0 && nextedge < nmax;
+      e = EdgetreeSuccessor(nwp->outedges, e)){
+        Vertex k = nwp->outedges[e].value;
+        eids[nextedge] = nwp->outedges[e].eid;
         if(v < k){
           tails[nextedge] = k;
           heads[nextedge] = v;

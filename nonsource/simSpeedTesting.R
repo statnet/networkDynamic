@@ -19,11 +19,24 @@ net.deactivate.edges <- function(x, e, onset, terminus) UseMethod("net.deactivat
 net.activate.edges <- function(x, e, onset, terminus) UseMethod("net.activate.edges")
 net.as.networkDynamic <- function(x) UseMethod("net.as.networkDynamic")
 
+# Test for networkDynamic equality: only test edges and activity
+nD.is.equal <- function(x,y){
+  if (network.size(x) != network.size(y)) return(FALSE)
+  if (length(x$mel) != length(y$mel)) return(FALSE)
+  all(unlist(lapply(1:length(x$mel), function(i){
+      x$mel[[i]]$inl == y$mel[[i]]$inl && x$mel[[i]]$outl == y$mel[[i]]$outl && 
+        all(x$mel[[i]]$atl$active == y$mel[[i]]$atl$active)
+  })))
+}
+
 # Vanilla networkDynamic object
 source("sim.nD.R")
 
-# ndCache object
+# ndCache object: network + file backed store
 source("sim.ndCache.R")
+
+# ET object: edgetree + file backed store
+source("sim.ET.R")
 
 # function to define each simulation step.
 # this is inteded to do something analagous to a simulation involving edge and vertex dynamics
@@ -72,7 +85,7 @@ simStep<-function(x,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
   return(obs.period.incr(x))
 }
 
-# functions to define sim runs
+# Sim steps plus conversion to networkDynamic
 runSim<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
   set.seed(1)
   for(t in 1:steps){
@@ -81,14 +94,12 @@ runSim<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttr
   return(net.as.networkDynamic(x))
 }
 
-
 # Run network-type nD 
 runSim.nD <- function(){
   nD<-sim.nD.init(11)
   nD <- net.add.edges.active(nD,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSim(nD))
 }
-microbenchmark(runSim.nD(),times = 10)
 
 # Run network-type ndCache
 runSim.ndCache <- function(){
@@ -96,8 +107,20 @@ runSim.ndCache <- function(){
   ndCache <- net.add.edges.active(ndCache,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSim(ndCache))
 }
-microbenchmark(runSim.ndCache(),times = 10)
 
+# Run network-type edgetree
+runSim.ET <- function(){
+  et<-sim.ET.init(11)
+  et <- net.add.edges.active(et,tail=1:10,head=2:11,onset=0,terminus=Inf)
+  invisible(runSim(et))
+}
+mb <- microbenchmark(x<-runSim.ET(),y<-runSim.nD(), z<-runSim.ndCache(), times = 10)
+nD.is.equal(x,y)
+nD.is.equal(y,z)
+nD.is.equal(x,z)
+print(mb)
+
+# Sim steps only... no conversion to networkDynamic
 runSimNoConvert<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
   set.seed(1)
   for(t in 1:steps){
@@ -119,7 +142,16 @@ runSim.ndCache.NC <- function(){
   ndCache <- net.add.edges.active(ndCache,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSimNoConvert(ndCache))
 }
-microbenchmark(runSim.ndCache.NC(),times = 10)
+
+# Run network-type edgetree
+runSim.ET.NC <- function(){
+  et<-sim.ET.init(11)
+  et <- net.add.edges.active(et,tail=1:10,head=2:11,onset=0,terminus=Inf)
+  invisible(runSimNoConvert(et))
+}
+mb <- microbenchmark(x<-runSim.ET.NC(),y<-runSim.nD.NC(), z<-runSim.ndCache.NC(), times = 10)
+print(mb)
+
 
 # speed profiling of existing method
 #Rprof(filename = 'simTest')

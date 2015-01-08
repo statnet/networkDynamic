@@ -63,14 +63,23 @@ net.edgeIDs.ndCache <- function(x, v, alter){
 # question: should activations automatically increment the net.obs.period?
 # disallow edge/vertex deletion (since it is expensive). They may be added, or deactivated, but not removevd?
 
+# Presumes that edges never get deleted and edge ids increase?
 net.add.edges.active.ndCache<-function (x, tail, head, onset, terminus){
   class(x) <- class(x)[2:length(class(x))]
-  x<-add.edges.network(x,tail=tail,head=head,onset=onset,terminus=terminus)  # or should this be the networkDynamic version?
-  # update the edge status vector, assuming edge is active
-  # We also presume that edge ids increase
+  x<-add.edges.network(x,tail=tail,head=head)
+
   eA <- x%n%'edgeActivity'
+
+  # Eids defined by old length of edgeActivity and new length of x$mel
+  eids <- seq.int(length(eA)+1,length(x$mel))
+
+  # Update edge activity vector
   x%n%'edgeActivity' <- c(eA,rep(TRUE,length(x$mel)-length(eA)))
   class(x) <- c("ndCache",class(x))
+
+  # Now record activations
+  net.activate.edges.ndCache(x,eids,onset=onset,terminus=terminus)
+
   x
 }
 
@@ -128,8 +137,7 @@ net.is.edge.active.ndCache <- function (x, e, at) {
 }
 
 net.is.vertex.active.ndCache <- function (x, v, at) {
-  class(x) <- class(x)[2:length(class(x))]
-  rep(TRUE,length(network.size(x)))
+  rep(TRUE,length(v))
 }
 
 # convert the cached time information in an ndCache object into a networkDynamic object

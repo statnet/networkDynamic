@@ -44,3 +44,6 @@ et.is.directed <- function(nw) .Call(EdgetreeInfo_R, nw)$directed_flag==1
 et.get.neighborhood <- function(nw, x, type=1L){
    unique(sort(.Call(GetNeighborhood_R, nw, x, as.integer(type))))
 }
+
+et.to.edgelist <- function(nw) .Call(EdgeTree2EdgeList_R,nw,TRUE)
+et.get.eid <- function(nw,tail,head) .Call(GetEid_R,nw,as.integer(tail),as.integer(head))

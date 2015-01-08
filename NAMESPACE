@@ -83,6 +83,8 @@ et.find.ith.edge,
 et.is.directed,
 et.network.size,
 et.info,
-et.get.neighborhood
+et.get.neighborhood,
+et.to.edgelist,
+et.get.eid
 #when.next.edge.change
 )

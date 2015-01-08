@@ -40,6 +40,7 @@ typedef struct TreeNodestruct {
   Edge parent;   /*  parent of this node in the tree (0 for root) */
   Edge left;     /*  left child (0 if none)  */
   Edge right;    /*  right child (0 if none) */
+  Edge eid;
 } TreeNode;
 
 /* Dur_Inf is a structure containing information about durations of
@@ -72,6 +73,7 @@ typedef struct Dur_Infstruct {
 typedef struct Networkstruct {
   TreeNode *inedges;
   TreeNode *outedges;
+  Edge eid_counter;
   int directed_flag;
   Vertex bipartite;  
   Vertex nnodes;
@@ -116,6 +118,7 @@ int ToggleEdge (Vertex tail, Vertex head, Network *nwp);
 int ToggleEdgeWithTimestamp (Vertex tail, Vertex head, Network *nwp);
 int AddEdgeToTrees(Vertex tail, Vertex head, Network *nwp);
 void AddHalfedgeToTree (Vertex a, Vertex b, TreeNode *edges, Edge next_edge);
+void AddHalfedgeWithEid (Vertex a, Vertex b, Network *nwp);
 void UpdateNextedge (TreeNode *edges, Edge *nextedge, Network *nwp);
 int DeleteEdgeFromTrees(Vertex tail, Vertex head, Network *nwp);
 int DeleteHalfedgeFromTree(Vertex a, Vertex b, TreeNode *edges,
@@ -127,14 +130,18 @@ void TouchEdge(Vertex tail, Vertex head, Network *nwp);
 
 /* Utility functions. */
 int FindithEdge (Vertex *tail, Vertex *head, Edge i, Network *nwp);
+int GetEid(Vertex tail, Vertex head, Network *nwp);
 int GetRandEdge(Vertex *tail, Vertex *head, Network *nwp);
 void printedge(Edge e, TreeNode *edges);
 void InOrderTreeWalk(TreeNode *edges, Edge x);
+void EdgeTreeWalk(TreeNode *tree, Edge x, 
+                  int (*fn)(TreeNode *tree, void *ctx), void *ctx);
 void NetworkEdgeList(Network *nwp);
 void ShuffleEdges(Vertex *tails, Vertex *heads, Edge nedges);
 
 /* Others... */
 Edge DesignMissing (Vertex a, Vertex b, Network *mnwp);
 Edge EdgeTree2EdgeList(Vertex *tails, Vertex *heads, Network *nwp, Edge nmax);
+Edge EdgeTree2EdgeListWithEid(Vertex *tail, Vertex *heads, Edge *eids, Network *nwp, Edge nmax);
 
 #endif

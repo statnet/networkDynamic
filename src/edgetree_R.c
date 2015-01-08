@@ -59,20 +59,22 @@ SEXP NetworkInitialize_R(SEXP tails, SEXP heads, SEXP nedges,
 			  SEXP lasttoggle_flag, SEXP time, SEXP lasttoggle){
 
   SEXP ans=R_NilValue;
-  Vertex *vtails, *vheads;
+  Vertex *vtails=NULL, *vheads=NULL;
   Network *nw;
 
   if (!isInteger(nedges) || !isInteger(nnodes) || !isInteger(directed_flag)
       || !isInteger(bipartite) || !isInteger(lasttoggle_flag) || !isInteger(time)
       || !isInteger(lasttoggle) ) return ans;
 
-  vtails = copyVertex(tails, INTEGER(nedges)[0]);
-  vheads = copyVertex(heads, INTEGER(nedges)[0]);
+  if (INTEGER(nedges)[0] > 0){
+    vtails = copyVertex(tails, INTEGER(nedges)[0]);
+    vheads = copyVertex(heads, INTEGER(nedges)[0]);
 
-  if (vtails == NULL || vheads == NULL){
-    if (vtails != NULL) free(vtails);
-    if (vheads != NULL) free(vheads);
-    return ans;
+    if (vtails == NULL || vheads == NULL){
+      if (vtails != NULL) free(vtails);
+      if (vheads != NULL) free(vheads);
+      return ans;
+    }
   }
 
   nw = NetworkInitialize(vtails, vheads, (Edge) INTEGER(nedges)[0],
@@ -83,8 +85,8 @@ SEXP NetworkInitialize_R(SEXP tails, SEXP heads, SEXP nedges,
   PROTECT(ans = R_MakeExternalPtr(nw,install("edgetree ptr"), R_NilValue));
   R_RegisterCFinalizerEx(ans,edgetreeFinalizer, TRUE);
 
-  free(vtails);
-  free(vheads);
+  if (vtails) free(vtails);
+  if (vtails) free(vheads);
 
   UNPROTECT(1);
   return ans;
@@ -182,6 +184,17 @@ SEXP FindithEdge_R(SEXP i, SEXP nw){
   return(ans);
 }
 
+SEXP GetEid_R(SEXP nw, SEXP tail, SEXP head){
+  SEXP ans=R_NilValue;
+  if (!IS_EDGETREE_PTR(nw)) {
+    return ans;
+  } 
+  PROTECT(ans = allocVector(INTSXP,1));
+  INTEGER(ans)[0] = GetEid(INTEGER(tail)[0],INTEGER(head)[0],R_ExternalPtrAddr(nw));
+  UNPROTECT(1);
+  return ans;
+}
+
 SEXP EdgetreeInfo_R(SEXP nw){
   SEXP ans=R_NilValue, nms;
   Network *pnw;
@@ -211,26 +224,18 @@ SEXP EdgetreeInfo_R(SEXP nw){
   return ans;
 }
 
-void EdgeTreeWalk(TreeNode *tree, Edge x, 
-                  void (*fn)(TreeNode *tree, void *ctx), void *ctx){
-  if (x == 0) return;
-
-  EdgeTreeWalk(tree, (tree+x)->left, fn, ctx);
-  if (fn) (*fn)(tree+x, ctx);
-  EdgeTreeWalk(tree, (tree+x)->right, fn, ctx);
-}
-
 struct Vertices {
   int i;
   Vertex *v;
 };
-void AdjacencyList_fn(TreeNode *tree, void *ctx){
+int AdjacencyList_fn(TreeNode *tree, void *ctx){
   struct Vertices *v;
 
   v = (struct Vertices *)ctx;
-  if (tree->value==0) return;
+  if (tree->value==0) return 0;
   v->v[v->i] = tree->value;
   (v->i)++;
+  return 0;
 }
 Vertex *AdjacencyList(Network *nw, Edge x, int inout, int *len){
   struct Vertices v;
@@ -290,4 +295,41 @@ SEXP GetNeighborhood_R(SEXP nw, SEXP vertex, SEXP type){
   UNPROTECT(1);
   return ans;
 
+}
+
+SEXP EdgeTree2EdgeList_R(SEXP nw, SEXP eid){
+  SEXP ans=R_NilValue, t;
+  int *tails, *heads, *eids=NULL, cols=2;
+  Network *pnw;
+
+  if (!IS_EDGETREE_PTR(nw)) return ans;
+  pnw = R_ExternalPtrAddr(nw);
+
+  if (!isLogical(eid)) return ans;
+
+  if (pnw->nedges == 0) return ans;
+
+  if (LOGICAL(eid)[0])
+    cols=3;
+
+  PROTECT(ans = allocVector(INTSXP,pnw->nedges*cols));
+  PROTECT(t = allocVector(INTSXP, 2));
+  INTEGER(t)[0] = pnw->nedges;
+  INTEGER(t)[1] = cols;
+
+  tails = INTEGER(ans);
+  heads = tails + pnw->nedges;
+
+  if (LOGICAL(eid)[0]){
+    eids = heads+pnw->nedges;
+    EdgeTree2EdgeListWithEid(tails,heads,eids, pnw,pnw->nedges);
+  } else {
+    EdgeTree2EdgeList(tails,heads,pnw,pnw->nedges);
+  }
+
+  setAttrib(ans,R_DimSymbol, t);
+
+  UNPROTECT(2);
+  return ans;
+  
 }

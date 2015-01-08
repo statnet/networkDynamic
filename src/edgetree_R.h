@@ -48,6 +48,7 @@ SEXP AddDelEdgeToTrees_R(SEXP tail, SEXP head, SEXP nw, SEXP add);
 
 /* Utility functions. */
 SEXP FindithEdge_R (SEXP i, SEXP nw);
+SEXP GetEid_R(SEXP nw, SEXP tail, SEXP head);
 //int GetRandEdge(Vertex *tail, Vertex *head, Network *nwp);
 //void printedge(Edge e, TreeNode *edges);
 //void InOrderTreeWalk(TreeNode *edges, Edge x);
@@ -57,5 +58,6 @@ SEXP NetworkEdgeList_R(SEXP nw);
 /* Others... */
 //Edge DesignMissing (Vertex a, Vertex b, Network *mnwp);
 //Edge EdgeTree2EdgeList(Vertex *tails, Vertex *heads, Network *nwp, Edge nmax);
+SEXP EdgeTree2EdgeList_R(SEXP nw, SEXP eid);
 
 #endif
