@@ -7,55 +7,72 @@ sim.nD.init <- function(n){
   input
 }
 obs.period.now.nD <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   obs<-x%n%'net.obs.period'
   now<-max(unlist(obs$observations))
   now
 }
 obs.period.incr.nD <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   obs<-x%n%'net.obs.period'
   now<-max(unlist(obs$observations))
   obs$observations[[1]][2]<-now+1
   x%n%'net.obs.period'<-obs
-  class(x) <- c("nD",class(x))
   x
 }
 net.size.nD <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   network.size(x)
 }
 net.edgeIDs.nD <- function(x, v, alter){
-  class(x) <- class(x)[2:length(class(x))]
   get.edgeIDs(x,v=v,alter=alter)
 }
 net.add.edges.active.nD <- function(x, tail, head, onset, terminus){
-  class(x) <- class(x)[2:length(class(x))]
   x<-add.edges.active(x,tail=tail,head=head,onset=onset,terminus=terminus)
-  class(x) <- c("nD",class(x))
   x
 }
 net.is.vertex.active.nD <- function(x, v, at){
-  class(x) <- class(x)[2:length(class(x))]
   is.active(x,v=v,at=at)
 }
 net.is.edge.active.nD <- function(x, e, at){
-  class(x) <- class(x)[2:length(class(x))]
   is.active(x,e=e,at=at)
 }
+
+# check if edge exists and is active (non-existing edge assumed inactive)
+net.is.dyad.active.nD <- function(x, tail, head, at){
+  if (length(get.edgeIDs.active(x,v=tail,alter=head,at=at))>0){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+# check if edge exists for dyad.  If not, add and activate
+net.activate.dyad.nD <- function(x, tail, head, at){
+  eid<-get.edgeIDs(x,v = tail,alter=head)
+  if (length(eid)==0){
+    add.edges.active(x,tail = tail,head=head,onset=at,terminus=Inf) # add and activate
+  } else {
+    activate.edges(x,e=eid,onset=at,terminus=Inf) # activate
+  }
+}
+
+net.deactivate.dyad.nD <- function(x, tail, head, at){
+  eid<-get.edgeIDs(x,v = tail,alter=head)
+  if (length(eid)>0){  # make sure edge exists
+    deactivate.edges(x,e=eid,onset=at,terminus=Inf)  # deactivate
+  }
+}
+
+
+
+
 net.deactivate.edges.nD <- function(x, e, onset, terminus){
-  class(x) <- class(x)[2:length(class(x))]
   x<-deactivate.edges(x,e=e,onset=onset,terminus=terminus)
-  class(x) <- c("nD",class(x))
   x
 }
 net.activate.edges.nD <- function(x, e, onset, terminus){
-  class(x) <- class(x)[2:length(class(x))]
+  # check if edge exists and add before activiating
   x<-activate.edges(x,e=e,onset=onset,terminus=terminus)
-  class(x) <- c("nD",class(x))
   x
 }
 net.as.networkDynamic.nD <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   x
 }

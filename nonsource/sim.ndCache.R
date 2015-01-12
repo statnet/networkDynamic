@@ -34,27 +34,22 @@ sim.ndCache.init<-function(n){
 }
 
 obs.period.now.ndCache <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   obs<-x%n%'net.obs.period'
   now<-max(unlist(obs$observations))
   now
 }
 obs.period.incr.ndCache <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   obs<-x%n%'net.obs.period'
   now<-max(unlist(obs$observations))
   obs$observations[[1]][2]<-now+1
   x%n%'net.obs.period'<-obs
-  class(x) <- c("ndCache",class(x))
   x
 }
 net.size.ndCache <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   network.size(x)
 }
 
 net.edgeIDs.ndCache <- function(x, v, alter){
-  class(x) <- class(x)[2:length(class(x))]
   get.edgeIDs(x,v=v,alter=alter)
 }
 
@@ -65,7 +60,6 @@ net.edgeIDs.ndCache <- function(x, v, alter){
 
 # Presumes that edges never get deleted and edge ids increase?
 net.add.edges.active.ndCache<-function (x, tail, head, onset, terminus){
-  class(x) <- class(x)[2:length(class(x))]
   x<-add.edges.network(x,tail=tail,head=head)
 
   eA <- x%n%'edgeActivity'
@@ -75,7 +69,6 @@ net.add.edges.active.ndCache<-function (x, tail, head, onset, terminus){
 
   # Update edge activity vector
   x%n%'edgeActivity' <- c(eA,rep(TRUE,length(x$mel)-length(eA)))
-  class(x) <- c("ndCache",class(x))
 
   # Now record activations
   net.activate.edges.ndCache(x,eids,onset=onset,terminus=terminus)
@@ -84,7 +77,6 @@ net.add.edges.active.ndCache<-function (x, tail, head, onset, terminus){
 }
 
 net.activate.edges.ndCache<-function(x, e, onset = NULL, terminus = NULL){
-  class(x) <- class(x)[2:length(class(x))]
   filename<-x%n%'edgeCacheFile'
   # todo: convert length and at to onset and terminus
   #at<-rep(at,length.out = length(e))
@@ -96,12 +88,10 @@ net.activate.edges.ndCache<-function(x, e, onset = NULL, terminus = NULL){
   edgeActivity<-x%n%'edgeActivity'
   edgeActivity[e]<-TRUE
   x%n%'edgeActivity'<-edgeActivity
-  class(x) <- c("ndCache",class(x))
   x
 }
 
 net.deactivate.edges.ndCache<-function(x, e, onset, terminus){
-  class(x) <- class(x)[2:length(class(x))]
   filename<-x%n%'edgeCacheFile'
 
   # todo: convert length and at to onset and terminus
@@ -114,7 +104,6 @@ net.deactivate.edges.ndCache<-function(x, e, onset, terminus){
   edgeActivity<-x%n%'edgeActivity'
   edgeActivity[e]<-FALSE
   x%n%'edgeActivity'<-edgeActivity
-  class(x) <- c("ndCache",class(x))
   x
 }
 
@@ -142,7 +131,6 @@ net.is.vertex.active.ndCache <- function (x, v, at) {
 
 # convert the cached time information in an ndCache object into a networkDynamic object
 net.as.networkDynamic.ndCache <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   # retrive the name of cache file
   filename<-x%n%'edgeCacheFile'
   edgeChanges<-read.csv(filename,header = FALSE)

@@ -13,7 +13,9 @@ net.size <- function(x) UseMethod("net.size")
 net.edgeIDs <- function(x, v, alter) UseMethod("net.edgeIDs")
 net.add.edges.active <- function(x, tail, head, onset, terminus)
                   UseMethod("net.add.edges.active")
-net.is.edge.active <- function(x, e, at) UseMethod("net.is.edge.active")
+net.is.dyad.active <- function(x, tail,head, at) UseMethod("net.is.dyad.active")
+net.activate.dyad <- function(x, tail, head, at) UseMethod("net.activate.dyad")
+net.deactivate.dyad <- function(x, tail, head, at) UseMethod("net.deactivate.dyad")
 net.is.vertex.active <- function(x, v, at) UseMethod("net.is.vertex.active")
 net.deactivate.edges <- function(x, e, onset, terminus) UseMethod("net.deactivate.edges")
 net.activate.edges <- function(x, e, onset, terminus) UseMethod("net.activate.edges")
@@ -62,18 +64,15 @@ simStep<-function(x,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
     tailTog<-sample(1:net.size(x),size=net.size(x),replace=FALSE)
     # slow loop
     for(e in 1:length(headTog)){
-      eid<-net.edgeIDs(x,v=tailTog[e],alter=headTog[e])
-      if (length(eid)==0){
-        x <- net.add.edges.active(x,tail =tailTog[e],head=headTog[e],onset=now,terminus=Inf)
+      # if the dyad is inactive (or no edge exists) activate it, otherwise deactive
+      if (net.is.dyad.active(x,tail=tailTog[e],head=headTog[e],at=now)){
+          x<-net.deactivate.dyad(x,tail=tailTog[e],head=headTog[e],at=now)
       } else {
-        if (net.is.edge.active(x,e=eid,at=now)){
-          x<-net.deactivate.edges(x,e=eid,onset=now,terminus=Inf)
-        } else {
-          x<-net.activate.edges(x,e=eid,onset=now,terminus=Inf)
-        }
+          x<-net.activate.dyad(x,tail=tailTog[e],head=headTog[e],at=now)
       }
     }
   }
+
   
 #  if(toggleVertAttrs){
 #    # toggle some vertex attributes
@@ -85,8 +84,11 @@ simStep<-function(x,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
   return(obs.period.incr(x))
 }
 
+sim.steps=100
+sim.net.size=100
+
 # Sim steps plus conversion to networkDynamic
-runSim<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
+runSim<-function(x,steps=sim.steps,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
   set.seed(1)
   for(t in 1:steps){
     x<-simStep(x,toggleEdges,toggleVertices,toggleVertAttrs)
@@ -96,32 +98,33 @@ runSim<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttr
 
 # Run network-type nD 
 runSim.nD <- function(){
-  nD<-sim.nD.init(11)
-  nD <- net.add.edges.active(nD,tail=1:10,head=2:11,onset=0,terminus=Inf)
+  nD<-sim.nD.init(sim.net.size)
+  #nD <- net.add.edges.active(nD,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSim(nD))
 }
 
 # Run network-type ndCache
 runSim.ndCache <- function(){
-  ndCache<-sim.ndCache.init(11)
-  ndCache <- net.add.edges.active(ndCache,tail=1:10,head=2:11,onset=0,terminus=Inf)
+  ndCache<-sim.ndCache.init(sim.net.size)
+  #ndCache <- net.add.edges.active(ndCache,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSim(ndCache))
 }
 
 # Run network-type edgetree
 runSim.ET <- function(){
-  et<-sim.ET.init(11)
-  et <- net.add.edges.active(et,tail=1:10,head=2:11,onset=0,terminus=Inf)
+  et<-sim.ET.init(sim.net.size)
+  #et <- net.add.edges.active(et,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSim(et))
 }
-mb <- microbenchmark(x<-runSim.ET(),y<-runSim.nD(), z<-runSim.ndCache(), times = 10)
-nD.is.equal(x,y)
-nD.is.equal(y,z)
-nD.is.equal(x,z)
+#mb <- microbenchmark(x<-runSim.ET(),y<-runSim.nD(), z<-runSim.ndCache(), times = 10)
+mb <- microbenchmark(x<-runSim.ET(),y<-runSim.nD(), times = 3)
+#nD.is.equal(x,y)
+#nD.is.equal(y,z)
+#nD.is.equal(x,z)
 print(mb)
 
 # Sim steps only... no conversion to networkDynamic
-runSimNoConvert<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
+runSimNoConvert<-function(x,steps=sim.steps,toggleEdges=TRUE,toggleVertices=TRUE,toggleVertAttrs=TRUE){
   set.seed(1)
   for(t in 1:steps){
     x<-simStep(x,toggleEdges,toggleVertices,toggleVertAttrs)
@@ -130,25 +133,26 @@ runSimNoConvert<-function(x,steps=100,toggleEdges=TRUE,toggleVertices=TRUE,toggl
 }
 
 runSim.nD.NC <- function(){
-  nD<-sim.nD.init(11)
+  nD<-sim.nD.init(sim.net.size)
   nD <- net.add.edges.active(nD,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSimNoConvert(nD))
 }
 
 # Run network-type ndCache
 runSim.ndCache.NC <- function(){
-  ndCache<-sim.ndCache.init(11)
+  ndCache<-sim.ndCache.init(sim.net.size)
   ndCache <- net.add.edges.active(ndCache,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSimNoConvert(ndCache))
 }
 
 # Run network-type edgetree
 runSim.ET.NC <- function(){
-  et<-sim.ET.init(11)
+  et<-sim.ET.init(sim.net.size)
   et <- net.add.edges.active(et,tail=1:10,head=2:11,onset=0,terminus=Inf)
   invisible(runSimNoConvert(et))
 }
-mb <- microbenchmark(x<-runSim.ET.NC(),y<-runSim.nD.NC(), z<-runSim.ndCache.NC(), times = 10)
+#mb <- microbenchmark(x<-runSim.ET.NC(),y<-runSim.nD.NC(), z<-runSim.ndCache.NC(), times = 10)
+mb <- microbenchmark(x<-runSim.ET.NC(),y<-runSim.nD.NC(), times = 3)
 print(mb)
 
 

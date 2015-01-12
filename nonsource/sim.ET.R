@@ -1,3 +1,6 @@
+
+#WARNING:  THE *.dyad.* methods now use a different model for how edgetree should work than the and and remove edges version. 
+
 # sim.{network-type}.init <- function(n) {} where n is number of nodes
 print.ET <- function(x, ...){
   class(x) <- 'list'
@@ -23,18 +26,15 @@ sim.ET.init <- function(n){
   et
 }
 obs.period.now.ET <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   obs<-x$net.obs.period
   now<-max(unlist(obs$observations))
   now
 }
 obs.period.incr.ET <- function(x){
-  class(x) <- class(x)[2:length(class(x))]
   obs<-x$net.obs.period
   now<-max(unlist(obs$observations))
   obs$observations[[1]][2]<-now+1
   x$net.obs.period<-obs
-  class(x) <- c("ET",class(x))
   x
 }
 net.size.ET <- function(x) et.info(x$net)$nnodes
@@ -67,6 +67,49 @@ net.is.edge.active.ET <- function(x, e, at){
 net.is.vertex.active.ET <- function(x, v, at){
   rep(TRUE,length(v))
 }
+
+
+net.is.dyad.active.ET <- function(x, tail, head, at){
+  # this will return 0 if edge does not exist in edgetree
+  eid<-et.get.eid(x$net,tail,head)
+  if (eid>0){
+    return(TRUE)
+  } else {
+    return(FALSE) # can't find edge
+  }
+}
+net.activate.dyad.ET <- function(x, tail, head, at){
+  eid<-et.get.eid(x$net,tail,head)
+  if (eid == 0){
+    # update the edge tree object
+    # don't have to save result back to x$net, because it is just a pointer so value doesn't change
+    et.add.edges(tail,head,x$net)
+    # write the update out to cache file
+    filename<-x$edgeCacheFile
+    write(t(cbind(at,tail,head,1)),file=filename,append=TRUE,ncolumns=4,sep=',')
+    
+    
+  } else {
+    warning("dyad already active with eid",eid)
+  }
+  x
+}
+
+net.deactivate.dyad.ET<- function(x, tail, head, at){
+  eid<-et.get.eid(x$net,tail,head)
+  if (eid == 0){
+    warning("dyad already inactive")
+    
+  } else {
+    filename<-x$edgeCacheFile
+    # write the update out to cache file
+    write(t(cbind(at,tail,head,0)),file=filename,append=TRUE,ncolumns=4,sep=',')
+    # update the edge tree object
+    et.delete.edges(tail,head,x$net)
+  }
+  x
+}
+
 net.activate.edges.ET <- function(x, e, onset, terminus){
   filename<-x$edgeCacheFile
   # todo: convert length and at to onset and terminus
@@ -98,15 +141,9 @@ net.deactivate.edges.ET <- function(x, e, onset, terminus){
 }
 net.as.networkDynamic.ET <- function(x) {
   xn <- network.initialize(et.info(x$net)$nnodes)
-  xn%n%'net.obs.period'<-list(observations=list(c(0,1)),mode="discrete", time.increment=1,time.unit="step")
-  edges <- et.to.edgelist(x$net)
-  edges <- edges[order(edges[,3]),]
-  tails <- edges[,1]
-  heads <- edges[,2]
-  add.edges(xn,tail=tails,head=heads)
   filename<-x$edgeCacheFile
   edgeChanges<-read.csv(filename,header = FALSE)
-  nd <-networkDynamic(base.net=xn,edge.change=cbind(edgeChanges[,1],tails[edgeChanges[,2]],heads[edgeChanges[,2]],edgeChanges[,3]))
+  nd <-networkDynamic(base.net=xn,edge.changes=edgeChanges)
   nd%n%'edgeCacheFile' <- filename
   nd
 }
