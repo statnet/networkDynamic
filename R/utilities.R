@@ -632,28 +632,46 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
         }
   
       } else {  # changes or toggles, so have to loop to avoid hurting our heads
-        # assume edges in base.net to be active initially
-        if (!is.null(edge.toggles)) activate.edges(base.net, onset=-Inf, terminus=Inf)
-        for (i in seq_len(nrow(edge.data))) {
-          t <- edge.data[i,2] 
-          h <- edge.data[i,3]
-          e <- get.edgeIDs(base.net, t, h)
-          # add edge if not present in the base.net (as inactive?)
-          # TODO: problem here with directed vs undirected networks?
-          # TODO: how to handle multiplex/duplicate edge case?
-          if (length(e) == 0) {
-            add.edge(base.net, t, h)
-            e <- get.edgeIDs(base.net, t, h)
-            if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
-          }
-          at <- edge.data[i,'time']
-          change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
-          if (change.activate) {
-            activate.edges(base.net, e=e, onset=at, terminus=Inf)
-          } else {
-            deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
-          }
+        
+        # if no edges exist in base.net, can at least pre-create the edges
+        if (network.edgecount(base.net) ==0){
+          dyads<-unique(edge.data[,2:3,drop=FALSE])
+          tails<-as.list(dyads[,1])
+          heads<-as.list(dyads[,2])
+          add.edges(base.net,tail=tails,head=heads)
           
+          # try to pre-generate the activity matrix for each edge
+          # and set it directly, bypasing the activity methods
+          spls<-lapply(seq_len(nrow(dyads)),function(e){
+            spellsFromChanges(edge.data,dyads[e,1],dyads[e,2])
+          })
+          base.net<-set.edge.attribute(base.net,'active',spls)
+          
+        } else {
+          # if there are pre-existing edges, assume edges in base.net to be active initially
+          if (!is.null(edge.toggles)) activate.edges(base.net, onset=-Inf, terminus=Inf)
+        
+          for (i in seq_len(nrow(edge.data))) {
+            t <- edge.data[i,2] 
+            h <- edge.data[i,3]
+            e <- get.edgeIDs(base.net, t, h)
+            # add edge if not present in the base.net (as inactive?)
+            # TODO: problem here with directed vs undirected networks?
+            # TODO: how to handle multiplex/duplicate edge case?
+            if (length(e) == 0) {
+              add.edge(base.net, t, h)
+              e <- get.edgeIDs(base.net, t, h)
+              if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
+            }
+            at <- edge.data[i,'time']
+            change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
+            if (change.activate) {
+              activate.edges(base.net, e=e, onset=at, terminus=Inf)
+            } else {
+              deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
+            }
+            
+          }
         }
       } # end of non-spell edge creation
       
@@ -1195,5 +1213,26 @@ adjust.activity <-function(nd,offset=0,factor=1){
   if(.validLHS(xn, parent.frame()))
     on.exit(eval.parent(call('<-',xn, nd)))
   invisible(nd)
+}
+
+
+# function to create edge spell matrix for a single dyad (tail,head)
+# from matrix of changes [time, tail, head, direction]
+spellsFromChanges<-function(changes,tail,head){
+  dyadRows<-changes[,2]==tail & changes[,3]==head
+  changes<-changes[dyadRows,]
+  # if there is an odd number of rows, spells will be unbalenced
+  # so need to pad beginning or end with inf
+  if (nrow(changes)%%2>0){
+    if (changes[1,4]==1){ # if first spell was an activation
+      # last spell should be open interval
+      changes<-rbind(changes,c(Inf,tail,head,0))
+    } else {  # first spell was deactivation, so first spell should be open interval
+      changes<-rbind(c(-Inf,tail,head,0),changes)
+    }
+  }
+  # bind onsets and termini into a spell matrix
+  splmat<-cbind(changes[changes[,4]==1,1],changes[changes[,4]==0,1])
+  return(splmat)
 }
 
