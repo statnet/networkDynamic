@@ -631,29 +631,52 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
           }
         }
   
-      } else {  # changes or toggles, so have to loop to avoid hurting our heads
-        # assume edges in base.net to be active initially
-        if (!is.null(edge.toggles)) activate.edges(base.net, onset=-Inf, terminus=Inf)
-        for (i in seq_len(nrow(edge.data))) {
-          t <- edge.data[i,2] 
-          h <- edge.data[i,3]
-          e <- get.edgeIDs(base.net, t, h)
-          # add edge if not present in the base.net (as inactive?)
-          # TODO: problem here with directed vs undirected networks?
-          # TODO: how to handle multiplex/duplicate edge case?
-          if (length(e) == 0) {
-            add.edge(base.net, t, h)
-            e <- get.edgeIDs(base.net, t, h)
-            if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
-          }
-          at <- edge.data[i,'time']
-          change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
-          if (change.activate) {
-            activate.edges(base.net, e=e, onset=at, terminus=Inf)
-          } else {
-            deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
-          }
+      } else {  # we are processing changes or toggles
+        
+        # if no edges exist in base.net, can at least pre-create the edges
+        if (network.edgecount(base.net) ==0){
+          dyads<-unique(edge.data[,2:3,drop=FALSE])
+          tails<-as.list(dyads[,1])
+          heads<-as.list(dyads[,2])
+          add.edges(base.net,tail=tails,head=heads)
           
+          
+          # try to pre-generate the activity matrix for each edge
+          # and set it directly, bypasing the activity methods
+		      spls<-lapply(seq_len(nrow(dyads)),function(e){
+            
+		        spellsFromChanges(edge.data,dyads[e,1],dyads[e,2],strict=FALSE)
+            # strict=FALSE means it will ignore any out-of-order changes
+		      })
+		      base.net<-set.edge.attribute(base.net,'active',spls)
+          
+          
+        } else { # some pre-existing edges, so have to loop to avoid hurting our heads
+           #TODO: this could be optimized much more, see version in tergm
+          # if there are pre-existing edges, assume edges in base.net to be active initially
+          if (!is.null(edge.toggles)) activate.edges(base.net, onset=-Inf, terminus=Inf)
+        
+          for (i in seq_len(nrow(edge.data))) {
+            t <- edge.data[i,2] 
+            h <- edge.data[i,3]
+            e <- get.edgeIDs(base.net, t, h)
+            # add edge if not present in the base.net (as inactive?)
+            # TODO: problem here with directed vs undirected networks?
+            # TODO: how to handle multiplex/duplicate edge case?
+            if (length(e) == 0) {
+              add.edge(base.net, t, h)
+              e <- get.edgeIDs(base.net, t, h)
+              if (!is.null(edge.toggles)) deactivate.edges(base.net, e=e, onset=-Inf, terminus=Inf)
+            }
+            at <- edge.data[i,'time']
+            change.activate <- (if (!is.null(edge.toggles)) !is.active(base.net, at=at, e=e) else edge.data[i,'direction']==1) 
+            if (change.activate) {
+              activate.edges(base.net, e=e, onset=at, terminus=Inf)
+            } else {
+              deactivate.edges(base.net, e=e, onset=at, terminus=Inf)
+            }
+            
+          }
         }
       } # end of non-spell edge creation
       
@@ -1028,18 +1051,6 @@ as.edgelist <- function(nw, attrname = NULL, as.sna.edgelist = FALSE,...){
   el
 }
 
-# given a network object (or networkDynamic) and a vertex name, return the vertex id
-# net: network or networkDynamic object
-# vertex.name: the vertex name to look up id for. Usually string type
-# returns the internal id of the vertex name. Gives a warning if the name isn't unique.
-# THIS IS REPLACED BY VERSION IN vertex.pid.R
-#get.vertex.id = function (net, vertex.name) {
-#  if (!is.network(net)) stop("Error: argument is not a network object")
-#  temp = which(network.vertex.names(net) == vertex.name)
-#  if (length(temp) == 0) stop("Error: vertex name not found")
-#  if (length(temp) > 1) warning("Warning: vertex names are not unique!")
-#  return(temp[1])
-#}
 
 # given a vector or list, return true if it is unique
 is.unique.list <- function(x) {
@@ -1195,5 +1206,56 @@ adjust.activity <-function(nd,offset=0,factor=1){
   if(.validLHS(xn, parent.frame()))
     on.exit(eval.parent(call('<-',xn, nd)))
   invisible(nd)
+}
+
+
+# function to create edge spell matrix for a single dyad (tail,head)
+# from matrix of changes [time, tail, head, direction]
+spellsFromChanges<-function(changes,tail,head,strict=TRUE){
+  dyadRows<-changes[,2]==tail & changes[,3]==head
+  changes<-changes[dyadRows,,drop=FALSE]
+  # remove any row names that may exist
+  dimnames(changes)<-NULL
+  # if there are only three columns, we are actually dealing with toggles
+  # assume that the first toggle is an activation
+  if (ncol(changes)==3){
+    # append 1 and 0 to indicate alternating activation and deactivation
+    changes<-cbind(changes,1:nrow(changes)%%2)
+  } else {
+    # check we don't have unbalenced activations or deactivations
+    badRows<-findRep(changes[,4])
+    if(length(badRows)>0){
+      if (strict){
+        stop('encountered unbalanced changes for dyad ',tail,' ',head, ' at times ',paste(changes[badRows,1]))
+      } else {
+        # painfully find and remove offending spell row(s)
+        changes<-changes[-badRows,,drop=FALSE]
+      }
+    }
+  }
+  # if there is an odd number of rows, spells will be unbalenced
+  # so need to pad beginning or end with inf
+  if (nrow(changes)%%2>0){
+    if (changes[1,4]==1){ # if first spell was an activation
+      # last spell should be open interval
+      changes<-rbind(changes,c(Inf,tail,head,0))
+    } else {  # first spell was deactivation, so first spell should be left-open interval activation
+      changes<-rbind(c(-Inf,tail,head,1),changes)
+    }
+  }
+  # bind onsets and termini into a spell matrix
+  splmat<-cbind(changes[changes[,4]==1,1,drop=FALSE],changes[changes[,4]==0,1,drop=FALSE])
+  return(splmat)
+}
+
+
+# find the index of values which are repeats of the previous values
+findRep<-function(x){
+  if (length(x)>1){
+   # find cases where vector value matches its value offset by 1
+   return(which(x[1:(length(x)-1)]==x[2:length(x)])+1)
+  } else {
+   return(numeric(0))
+  }        
 }
 
