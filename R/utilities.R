@@ -835,6 +835,14 @@ as.data.frame.networkDynamic<-function(x, row.names = NULL, optional = FALSE,e=s
     }
   }
   
+  # if start and end are still unset, set them to Inf so censoring and spell removal will work correctly
+  if(is.null(start)){
+    start<- -Inf
+  }
+  if(is.null(end)){
+    end<- Inf
+  }
+  
   tm<-lapply(seq_along(x$mel),function(y){
     edge<-x$mel[[y]]
     if(is.null(edge)) NULL else{
@@ -863,9 +871,12 @@ as.data.frame.networkDynamic<-function(x, row.names = NULL, optional = FALSE,e=s
   #remove any rows with 'null' (Inf,Inf) spells
   out<-out[!(out[,1]==Inf&out[,2]==Inf),]
   
+  # remove any rows that are entirly outside the start-end query range
+  out<-out[!(out[,1]>end | out[,2] < start),]
+  
   # do censoring
-  out$onset.censored <- out$onset==-Inf
-  out$terminus.censored <- out$terminus==Inf
+  out$onset.censored <- out$onset < start | out$onset==-Inf
+  out$terminus.censored <- out$terminus > end | out$terminus==Inf
   
   if(!is.null(start)) out$onset[out$onset.censored] <- start
   

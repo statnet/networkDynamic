@@ -1023,6 +1023,17 @@ if(!all(as.data.frame(testnet,start=0,end=6)[-8]==edgetimes)){
   stop("as.data.frame.networkDynamic gave unexpected censored spell matrix output")
 }
 
+# check censoring for non-Inf edges when start and end are set narrower
+tel<-matrix(c(40,  72,  10, 4,
+         214, 247, 1,  11,  
+         224, 256, 7,10),ncol=4,byrow=TRUE)
+test<-networkDynamic(edge.spells=tel) 
+result<-as.data.frame(test,start=50,end=60)
+expect_equal(nrow(result),1)
+expect_equal(as.numeric(result[,1:4]),c(50,60,10,4))
+expect_equal(as.logical(result[,5:6]),c(TRUE,TRUE))
+
+
 
 # properly handle edges with no spell activity
 test <- network.initialize(3)

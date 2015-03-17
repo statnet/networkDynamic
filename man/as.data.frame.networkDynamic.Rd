@@ -39,7 +39,7 @@ Creates a data.frame giving lists of edges and their activity spells correspondi
 }
 \details{
 Exports the edge dynamics of a networkDynamic object as a data.frame giving a table of edges with their activity spells, including whether an activity spell was ``censored'' (onset or termination was not observed within the observation window). 
-If a \code{\link{net.obs.period}} attribute exists, the maximal and minimal values will be used as censoring times by default.  Censoring times can also be provided using the \code{start} and \code{end} arguments, and censoring can be prevented by setting \code{start=-Inf, end=Inf}.
+If a \code{\link{net.obs.period}} attribute exists, the maximal and minimal values will be used as censoring times by default.  Censoring times can also be provided using the \code{start} and \code{end} arguments (which will override \code{net.obs.period}), and censoring can be prevented by setting \code{start=-Inf, end=Inf}.  Edge spells that exceed the censoring bounds will have their onset and/or terminus time appropriately truncated to match and will be marked as censored.  Spells which are fully outside the censoring bounds will be deleted and the corresponding rows will not be returned. 
 }
 \value{
 A \code{\link{data.frame}} containing timed relational information

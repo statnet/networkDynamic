@@ -1,5 +1,7 @@
 Change Log:
 v0.8
+  - as.data.frame.networkDynamic() will now remove rows corresponding spells that lie outside of the start End censoring range
+  - as.data.frame.networkDynamic() will now internally set 'start' and 'end' param to -Inf and Inf if not specified
   - networkDynamic() converter function now processes edge.changes much more quickly when adding edge activity to an empty network.
 v0.7
   - networkDynamic now uses (and requires) C-api exported by the network package
