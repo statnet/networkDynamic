@@ -55,7 +55,7 @@ expect_true(is.networkDynamic(net))
 expect_equal(unlist(get.vertex.activity(net,as.spellList=TRUE)[4:5,1:2]),c(1,1,2,2),check.names=FALSE)
 
 
-# ---- tests for get.dyads.active ---
+# ---- tests for get.dyads.active ----
 test_that("get.dyads.active works",{
   
   expect_error( get.dyads.active(network.initialize(3,hyper=TRUE),at=1),regexp="does not currently support hypergraphic",info="error on hyper")

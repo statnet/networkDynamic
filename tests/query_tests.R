@@ -554,6 +554,23 @@ expect_false(spells.overlap(c(1,3),c(3,3)))
 #       |
 expect_false(spells.overlap(c(1,3),c(4,4)))
 
+# ------ tests for spells.hit ----
+
+expect_error(spells.hit(c(1,2), matrix(ncol=2,nrow=0)),regexp = 'must have at least one row')
+expect_error(spells.hit(c(1,2,3), c(1,2)),regexp = 'must have exactly two elements')
+expect_error(spells.hit(c(1,2), matrix(ncol=3,nrow=1)),regexp = 'must have exactly two columns')
+
+expect_equal(spells.hit(c(1,2), matrix(c(3,5,
+                                         6,7),ncol=2,byrow=TRUE)),-1)
+expect_equal(spells.hit(c(1,4), matrix(c(3,5,
+                                         6,7),ncol=2,byrow=TRUE)),1)
+expect_equal(spells.hit(c(5,5), matrix(c(3,5,
+                                         6,7),ncol=2,byrow=TRUE)),-1)
+expect_equal(spells.hit(c(1,7), matrix(c(3,5,
+                                         6,7),ncol=2,byrow=TRUE)),1)
+expect_equal(spells.hit(c(5.5,7), matrix(c(3,5,
+                                         6,7),ncol=2,byrow=TRUE)),2)
+
 
 cat("ok\n")
 
