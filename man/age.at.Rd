@@ -11,7 +11,8 @@ Reports the age of edges or vertices at a specific time point. More precisely, t
 }
 \usage{
 edges.age.at(nD, at, e = seq_along(nD$mel), active.default = TRUE)
-dyads.age.at(nD, at, tails, heads, active.default=TRUE)
+dyads.age.at(nD, at, tails, heads, active.default=TRUE,
+                    format.out = c("vector", "edgelist", "matrix"))
 vertices.age.at(nD, at, v=seq_len(network.size(nD)), active.default=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -42,14 +43,18 @@ numeric vector of vertex ids incident on  the 'head' of edges for which ages / d
   \item{active.default}{
 logical, if \code{TRUE} edges or vertices with no activity specified will be considered always active (see \code{\link{is.active}})
 }
+
+  \item{format.out}{
+   character value indicating out the output should be structured. \code{vector} returns output as a vector, \code{edgelist} returns a 3-column matrix in which the first columns are the tail and head vertex ids of the edge and the 3rd column is the age, \code{matrix} returns an adjacency matrix with the edge ages as values. 
+  }
 }
 \details{
 Edges or vertices that are not active at time \code{at} will return \code{NA}. For edges or vertices with multiple activity spells, this function \emph{does not} report the total duration of activity across all spells, only the duration from the start of the spell with which the \code{at} point intersects. 
 
-\code{dyads.age.at} reports the age of edges corresponding to each dyad (tail,head).  It cannot be used with hypergraphic or multiplex networks because a pair of vertex ids may not uniquely correspond to an edge. 
+\code{dyads.age.at} reports the age of edges corresponding to each dyad (tail,head).  It cannot be used with hypergraphic or multiplex networks because a pair of vertex ids may not uniquely correspond to an edge. If \code{tails} and \code{heads} are not specified, they will default to the tails and heads of all existing (but not necessarily active) edges in the network.  Ordering and index position should correspond to \code{\link{valid.eids}}.
 }
 \value{
-Numeric vector indicating the age of the network element at the query time point, or NA if the element is not active or (in the case of edges) deleted. Elements of the vector return correspond to the values of \code{e} or \code{v} or \code{(tails,heads)} respectively. 
+By default, a numeric vector indicating the age of the network element at the query time point, or NA if the element is not active or (in the case of edges) deleted. Elements of the vector return correspond to the values of \code{e} or \code{v} or \code{(tails,heads)} respectively. 
 }
 
 \author{
@@ -77,5 +82,7 @@ vertices.age.at(test,at=3, v=2)
 
 # how old are the edges [1,2] and [3,4] at time point 2
 dyads.age.at(test,at=2,tails=c(1,3),heads=c(2,4))
+
+dyads.age.at(test,at=2,format.out='matrix')
 
 }

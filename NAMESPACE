@@ -76,3 +76,13 @@ dyads.age.at,
 vertices.age.at
 #when.next.edge.change
 )
+
+# register S3 methods
+S3method(add.edge,networkDynamic)
+S3method(add.edges,networkDynamic)
+S3method(add.vertices,networkDynamic)
+S3method(as.data.frame,networkDynamic)
+S3method(as.network,networkDynamic)
+S3method(as.networkDynamic,network)
+S3method(as.networkDynamic,networkDynamic)
+S3method(print,networkDynamic)
