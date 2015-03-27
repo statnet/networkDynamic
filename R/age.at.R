@@ -24,16 +24,28 @@ edges.age.at <-function(nD,at,e=seq_along(nD$mel),active.default=TRUE){
 }
 
 # return the ages of  activity spell of edges specified by edge id dyads
-dyads.age.at <-function(nD,at,tails,heads,active.default=TRUE){
+dyads.age.at <-function(nD,at,tails,heads,active.default=TRUE,format.out=c('vector','edgelist','matrix')){
   if(is.hyper(nD)){
     stop('dyad.age.at does not support hypergrahic networks')
   }
   if(is.multiplex(nD)){
     stop('dyad.age.at does not support multiplex networks because vertex id dyads may not uniquely specify edges')
   }
-  if (length(tails)!=length(heads)){
-    stop('vectors of vertices for heads and tails of edges must be the same length')
+  
+  format.out<-match.arg(format.out)
+  
+  # if heads and tails both missing, assume dyads wanted for all existing edges (existing at any time point)
+  if(missing(tails) & missing(heads)){
+    dyads<-as.matrix.network.edgelist(nD,)
+    tails<-dyads[,1]
+    heads<-dyads[,2]
+  } else {
+    if (length(tails)!=length(heads)){
+      stop('vectors of vertices for heads and tails of edges must be the same length')
+    }
+    
   }
+  
  
   ages<-rep(NA,length(tails))
   # find the set of edges corresponding to elements in tail and head
@@ -50,7 +62,23 @@ dyads.age.at <-function(nD,at,tails,heads,active.default=TRUE){
       return(at-spls[index,1]) # return difference between 'at' query and onset of matching spell
     })
   }
-  return(ages)
+  if(format.out=='edgelist'){
+    out<-cbind(tails,heads,ages)  #todo:  should we force tail head ordering for undirected nets?
+  } else if(format.out=='matrix'){
+    out<-matrix(NA,nrow=network.size(nD),ncol=network.size(nD))
+    
+    #I'm not sure why this is the inexing form but,  out[tails,heads] doesn't work
+    out[tails+(heads-1)*network.size(nD)]<-ages 
+    # if it is undirected, also set the other dimension
+    if(!is.directed(nD)){
+      out[heads+(tails-1)*network.size(nD)]<-ages 
+    }
+    
+  } else { # return as a vector
+    out<-ages
+  }
+  
+  return(out)
   
   
 }
