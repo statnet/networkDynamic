@@ -41,7 +41,7 @@ men to the \eqn{j}th man if \eqn{i} had a preference for
 to \eqn{j}. Note that since these are ranks, the degree of each vertex (and the total number of edges) does not vary over time
 }
 \usage{data(newcomb)}
-\source{\url{http://vlado.fmf.uni-lj.si/pub/networks/pub/data/UciNet/UciData.htm#newfrat}}
+\source{\url{http://vlado.fmf.uni-lj.si/pub/networks/data/ucinet/ucidata.htm#newfrat}}
 \references{See the link above. 
 Newcomb T. (1961). The acquaintance process. New York: Holt, Reinhard and Winston.\\
 Nordlie P. (1958). A longitudinal study of interpersonal attraction in a natural group setting. Unpublished doctoral dissertation, University of Michigan.\\
@@ -62,7 +62,7 @@ Mark S. Handcock, David Hunter, Carter T. Butts, Steven M. Goodreau,
 and Martina Morris. 2003 
 \emph{statnet: An R package for the Statistical Modeling of Social Networks}
 \cr
-\url{http://www.csde.washington.edu/statnet}
+\url{http://statnet.csde.washington.edu/}
 and the source should be cited as:
 
 Vladimir Batagelj and Andrej Mrvar (2006): \emph{Pajek datasets}
