@@ -219,7 +219,7 @@ vrt.tog <-matrix(
     2,2,
     3,2),ncol=2,byrow=TRUE)
 nd <-networkDynamic(vertex.toggles=vrt.tog)
-if(!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(1,1,1,1,2,2, 3,3,2),ncol=3,byrow=TRUE))){
+if(!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(-Inf,1,1, -Inf,2,2, 3,Inf,2),ncol=3,byrow=TRUE))){
   stop("networkDynamic() did not produduce expected output for vertex.toggles ")
 }
 
@@ -233,10 +233,10 @@ vrt.tog <-matrix(
     2,2,
     3,2),ncol=2,byrow=TRUE)
 nd <-networkDynamic(base.net=net,vertex.toggles=vrt.tog)
-if(!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(1,1,1,
-                                                                  1,2,2,
-                                                                  3,3,2,
-                                                                  1,3,3),ncol=3,byrow=TRUE))){
+if(!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(-Inf,1,1,
+                                                                  -Inf,2,2,
+                                                                  3,Inf,2,
+                                                                  -Inf,Inf,3),ncol=3,byrow=TRUE))){
   stop("networkDynamic() did not produce expected output for vertex.toggles and base.net")
 }
 
@@ -278,7 +278,7 @@ vrt.cng <-matrix(
     2,2,1,
     3,2,0),ncol=3,byrow=TRUE)
 nd <-networkDynamic(vertex.changes=vrt.cng)
-if (!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(1,3,1,2, 2,3,2,3),ncol=4,byrow=TRUE) )){
+if (!all(get.vertex.activity(nd,as.spellList=TRUE)[,1:3]==matrix(c(1,Inf,1,2, 2,3,2,3),ncol=4,byrow=TRUE) )){
   stop("networkDynamic() did not produce expected output for vertex.changes argument")
 }
 
@@ -296,7 +296,7 @@ if (!all(get.edge.activity(nd,as.spellList=TRUE)[,1:4]==matrix(c(1,Inf,1,2, 2,3,
 
 expect_equal(unlist(get.edge.activity(nd)),c(1,Inf,2,3))
 # check net.obs.period defaults
-expect_equal((nd%n%'net.obs.period')$'observations'[[1]],c(1,3))
+expect_equal((nd%n%'net.obs.period')$'observations'[[1]],c(1,Inf))
 
 # edge changes - activate edge allready active ignored
 edge.cng <-matrix(
@@ -306,7 +306,7 @@ nd <-networkDynamic(edge.changes=edge.cng)
 expect_equivalent(as.numeric(get.edge.activity(nd,as.spellList=TRUE)[1:4]),c(2,Inf,2,3))
 
 # check net.obs.period defaults
-expect_equal((nd%n%'net.obs.period')$'observations'[[1]],2:3)
+expect_equal((nd%n%'net.obs.period')$'observations'[[1]],c(2,Inf))
 
 
 
@@ -776,13 +776,13 @@ echange<-matrix( c(1,1,2,1,
 
 nd<-networkDynamic(edge.changes=echange)
 # the expected output
-spls<-data.frame(onset=c(1,2,1),terminus=c(2,3,3),tail=c(1,2,1),head=c(2,3,3),onset.censored=c(FALSE,FALSE,TRUE),terminus.censored=c(FALSE,TRUE,FALSE),duration=c(1,1,2),edge.id=c(1,2,3))
+spls<-data.frame(onset=c(1,2,-Inf),terminus=c(2,Inf,3),tail=c(1,2,1),head=c(2,3,3),onset.censored=c(FALSE,FALSE,TRUE),terminus.censored=c(FALSE,TRUE,FALSE),duration=c(1,Inf,Inf),edge.id=c(1,2,3))
 
 # check that spells constructed correctly from edge.changes
 expect_equivalent(as.data.frame(nd),spls,info='comparing networkDynamic(edge.changes) to resulting spell list')
 
 # check net.obs.period construction
-expect_equal((nd%n%'net.obs.period')$observations[[1]],c(1,3),info='net.obs.period created by default by networkDynamic(edge.changes) did not have expected range')
+expect_equal((nd%n%'net.obs.period')$observations[[1]],c(-Inf,Inf),info='net.obs.period created by default by networkDynamic(edge.changes) did not have expected range')
 
 expect_equal((nd%n%'net.obs.period')$mode,'discrete',info='net.obs.period created by default by networkDynamic(edge.changes) did not have expected mode')
 
@@ -793,7 +793,7 @@ vchange<-matrix( c(1,1,1,
                    3,3,0),ncol=3,byrow=TRUE)
 
 nd<-networkDynamic(vertex.changes=vchange)
-expect_equivalent(get.vertex.activity(nd,as.spellList=TRUE),data.frame(onset=c(1,2,1),terminus=c(2,3,3),vertex.id=c(1,2,3),onset.censored=c(FALSE,FALSE,TRUE),terminus.censored=c(FALSE,TRUE,FALSE),duration=c(1,1,2)),info='networkDynamic(vertex.change) did not give expected spell list result')
+expect_equivalent(get.vertex.activity(nd,as.spellList=TRUE),data.frame(onset=c(1,2,-Inf),terminus=c(2,Inf,3),vertex.id=c(1,2,3),onset.censored=c(FALSE,FALSE,TRUE),terminus.censored=c(FALSE,TRUE,FALSE),duration=c(1,Inf,Inf)),info='networkDynamic(vertex.change) did not give expected spell list result')
 
 
 # [time,vertex.id,direction,red_herring]
@@ -803,7 +803,7 @@ vchange<-matrix( c(1,1,1,5,
                    2,2,1,7,
                    3,3,0,8),ncol=4,byrow=TRUE)
 nd<-networkDynamic(vertex.changes=vchange)
-expect_equivalent(get.vertex.activity(nd,as.spellList=TRUE),data.frame(onset=c(1,2,1),terminus=c(2,3,3),vertex.id=c(1,2,3),onset.censored=c(FALSE,FALSE,TRUE),terminus.censored=c(FALSE,TRUE,FALSE),duration=c(1,1,2)),info='networkDynamic(vertex.change) did not give expected spell list result')
+expect_equivalent(get.vertex.activity(nd,as.spellList=TRUE),data.frame(onset=c(1,2,-Inf),terminus=c(2,Inf,3),vertex.id=c(1,2,3),onset.censored=c(FALSE,FALSE,TRUE),terminus.censored=c(FALSE,TRUE,FALSE),duration=c(1,Inf,Inf)),info='networkDynamic(vertex.change) did not give expected spell list result')
 
 
 # ----- networkDynamic network.list conversion ----
@@ -1113,6 +1113,21 @@ delete.edges(nd,eid=2)
 ndmat<-as.data.frame(nd)
 expect_equal(ndmat$edge.id,c(1,1,3,4),info='check that deleted edge doesnt cause problem for as.data.frame.networkDynamic')
 
+# check for appropriate exclusion of terminating edges
+test<-network.initialize(3)
+add.edges.active(test,tail=c(1,2,3),head=c(2,3,1),onset=c(0,1,2),terminus=c(1,2,3))
+# first edge should be excluded because it lies entirly outside query range
+# second edge could be excluded because it terminates at onset of query range
+expect_equal(as.data.frame(test,start=2,end=3)$edge.id,3)
+# also check for appropriate inclusion at other boundry
+expect_equal(as.data.frame(test,start=1,end=2)$edge.id,2)
+
+# and for at spell query
+test<-network.initialize(3)
+add.edges.active(test,tail=c(1,2,3,3),head=c(2,3,1,1),onset=c(0,1,2,1),terminus=c(1,2,3,1))
+expect_equal(as.data.frame(test,start=1,end=1)$edge.id,c(2,4))
+
+
 # ----- get.edge.activity ----
 # some of this is not tested becaue it actually calls as.data.frame internally
 
@@ -1178,19 +1193,19 @@ net<-networkDynamic(base.net=test,edge.toggles=tog)
 spells <-as.data.frame(net)[1:6]
 # first spell should be onset censored because edge was in original net
 # all edges in original net are considered active before toggles
-if (!all(spells[1,]==c(1,4,1,3,1,0))){
+if (!all(spells[1,]==c(-Inf,4,1,3,1,0))){
   stop("networkDynamic() did not record initial toggle correctly")
 }
 # 2nd spell toggles twice
 if (!all(spells[2,]==c(1,2,1,2,0,0))){
   stop("networkDynamic() did not record double toggle correctly")
 }
-if (!all(spells[4,]==c(1,4,2,3,0,1)) | !all(spells[3,]==c(4,4,1,2,0,1))){
+if (!all(spells[4,]==c(1,Inf,2,3,0,1)) | !all(spells[3,]==c(4,Inf,1,2,0,1))){
   stop("networkDynamic() did not record toggles correctly")
 }
 
 # check for net.obs.period
-expect_equal((net%n%'net.obs.period')$observations[[1]],c(1,4),info='net.obs.period created by default by networkDynamic(edge.toggles) did not have expected range')
+expect_equal((net%n%'net.obs.period')$observations[[1]],c(-Inf,Inf),info='net.obs.period created by default by networkDynamic(edge.toggles) did not have expected range')
 
 expect_equal((net%n%'net.obs.period')$mode,'discrete',info='net.obs.period created by default by networkDynamic(edge.toggles) did not have expected mode')
 
