@@ -479,37 +479,6 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       base.net <- network.initialize(max.vertex)
     } 
     
-    if (is.null(net.obs.period)) {
-      # observation.period and censoring
-      
-      # default to max and min of time range
-      if (is.null(start)){
-        start <- mintime(vertex.data, edge.data)
-      }
-      if (is.null(end)){
-        end <- maxtime(vertex.data, edge.data)
-      }
-      net.obs.period <- list(observations=list(c(start, end)))
-      if (!is.null(edge.spells) || !is.null(vertex.spells)) {
-        net.obs.period$mode <- 'continuous'
-        net.obs.period$time.increment<-NA
-        net.obs.period$time.unit<-"unknown"
-      } else {
-        net.obs.period$mode <- 'discrete'
-        net.obs.period$time.increment<-1
-        net.obs.period$time.unit<-"step"
-        
-      }
-    } else {
-      if (!is.null(start)) stop("start and end arguments should not be specified with net.obs.period argument")
-    }
-    # verify that net.obs.period has good structure
-    .check.net.obs.period(net.obs.period)
-    if (verbose){
-      cat("Created net.obs.period to describe network\n")
-      cat(.print.net.obs.period(net.obs.period))
-    }
-    set.network.attribute(base.net, "net.obs.period", net.obs.period)
     
     # strict construction for now
     if (max.vertex > network.size(base.net)) stop("base.net network size is smaller than size implied by vertex.ids in vertex or edge argument")
@@ -734,6 +703,43 @@ networkDynamic <- function(base.net=NULL,edge.toggles=NULL,vertex.toggles=NULL,
       
     } # end edge data
     
+    # if the net.obs.period was not provided, create one
+    if (is.null(net.obs.period)) {
+      # observation.period and censoring
+      # default to max and min of time range
+      if(is.null(start) | is.null(end)){
+        timeRange<-range(get.change.times(base.net,ignore.inf=FALSE))
+      }
+      if (is.null(start)){
+        start <- timeRange[1]
+      }
+      if (is.null(end)){
+        end <- timeRange[2]
+      }
+      
+      # if we are in the toggles case, need
+      net.obs.period <- list(observations=list(c(start, end)))
+      if (!is.null(edge.spells) || !is.null(vertex.spells)) {
+        
+        net.obs.period$mode <- 'continuous'
+        net.obs.period$time.increment<-NA
+        net.obs.period$time.unit<-"unknown"
+      } else {
+        net.obs.period$mode <- 'discrete'
+        net.obs.period$time.increment<-1
+        net.obs.period$time.unit<-"step"
+      }
+    } else {
+      if (!is.null(start)) stop("start and end arguments should not be specified with net.obs.period argument")
+    }
+    # verify that net.obs.period has good structure
+    .check.net.obs.period(net.obs.period)
+    if (verbose){
+      cat("Created net.obs.period to describe network\n")
+      cat(.print.net.obs.period(net.obs.period))
+    }
+    set.network.attribute(base.net, "net.obs.period", net.obs.period)
+    
   } # end non-network.list part
   
   # if only base net is specified, set.nD.class on it and return. 
@@ -843,7 +849,7 @@ as.data.frame.networkDynamic<-function(x, row.names = NULL, optional = FALSE,e=s
     end<- Inf
   }
   
-  tm<-lapply(seq_along(x$mel),function(y){
+  tm<-lapply(e,function(y){
     edge<-x$mel[[y]]
     if(is.null(edge)) NULL else{
       active<-edge$atl$active
@@ -861,18 +867,21 @@ as.data.frame.networkDynamic<-function(x, row.names = NULL, optional = FALSE,e=s
   })
   out <- do.call(rbind,tm)
   if (is.null(out)) {
-    out = data.frame(onset=numeric(), terminus=numeric(), tail=numeric(), head=numeric(),edge.id=numeric())
+    out <- data.frame(onset=numeric(), terminus=numeric(), tail=numeric(), head=numeric(),edge.id=numeric())
     warning("Network does not have any edge activity")
   } else {
     colnames(out)<-c("onset","terminus","tail","head","edge.id")
   }
   out<-data.frame(out)
   
-  #remove any rows with 'null' (Inf,Inf) spells
-  out<-out[!(out[,1]==Inf&out[,2]==Inf),]
+  # determine which spells are active and subset them
+  if(nrow(out)>0){
+     spls.active<-sapply(seq_len(nrow(out)),function(s){
+       spells.overlap(c(start,end),out[s,1:2])
+     })
+     out<-out[spls.active,,drop=FALSE]
+  }
   
-  # remove any rows that are entirly outside the start-end query range
-  out<-out[!(out[,1]>end | out[,2] < start),]
   
   # do censoring
   out$onset.censored <- out$onset < start | out$onset==-Inf
@@ -886,10 +895,7 @@ as.data.frame.networkDynamic<-function(x, row.names = NULL, optional = FALSE,e=s
   
   # have to permute columns to put edge.id at end
   out<-out[,c(1,2,3,4,6,7,8,5)]
-  
-  # remove any edges not specified in original arugments TODO: why not do this at beginning?
-  out <- out[as.numeric(out$edge.id)%in%e,]
-  # out <- out[order(out$onset),]
+
   # sort output by eid, onset,terminus
   out<-out[order(out[,8],out[,1],out[,2]),]
   
@@ -970,7 +976,7 @@ print.networkDynamic <- function(x, ...){
   } else {
     cat("  distinct change times:", length(times), "\n")
     maxrange<-range(times)
-    cat("  maximal time range:", maxrange[1], "to",maxrange[2],"\n")
+    cat("  maximal time range:", maxrange[1], "until ",maxrange[2],"\n")
   }
   # TEAs
   ntea <-list.network.attributes.active(x,onset=-Inf,terminus=Inf,dynamic.only=TRUE)
@@ -1136,7 +1142,7 @@ maxtime <- function(vertex.data, edge.data) {
   cat(" Network observation period info:\n")
   cat(paste("  Number of observation spells:",length(nop$observations),"\n"))
   maxrange<-range(nop$observations)
-  cat(paste("  Maximal range of observations:",maxrange[1],"to",maxrange[2],"\n"))
+  cat(paste("  Maximal time range observed:",maxrange[1],"until",maxrange[2],"\n"))
   cat(paste("  Temporal mode:",nop$mode,"\n"))
   cat(paste("  Time unit:",nop$time.unit,"\n"))
   cat(paste("  Suggested time increment:",nop$time.increment,"\n"))
