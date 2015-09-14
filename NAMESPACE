@@ -1,6 +1,9 @@
 useDynLib(networkDynamic, .registration = TRUE)
 
 import(statnet.common, network)
+importFrom("methods", "el")
+importFrom("stats", "na.omit")
+importFrom("utils", "read.table", "tail")
 
 export(
 networkDynamic,
@@ -86,3 +89,10 @@ S3method(as.network,networkDynamic)
 S3method(as.networkDynamic,network)
 S3method(as.networkDynamic,networkDynamic)
 S3method(print,networkDynamic)
+
+# these are NOT S3 methods, but are included here because its the 
+# only way to quiet the warning
+S3method(add.edges,active)
+S3method(add.vertices,active)
+
+
