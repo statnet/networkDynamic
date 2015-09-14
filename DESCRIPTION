@@ -1,5 +1,5 @@
 Package: networkDynamic
-Version: 0.8
+Version: 0.8.0
 Date: 2015-09-14
 Title: Dynamic Extensions for Network Objects
 Type: Package
