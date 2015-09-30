@@ -77,7 +77,7 @@ test_that("get.dyads.active works",{
   test2[1,2]<-1
   expect_equal(get.dyads.active(test2,onset=0,terminus=4),rbind(1:2))
   # test active default
-  expect_equal(get.dyads.active(test2,onset=0,terminus=4,active.default=FALSE),matrix(numeric(),ncol=2,nrow=0),check.attributes=FALSE, info='test active default arg')
+  expect_equal(get.dyads.active(test2,onset=0,terminus=4,active.default=FALSE),cbind(list(),list()), info='test active default arg')
   
   # deleted edges
   test2<-network.initialize(3)
