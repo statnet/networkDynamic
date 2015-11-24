@@ -390,6 +390,13 @@ activate.edge.attribute(test,'letter','a',onset=0,terminus=1,e=1)
 activate.edge.attribute(test,'letter','b',onset=2,terminus=3,e=2)
 expect_equal(get.edge.attribute.active(test,'letter',at=0),c("a",NA)) # this was returning c("a","a")
 
+
+# test setting multiple spells on a single element with one call
+test<-network.initialize(3)
+test[1,2]<-1
+activate.edge.attribute(test,'letter',c('a','b','c'),onset=c(0,2,4),terminus=c(1,3,5),e=c(1,1,1))
+#expect_equal(test$mel[[1]]$atl$letter.active[[1]],list('a','b','c'))
+
 # what if an edge is null because it was deleted
 
 # apply to subset of edge
