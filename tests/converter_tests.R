@@ -1054,22 +1054,20 @@ data.frame(onset=c(3,-Inf),terminus=c(3,Inf),
 # active default means it should still return two edges
 net <-network.initialize(3)
 activate.vertices(net, onset=1, terminus=Inf)
-expect_warning(
-temp<-as.data.frame(net),
-"does not have any edge activity")
+temp<-as.data.frame(net)
 
 if (nrow(temp) != 0) {
   stop("as.data.frame.networkDynamic() did not handle an object without any edge activity")
 }
 
 # check for crash with network size 0
-expect_warning(get.edge.activity(network.initialize(0),as.spellList=TRUE),'does not have any edge activit')
+expect_equal(nrow(get.edge.activity(network.initialize(0),as.spellList=TRUE)),0)
 
 # check active.default
 net<-network.initialize(3)
 add.edges(net,tail=1:3,head=c(2,3,1))
 expect_equal(get.edge.activity(net,as.spellList=TRUE)$onset,c(-Inf,-Inf,-Inf))
-expect_warning(get.edge.activity(net,as.spellList=TRUE,active.default=FALSE),'does not have any edge activit')
+expect_equal(nrow(get.edge.activity(net,as.spellList=TRUE,active.default=FALSE)),0)
 
 # check for 'null' spell
 net<-network.initialize(3)

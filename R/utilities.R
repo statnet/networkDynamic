@@ -866,22 +866,24 @@ as.data.frame.networkDynamic<-function(x, row.names = NULL, optional = FALSE,e=s
     }
   })
   out <- do.call(rbind,tm)
+  
+  # determine which spells are active and subset them
+  if(!is.null(out) && nrow(out)>0 ){
+    spls.active<-sapply(seq_len(nrow(out)),function(s){
+      # odd syntax c(out[s,1],out[s,1]) is needed to force evaluation or something
+      # otherwise the dataframe subset is *extremely* expensive
+      spells.overlap(c(start,end),c(out[s,1],out[s,2]))
+    })
+    out<-out[spls.active,,drop=FALSE]
+  }
+  
   if (is.null(out)) {
     out <- data.frame(onset=numeric(), terminus=numeric(), tail=numeric(), head=numeric(),edge.id=numeric())
-    warning("Network does not have any edge activity")
+    #warning("Network does not have any edge activity")
   } else {
     colnames(out)<-c("onset","terminus","tail","head","edge.id")
   }
   out<-data.frame(out)
-  
-  # determine which spells are active and subset them
-  if(nrow(out)>0){
-     spls.active<-sapply(seq_len(nrow(out)),function(s){
-       spells.overlap(c(start,end),out[s,1:2])
-     })
-     out<-out[spls.active,,drop=FALSE]
-  }
-  
   
   # do censoring
   out$onset.censored <- out$onset < start | out$onset==-Inf
