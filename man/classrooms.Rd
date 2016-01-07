@@ -19,14 +19,12 @@ A dynamic network object describing continuous time streams of social interactio
 }
 \usage{data(McFarland_cls33_10_16_96)}
 \format{
-  The format is is a \link{networkDynamic} object  named \code{cls33_10_16_96} with node and edge \link{activity.attribute}s defined by spell matricies and associated vertex attributes. 
+  The format is is a \link{networkDynamic} object  named \code{cls33_10_16_96} with node and edge \link{activity.attribute}s defined by spell matricies and associated vertex attributes and dynamic edge attributes. 
 }
 \details{
-The dynamic network object has 20 vertices and directed edges and covers a time range of 0.0 to 49.0 minutes of class time. The vertex attribute \code{gender} gives gender ('M' or 'F') of each person and \code{type} gives a crude role ('grade11','grade12','instructor').
+The dynamic network object has 20 vertices and directed edges and covers a time range of 0.0 to 49.0 minutes of class time. The vertex attribute \code{gender} gives gender ('M' or 'F') of each person and \code{type} gives a crude role ('grade11','grade12','instructor').  The original dataset id for the vertices is included as \code{data_id} and defined as a persistent.id. The edges include a dynamic attribute (TEA) \code{interaction_type} as a factor with levels 'saction', 'social' and 'task' (see explanation below) and a \code{weight} assigned by the reacher to that interaction (direct comunication is given more weight than indirect 'broadcast' communication).
 
-Note: Task and Social Codings for edges are missing until dynamic attributes supported
-
-A .son formatted input file for this classroom is located in the /inst/extdata directory. 
+A .son formatted input file with the same data as well as seperate tsv files for vertices and edges are located in the /inst/extdata directory.
 
 The data for these classroom interactions consists of streaming observations of conversation turns. The conversation turns were recorded as pairs of senders and receivers and for types of content. Speakers were viewed as directing their communication in one of two fashions: (1) indirect soundings, such as lectures (where a teacher addresses all students); and (2) direct interactions that are focused on particular others. Each type of directional speech is viewed as having different forms of network reception - indirect speech reaches all bystanders as passive hearers and directed speech reaches the focal person as an active co-author of the conversation (Goffman 1981).
 
