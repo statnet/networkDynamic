@@ -1,9 +1,9 @@
 Package: networkDynamic
 Version: 0.9
-Date: 2015-11-24
+Date: 2016-01-07
 Title: Dynamic Extensions for Network Objects
 Type: Package
-Depends: R (>= 3.0.0), network (>= 1.12)
+Depends: R (>= 3.0.0), network (>= 1.13)
 Imports: statnet.common, methods
 Suggests: testthat
 LinkingTo: network
