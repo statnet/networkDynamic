@@ -852,8 +852,15 @@ network.collapse <- function(dnet,onset=NULL,terminus=NULL, at=NULL, length=NULL
   activeAttrs <- knownNAttrs[grep(".active",knownNAttrs)]
   newNames <- sub(".active","",activeAttrs)
   newVals <- lapply(newNames, function(name){get.network.attribute.active(net,name,onset=onset,terminus=terminus,rule=rule,unlist=FALSE)})
+  # check if we are setting multiple or single values, and adjust nesting as needed
+  if(length(newNames)==1){
+    newNames<-newNames[[1]]
+    newVals<-newVals[[1]]
+  }
+  
   # set multiple values at once
   set.network.attribute(net,newNames,newVals)
+  
   
   if (rm.time.info){
     # remove net.obs.period if it exists

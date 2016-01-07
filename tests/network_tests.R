@@ -343,9 +343,6 @@ expect_equal(is.directed(netout),FALSE)
 
 
 
-cat("ok\n")
-
-
 #-------------------- NETWORK.DYNAMIC.CHECK ------------------------
 # Notes:
 #  - 
@@ -953,6 +950,27 @@ test_that("net.obs.period is appropriately removed or retained",{
   n<-network.collapse(nD,rm.time.info=FALSE)
   expect_equal(n%n%'net.obs.period',obs)
 })
+
+# test for form of dynamic network attribute, bug #1184
+net <- network.initialize(5)
+x <- matrix(0,2,2) # a matrix
+activate.network.attribute(net, "dyadic", x, onset=1, length=1)
+
+# query it and get back a marix
+activeQ<-get.network.attribute.active(net, "dyadic", at=1) # a matrix
+net1 <- (net %k% 1) # Collapse at t=1.
+expect_equal(net1 %n% "dyadic",activeQ) # a list containing a matrix
+
+net <- network.initialize(5)
+x <- matrix(0,2,2) # a matrix
+y <- matrix(1,2,2) # a matrix
+activate.network.attribute(net, "dyadic", x, onset=1, length=1)
+#activate.network.attribute(net, "dyadic2", y, onset=1, length=1)
+
+# query it and get back a marix
+activeQ<-get.network.attribute.active(net, "dyadic", at=1) # a matrix
+net1 <- (net %k% 1) # Collapse at t=1.
+expect_equal(net1 %n% "dyadic",activeQ) # a list containing a matrix
 
 #----- get.networks -------
 
