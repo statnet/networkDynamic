@@ -230,6 +230,12 @@ is.adjacent.active(triangle,vi=1,vj=2,onset=2,length=1)
 
 These methods of course accept the same additional arguments as their \verb@network@ counterparts.
 
+In some situations it may be helpful to be able to extract a list of all the dyads that are active at a time point. the \verb@get.dyads.active@ returns a two-column matrix (essentially an 'edgelist') of the pairs of vertices connected by edges active within the query spell. This assumes that the network is not hypergraphic or multiplex.
+
+<<get_dyads_active>>=
+get.dyads.active(triangle, at=1)
+@
+
 \subsection{Are regular network objects active?}
 What happens when we ask about the activity of a regular \verb@network@ object?  Or what if only some vertices or edges in a \verb@networkDynamic@ object have activity attributes defined? Many functions include the \verb@active.default@ parameter for controlling how elements without spells should be treated. If the parameter is not explicitly given (\verb@active.default=TRUE@), they will behave as if they are active from \verb@-Inf@ to \verb@Inf@. 
 
@@ -311,7 +317,7 @@ Although the timing information of the edges and/or vertices may be removed,  ot
 
 
 
-\subsection{Differences between ``any'' and ``all' aggregation rules}
+\subsection{Differences between ``any'' and ``all'' aggregation rules}
 In addition to the point-based (\verb@at@ syntax) or unit interval (\verb@length=1@) activity tests and extraction operations used in most examples so far, the methods also support the idea of a ``query spell' specified using the same onset and terminus syntax. So it is also possible (assuming it makes sense for the network being studied) to use \verb@length=27.52@ or \verb@onset=0, terminus=256@. 
 
 Querying with a time range does raise an issue: how should we handle situations where edges or vertices have spells that begin or end part way through the query spell? Although other potential rules have been proposed, the methods currently include a \verb@rule@ argument that can take the values of \verb@any@ (the default) or \verb@all@. The former returns elements if they are active for any part of the query spell, and the later only returns elements if they are active for the entire range of the query spell.  
@@ -419,6 +425,10 @@ This shows us that it took a few hundred time steps of ``burn in'' for the netwo
 \subsection{Batteries and tergm example not included}
 Unfortunately we can't include a real live \verb@tergm@ model example here, because the \verb@tergm@ package depends on \verb@networkDynamic@, and we don't want to create a circular package dependency.  But are nice examples located in the \verb@tegrm@ and \verb@ndtv@ package vignettes. 
 
+\subsection{Importing Pajek's timed network format}
+
+Version 1.13 of the \verb@network@ package expanded support for reading the .net and .paj formats used by the Pajek network analysis software (\url{http://mrvar.fdv.uni-lj.si/pajek/}), including tpajek's most commonly used temporal network formats.  
+
 \subsection{Converting a stream of spells: McFarland's classroom interactions}
 
 Not surprisingly, the \verb@networkDynamic()@ function can create \verb@networkDynamic@ objects from a matrix of activity spells stored in a \verb@data.frames@. It assumes that the first two columns give the onset and terminus of a spell, and the third and forth columns correspond to the network indices of the ego and alter vertices for that dyad. Multiple spells per dyad are expressed by multiple rows. In the following example, we read some tabular data describing arc relationships out of example text files.  For more information about the data-set (which also exists as a \verb@networkDynamic@ object) see \verb@?cls33_10_16_96@.
@@ -498,6 +508,48 @@ plot(network.extract(
   classDyn,onset=0,length=.1,rule="any"),
   main='a single conversation turn',displaylabels=T)
 @
+
+\subsection{Reconciling and data and adjusting timing}
+
+Often network data does not arrive in the ideal form for analysis and may need some cleaning and adjustment.  For example, the data describing edge activity and vertex activity may have come from different sources and may not fully align. As mentioned earlier the \verb@network.dynamic.check@ function can be used to hilight some of these cases, but how can we resolve them?  The \verb@reconcile.edge.activity@ and \verb@reconcile.vertex.actibity@ functions can be used to modify either the edge or vertex activity spells to force them to be consistant. If we make a trivial example where the first vertex is only active part of the time, even though its edge is always active, we can then force the edge to match.  
+
+<<reconcile_tri1>>=
+# make a network where the first vertex is not always active
+dirtyData<-networkDynamic(vertex.spells=matrix(c(0,1,1,
+                                                 3,5,1,
+                                                 0,5,2),ncol=3,byrow=TRUE),
+                          edge.spells=matrix(c(0,5,1,2),ncol=4,byrow=TRUE))
+
+network.dynamic.check(dirtyData)$dyad.checks
+# print out the edge spell before ..
+as.data.frame(dirtyData)
+@
+
+We can then ask to have the spells of the edges truncated to match the vertices
+
+<<reconcile_tri2>>=
+reconcile.edge.activity(dirtyData,mode="reduce.to.vertices")
+as.data.frame(dirtyData)
+@
+
+Notice that the edge.id 1 now has two spells, one from 0 until 1, and the second from 3 until 5. Another common use case for this is when we have only edge activity data, and want to make it so that vertices only become active when they are involved in an edge (they don't appear as isolates earlier)
+
+<<reconcile_2>>=
+# before..
+head(get.vertex.activity(classDyn,as.spellList = TRUE))
+# modify vertex spells to encompass all of their incident edges
+reconcile.vertex.activity(classDyn,mode='encompass.edges')
+# after..
+head(get.vertex.activity(classDyn,as.spellList = TRUE))
+@
+
+A related utility is the function for applying a transformation to all the time units in a network.  This is useful if you want to shift all of the timing to start at a certain value, or if you wanted to change the time units that the network is measured in.  For example, if we wanted to change the McFarland Classroom network to be measured in units of hours instead of minutes:
+
+<<adjust_activity>>=
+adjust.activity(classDyn,factor = 1/60)
+head(get.vertex.activity(classDyn,as.spellList = TRUE))
+@
+
 
 \section{Persistent IDs}
 
@@ -602,6 +654,7 @@ If we have a network that already has 'slicing' information in its \verb@net.obs
 newSlices<-get.networks(newcombGaps)
 sapply(newSlices,network.size)
 @
+
 
 
 \section{Dynamic attributes}
