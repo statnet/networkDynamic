@@ -1,5 +1,6 @@
 Change Log:
 v0.9
+  - vignette updates
   - fixed issue where network.collpase would incorrectly nest dynamic network-level attributes if there was only one of them
   - updated McFarland classroom networks to include TEA edge attributes
   - updated as.data.frame.networkDynamic() to mostly fix dramatic speed cost of filtering features from previous release, doc corrections

@@ -1,7 +1,7 @@
 # R script to load and format the mcfarland clasroom networks
 library(networkDynamic)
 vertexData <-read.table(system.file('extdata/cls33_10_16_96_vertices.tsv', package='networkDynamic'),header=T)
-edgeData <-read.table(system.file('extdata/cls33_10_16_96_edges.tsv', package='networkDynamic'),header=T)
+edgeData <-read.table(system.file('extdata/cls33_10_16_96_edges.tsv', package='networkDynamic'),header=T,stringsAsFactors = FALSE)
 clss33new<-networkDynamic(vertex.spells=vertexData[,c(3,4,1)],edge.spells = edgeData[,c(3,4,1,2,5,6)],create.TEAs = TRUE,edge.TEA.names = c('weight','interaction_type'))
 
 # set net obs period
