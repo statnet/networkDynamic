@@ -255,6 +255,8 @@ is.active(inactive,onset=Inf,terminus=Inf,v=1:2,active.default=TRUE)
 @
 
 \subsection{Basic descriptives}
+The primary focus of the \verb@networkDynamic@ package is providing the foundational data structures and manipulation tools, so that the implementation of temporal SNA measures are provided by other packages such as \verb@tsna@. However, there are some crude metrics available here. 
+
 In some contexts, especially writing simulations on a network that can work in both discrete and continuous time, it may be important to know all the time points at which the structure of the network changes.  The package includes a function \verb@get.change.times@ that can return a list of times for the entire network, or edges and vertices independently:
 
 <<get_change_times>>=
@@ -269,6 +271,7 @@ We have also implemented dynamic versions of the basic network functions \verb@n
 network.size.active(triangle,onset=2,terminus=3)
 network.edgecount.active(triangle,at=5)
 @
+
 
 
 \subsection{Collapsing a network vs. extracting it}
@@ -294,7 +297,7 @@ get.change.times(flat)
 network.edgecount(flat)
 list.edge.attributes(flat)
 @
-If the argument \verb@rm.time.info=FALSE@ , the \verb@network.collapse@ function also adds \verb@actiactivity.count@ and \verb@activity.duration@ attributes to the vertices and edges to give a crude summary of the timing information that has been removed. However, the duration information does not take into account possible censoring of ties at the beginning and end of the network observation time period. 
+If the argument \verb@rm.time.info=FALSE@ , the \verb@network.collapse@ function also adds \verb@activity.count@ and \verb@activity.duration@ attributes to the vertices and edges to give a crude summary of the timing information that has been removed. However, the duration information does not take into account possible censoring of ties at the beginning and end of the network observation time period. 
 <<collapse2>>=
 flat <-network.collapse(triangle,onset=1,terminus=3,rm.time.info=FALSE)
 flat%v%'activity.duration'
@@ -374,7 +377,10 @@ newcombGaps <- networkDynamic(network.list=newcomb,
                       onsets=c(1:8,10:15),termini=c(2:9,11:16))
 get.vertex.activity(newcombGaps)[[1]] # peek at spells for v1
 @
-We can also store some descriptive meta-data for the network:
+
+Another option would be to use the \verb@adjust.activity@ function to modify the network timing after it was loaded. 
+
+It is often a good idea store some descriptive meta-data for the network to give hints to functions later on about how they should bin or display the data:
 
 <<alterNewcombNetObs>>==
 nobs <-get.network.attribute(newcombGaps,'net.obs.period')
@@ -422,12 +428,6 @@ plot(nEdgesActive,xlab='timestep',ylab='number of active edges')
 
 This shows us that it took a few hundred time steps of ``burn in'' for the network to move from its initial extreme (the zero-edges condition) to a sort of equilibrium state. After which there were enough active edges that some of them started getting toggled off again, and it continues to wobble around a value of about 50 edges until the end. 
 
-\subsection{Batteries and tergm example not included}
-Unfortunately we can't include a real live \verb@tergm@ model example here, because the \verb@tergm@ package depends on \verb@networkDynamic@, and we don't want to create a circular package dependency.  But are nice examples located in the \verb@tegrm@ and \verb@ndtv@ package vignettes. 
-
-\subsection{Importing Pajek's timed network format}
-
-Version 1.13 of the \verb@network@ package expanded support for reading the .net and .paj formats used by the Pajek network analysis software (\url{http://mrvar.fdv.uni-lj.si/pajek/}), including tpajek's most commonly used temporal network formats.  
 
 \subsection{Converting a stream of spells: McFarland's classroom interactions}
 
@@ -511,7 +511,7 @@ plot(network.extract(
 
 \subsection{Reconciling and data and adjusting timing}
 
-Often network data does not arrive in the ideal form for analysis and may need some cleaning and adjustment.  For example, the data describing edge activity and vertex activity may have come from different sources and may not fully align. As mentioned earlier the \verb@network.dynamic.check@ function can be used to hilight some of these cases, but how can we resolve them?  The \verb@reconcile.edge.activity@ and \verb@reconcile.vertex.actibity@ functions can be used to modify either the edge or vertex activity spells to force them to be consistant. If we make a trivial example where the first vertex is only active part of the time, even though its edge is always active, we can then force the edge to match.  
+Often network data does not arrive in the ideal form for analysis and may need some cleaning and adjustment.  For example, the data describing edge activity and vertex activity may have come from different sources and may not fully align. As mentioned earlier the \verb@network.dynamic.check@ function can be used to highlight some of these cases, but how can we resolve them?  The \verb@reconcile.edge.activity@ and \verb@reconcile.vertex.activity@ functions can be used to modify either the edge or vertex activity spells to force them to be consistent. If we make a trivial example where the first vertex is only active part of the time, even though its edge is always active, we can then force the edge to match.  
 
 <<reconcile_tri1>>=
 # make a network where the first vertex is not always active
@@ -550,10 +550,56 @@ adjust.activity(classDyn,factor = 1/60)
 head(get.vertex.activity(classDyn,as.spellList = TRUE))
 @
 
+\subsection{Importing Pajek's timed network format}
+
+Version 1.13 of the \verb@network@ package expanded support for reading the .net and .paj formats used by the Pajek network analysis software (\url{http://mrvar.fdv.uni-lj.si/pajek/}), including Pajek's most commonly used temporal network formats in the \verb@read.paj()@ function.  We can download the Sampson monastery data from a Pajek example data set  and extract it from a compressed zip archive. Note that to get \verb@read.paj@ to give us back a \verb@networkDynamic@ object we have to include the \verb@time.format='networkDynamic'@ argument.
+
+<<download_paj>>=
+sampFile<-tempfile('days',fileext='.zip')
+download.file('http://vlado.fmf.uni-lj.si/pub/networks/data/esna/Sampson.zip',sampFile)
+sampData<-read.paj(unz(sampFile,'Sampson.paj'),
+                   time.format='networkDynamic',
+                   edge.name = 'liked')
+names(sampData)
+@
+
+Because this was a .paj file, it can include multiple networks and some vertex-level data as separate elements in the the list returned.  In this case, we want to grab the first more complete network (for background info, see \url{http://vlado.fmf.uni-lj.si/pub/networks/data/esna/sampson.htm}). We can attach the partition info onto the network as an attribute, and filter out the edges to include only the positive ``like'' ties.
+
+<<sampson_format>>=
+sampData$partitions
+sampData$networks[[1]]
+
+sampDyn<-get.inducedSubgraph(sampData$networks[[1]], eid=which(sampData$networks[[1]]%e%'liked' > 0))
+sampDyn%v%'cloisterville'<-sampData$partitions$Sampson_cloisterville
+@
+
+We can then extract and plot the network at several time points. Notice that some of the novices had left the monastery by time 5.
+
+<<sampson_plot,fig=TRUE>>=
+par(mfcol=c(2,2))
+plot(network.extract(sampDyn,at=1),vertex.col='cloisterville', 
+     edge.col='gray', label.cex=0.6,
+     displaylabels=TRUE, main='Sampson "like" net at time 1')
+plot(network.extract(sampDyn,at=2),vertex.col='cloisterville', 
+     edge.col='gray',label.cex=0.6,
+     displaylabels=TRUE, main='Sampson "like" net at time 2')
+plot(network.extract(sampDyn,at=3),vertex.col='cloisterville', 
+     edge.col='gray',label.cex=0.6,
+     displaylabels=TRUE, main='Sampson "like" net at time 3')
+plot(network.extract(sampDyn,at=5),vertex.col='cloisterville', 
+     edge.col='gray',label.cex=0.6,
+     displaylabels=TRUE, main='Sampson "like" net at time 5')
+par(mfcol=c(1,1))
+@
+
+\subsection{Batteries and tergm example not included}
+Unfortunately we can't include a real live \verb@tergm@ model example here, because the \verb@tergm@ package depends on \verb@networkDynamic@, and we don't want to create a circular package dependency.  But are nice examples located in the \verb@tegrm@ and \verb@ndtv@ package vignettes.  The \verb@EpiModel@ package also includes tools for saving longitudinal network epidemic simulations as \verb@networkDynamic@ objects. 
 
 \section{Persistent IDs}
 
 As has already been mentioned, the standard vertex and edge ids used in the network package are indices, so they must change when the network size changes during an extraction operation \footnote{In the case of vertex ids, they may also change during vertex deletions, or additions to the first mode of a bipartite network}.  So how can we follow a specific network element through a series of slicing and dicing operations?  Since v0.5, the networkDynamic package supports defining an (optional) ``persistent id'' (pid) for edges and vertices.  
+
+\subsection{Translating between ids and persistent ids}
 
 Once a persistent id has been defined, the functions \verb@get.vertex.id()@ and \verb@get.vertex.pid@ can be used to translate between the normal ids and the pids.  For edges, the functions are named \verb@get.edge.id@ and \verb@get.edge.pid@. Lets look at an example where we find the original vertices corresponding to vertices in smaller extracted net.
 
@@ -583,6 +629,8 @@ What are the pids of vertices with needles? Which vertices are the corresponding
 get.vertex.pid(newstack,needleIds)
 get.vertex.id(haystack,get.vertex.pid(newstack,needleIds))
 @
+
+\subsection{Defining pids}
 In the example above, we made up a new id, but if the data set already had some type of unique identifier for vertices, we could have used it instead. For the previous McFarland example we could use \verb@data_id@:
 <<pids6>>==
 set.network.attribute(classDyn,'vertex.pid','data_id')
@@ -609,7 +657,7 @@ as.matrix(net)
 @
 Notice that when we added vertices in the first case we explicitly included in a vertex pid for the new vertex. In the second case, we didn't specify a pid, so it made up a messy one to make sure they stayed unique. 
 
-The function initialize.pids can also be used to create a set of pids on all existing vertices (named vertex.pid) and edges (named edge.pid). The pids are currently initialized with meaningless but unique pseudo-random hex strings using the \verb@tempfile@ function (something like \verb@'4ad912252bc2'@)  These are also the types of new pids that will be created if add.vertices is called in a network with a vertex.pid defined, as in the example above. It is a good idea to define pids after a network object as been constructed and before any extractions are performed.
+The function \verb@initialize.pids()@ can also be used to create a set of pids on all existing vertices (named vertex.pid) and edges (named edge.pid). The pids are currently initialized with meaningless but unique pseudo-random hex strings using the \verb@tempfile@ function (something like \verb@'4ad912252bc2'@)  These are also the types of new pids that will be created if add.vertices is called in a network with a vertex.pid defined, as in the example above. It is a good idea to define pids after a network object as been constructed and before any extractions are performed.
 <<initialize.pids>>==
 net<-network.initialize(3)
 add.edges(net,tail=1:2,head=2:3)
@@ -658,7 +706,7 @@ sapply(newSlices,network.size)
 
 
 \section{Dynamic attributes}
-An important tool for working with dynamic networks is the ability to represent time-varying attributes of networks, vertices (changing properties) and edges (changing weights). In the \verb@networkDynamic@ package we refer to these as dynamic attributes or ``TEAs'' (Temporally Extended Attributes). A TEA is a standard edge, vertex, or network attribute that has a name ending in \verb@.active@ and carries meta-data regarding its state over time. We store the TEAs as a two-part list, where the first part is a list of values, and the second is a spell matrix where each row gives the onset and terminus of activity for the corresponding value. See \verb@?activate.vertex.attribute@ for the full specification of Temporally Extended Attributes. Of course we try to hide most of this as much as possible using a set of accessor functions. 
+An important tool for working with dynamic networks is the ability to represent time-varying attributes of networks, vertices (changing properties) and edges (changing weights). In the \verb@networkDynamic@ package we refer to these as dynamic attributes or ``TEAs'' (Temporally Extended Attributes). A TEA is a standard edge, vertex, or network attribute that has a name ending in \verb@.active@ and carries meta-data detailing changes its state over time. We store the TEAs as a two-part list, where the first part is a list of values, and the second is a spell matrix where each row gives the onset and terminus of activity for the corresponding element in value list. See \verb@?activate.vertex.attribute@ for the full specification of Temporally Extended Attributes. Of course we try to hide most of this as much as possible by providing a set of accessor functions. 
 
 \subsection{Activating TEA attributes}
 The functions for creating TEA attributes are named similarly to the regular functions for manipulating network, vertex, and edge attributes but they also accept the spell-related arguments (onset, terminus, at, length).
@@ -684,7 +732,7 @@ add.edges(net,tail=c(1,2,3),head=c(2,3,4)) # need edges to activate-
 activate.edge.attribute(net,'weight',c(5,12,7),onset=1,terminus=3)
 activate.edge.attribute(net,'weight',c(1,2,1),onset=3,terminus=7)
 @
-Since we didn't give the edges themselves timing info, they will be assumed to be always active. But we've specified that the 'weight' of the edges should vary over time. 
+Since we didn't give the edges themselves timing info, they will be assumed to be always active. But we've specified that the ``weight'' of the edges should vary over time. 
 
 \subsection{Querying TEA attributes}
 What happens when there are no values defined? When we activate the vertex attributes, we left a gap in the spell coverage. What if we ask for values in the time period?
@@ -695,7 +743,7 @@ get.vertex.attribute.active(net,"happiness",
 get.vertex.attribute.active(net,"happiness",
                             onset=2.5,terminus=3.5,rule="all")
 @
-In the first case, no values are defined so \verb@NA@ is returned. In the second case, the query spell included part of a defined value since inclusion rule defaults to `\verb@rule='any'@ and the query intersected with part of the spell associated with the value 5. We can ask it to only return values if they match the entire query spell by setting \verb@rule='all'@, which is what happened in the third case.  
+In the first case, no values are defined so \verb@NA@ is returned. In the second case, the query spell included part of a defined value since inclusion rule defaults to \verb@rule='any'@ and the query intersected with part of the spell associated with the value 5. We can ask it to only return values if they match the entire query spell by setting \verb@rule='all'@, which is what happened in the third case.  
 
 The functions also permit queries that will intersect with multiple attribute values. In this case the earliest value is returned, but it also gives a warning that the value returned may not be the appropriate value for the time range. 
 <<tea3>>=
@@ -746,6 +794,14 @@ list.edge.attributes.active(net,at=2)
 list.network.attributes.active(net,at=2,dynamic.only=TRUE)
 @
 
+There may be situations where we want to know the time at which a TEA attribute takes a certain value or matches a specific criteria.  For example, when does a value of happiness equal 2? Or when is the edge weight greater than 10?
+
+<<<when_attr_match>>=
+when.vertex.attrs.match(net,"happiness",2)
+when.edge.attrs.match(net,'weight',10, match.op = '>')
+@
+
+By default, the functions will return a vector with an appropriate value for each vertex (or edge) and they accept the standard \verb@e@ and \verb@v@ arguments to specify a subset of edges or vertices to query.  Notice that the second example returned \verb@Inf@ for the edges with weights that never met the match criteria.  The value returned for non-matching elements can be set with the \verb@no.match@ argument. 
 
 
 \subsection{Modifying TEAs}
@@ -927,13 +983,13 @@ plot(transTree(windsurfers),displaylabels=TRUE,
 
 We can see that the rumor started at v1, our seed vertex, which has a little loop because it infected itself. 
 
-\section{Related packages and other coming attractions}
+\section{Related packages}
 The statnet team is releasing several packages that work closely with the \verb@networkDynamic@ package to provide additional features. 
 \begin{itemize}
  \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/web/packages/networkDynamicData}
- \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network animations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}. 
- \item A longer tutorial demonstrating features of \verb@ndtv@ and \verb@networkDynamic@ data import is located at \url{http://statnet.csde.washington.edu/workshops/SUNBELT/current/ndtv/ndtv_workshop.pdf}
-\item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format. 
+ \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network movies as videos or interactive HTML5 animations, timelines and other visualizations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}. 
+ \item A longer tutorial demonstrating features of \verb@ndtv@ and \verb@networkDynamic@ data import is located at \url{http://statnet.csde.washington.edu/workshops/SUNBELT/current/ndtv/ndtv_workshop.html}
+\item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format \url{http://cran.r-project.org/web/packages/tsna}. 
 \end{itemize}
 
 \section{Citing networkDynamic}
