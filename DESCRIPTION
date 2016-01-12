@@ -1,6 +1,6 @@
 Package: networkDynamic
-Version: 0.9
-Date: 2016-01-07
+Version: 0.9.0
+Date: 2016-01-12
 Title: Dynamic Extensions for Network Objects
 Type: Package
 Depends: R (>= 3.0.0), network (>= 1.13)
