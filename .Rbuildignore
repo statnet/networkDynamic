@@ -1,1 +1,6 @@
 nonsource
+^.*\.Rproj$
+^\.Rproj\.user$
+.travis.yml
+.RSession
+appveyor.yml
