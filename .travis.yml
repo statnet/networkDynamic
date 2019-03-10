@@ -11,3 +11,10 @@ matrix:
     os: osx
 sudo: false
 cache: packages
+
+warnings_are_errors: true
+
+notifications:
+  email:
+    on_success: never
+on_failure: change
