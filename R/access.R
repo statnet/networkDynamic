@@ -680,7 +680,7 @@ is.adjacent.active<-function(x,vi,vj,onset=NULL,terminus=NULL,length=NULL, at=NU
 
 #Variant network.dyadcount which uses only active vertices.
 network.dyadcount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
-                                    rule=c("any","all","earliest","latest"), na.omit = TRUE, active.default=TRUE) {
+                                    rule=c("any","all","earliest","latest"), na.omit = TRUE, active.default=TRUE, ...) {
   if (!is.network(x)) 
     stop("network.dyadcount.active requires an argument of class network.")
   rule<-match.arg(rule)
@@ -732,7 +732,7 @@ network.dyadcount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, a
 
 #Variant network.edgecount which counts only active edges.  Not long-run safe.
 network.edgecount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
-                                    rule=c("any","all","earliest","latest"), na.omit = TRUE, active.default=TRUE){
+                                    rule=c("any","all","earliest","latest"), na.omit = TRUE, active.default=TRUE,...){
   rule<-match.arg(rule)
   if(x%n%"mnext">1){
     act<-is.active(x=x,onset=onset,terminus=terminus,length=length,at=at,
@@ -749,7 +749,7 @@ network.edgecount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, a
 
 #Variant network.naedgecount which counts only active edges.  Not safe.
 network.naedgecount.active<-function (x, onset=NULL, terminus=NULL, length=NULL, at=NULL,
-                                      rule=c("any","all","earliest","latest"), active.default=TRUE){
+                                      rule=c("any","all","earliest","latest"), active.default=TRUE,...){
   if(x%n%"mnext">1) {
     act<-is.active(x=x,onset=onset,terminus=terminus,length=length, at=at,
                    e=valid.eids(x),v=NULL,rule=rule, active.default=active.default)
@@ -761,7 +761,7 @@ network.naedgecount.active<-function (x, onset=NULL, terminus=NULL, length=NULL,
 
 #Network size which counts only active vertices - don't use for other purposes!
 network.size.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                              rule=c("any","all","earliest","latest"),active.default=TRUE){
+                              rule=c("any","all","earliest","latest"),active.default=TRUE,...){
   rule<-match.arg(rule)
   sum(is.active(x=x,onset=onset,terminus=terminus,length=length, at=at,
                 e=NULL,v=seq_len(network.size(x)), rule=rule,active.default=active.default))

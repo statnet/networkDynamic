@@ -94,5 +94,9 @@ S3method(print,networkDynamic)
 # only way to quiet the warning
 S3method(add.edges,active)
 S3method(add.vertices,active)
+S3method(network.dyadcount,active)
+S3method(network.edgecount,active)
+S3method(network.naedgecount,active)
+S3method(network.size,active)
 
 
