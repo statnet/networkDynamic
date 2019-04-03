@@ -1009,7 +1009,7 @@ delete.spell<-function(spells, onset=-Inf, terminus=Inf){
 # and replace them with null
 .removeNullSpells <- function(x){
   return(lapply(x,function(x){
-    if(!is.null(x) && !is.na(x) && x[1,1]==Inf && x[1,2]==Inf){ return(NULL)} else { return(x) }
+    if(!is.null(x) && !any(is.na(x)) && x[1,1]==Inf && x[1,2]==Inf){ return(NULL)} else { return(x) }
   }))
          
 }
