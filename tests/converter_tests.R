@@ -70,7 +70,7 @@ expect_equivalent(
 expect_equal(unlist(get.vertex.activity(network.initialize(3))),c(-Inf,Inf,-Inf,Inf,-Inf,Inf),info="calling with ordinary network")
 
 # test when called with something else
-expect_error(get.vertex.activity(list()),'requires an argument of class network')
+expect_error(get.vertex.activity(list()))
 
 # test with null spell
 net<- network.initialize(2)

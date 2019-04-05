@@ -36,14 +36,18 @@ get.neighborhood.active(x, v, onset = NULL, terminus = NULL, length = NULL, at =
 is.adjacent.active(x, vi, vj, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
     rule = c("any", "all", "earliest", "latest"), na.omit = FALSE, active.default = TRUE)
 
-network.dyadcount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
-network.edgecount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
-network.naedgecount.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all", "earliest", "latest"), active.default = TRUE)
-network.size.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all", "earliest", "latest"), active.default = TRUE)
+\method{network.dyadcount}{active}(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
+    rule = c("any", "all", "earliest", "latest"),
+    na.omit = TRUE, active.default = TRUE,...)
+\method{network.edgecount}{active}(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
+    rule = c("any", "all", "earliest", "latest"),
+    na.omit = TRUE, active.default = TRUE,...)
+\method{network.naedgecount}{active}(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
+    rule = c("any", "all", "earliest", "latest"),
+    active.default = TRUE,...)
+\method{network.size}{active}(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
+    rule = c("any", "all", "earliest", "latest"),
+    active.default = TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -61,6 +65,7 @@ network.size.active(x, onset = NULL, terminus = NULL, length = NULL, at = NULL,
   \item{rule}{ a text string for defining \dQuote{active} for this call:  \code{any} (default) to select elements appearing at any time during the specified interval, or \code{all} to select only elements active for the entire interval. For these functions, the values of \code{earliest} and \code{latest} are equivalent to \code{any} and are only included for consistency.}
   \item{na.omit}{ logical; should we omit missing edges? }
   \item{active.default}{ logical; should elements without an activity attribute be regarded as active by default? }
+  \item{\dots}{possible additional argumenets}
 }
 \details{
   These functions are \dQuote{dynamically extended} versions of their standard \link[network]{network} counterparts.  As such, conventional aspects of their behavior can be found on their respective manual pages (see below).  In all cases, the sole difference between the extended and non-extended versions lies in the ability of the user to specify a time point (or interval), such that only vertices and edges active at the indicated time (or during the indicated interval) are employed by the routine.
@@ -114,5 +119,5 @@ network.edgecount.active(net, at=5, active.default=FALSE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ manip }
+\keyword{ graphs }% __ONLY ONE__ keyword per line
