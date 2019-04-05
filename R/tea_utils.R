@@ -1243,7 +1243,7 @@ deactivate.edge.attribute <-function(x, prefix, onset=NULL, terminus=NULL,length
   
   timedlist <-lapply(seq_len(length(e)),function(n){
     timed <- timedlist[[n]];
-    if (!is.null(timed) && !(length(timed)==1) && !is.na(timed)){ 
+    if (!is.null(timed) && !(length(timed)==1) && !any(is.na(timed))){ 
       return(
         deactive.spell.attribute(onset=onset[n],terminus=terminus[n],spell.mat=timed[[2]],val.list=timed[[1]])
       )}})
@@ -1327,8 +1327,8 @@ deactivate.network.attribute <- function (x, prefix, onset=NULL, terminus=NULL, 
   }
   
   
-  timed <- get.network.attribute(x, attrname,unlist=FALSE); 
-  if (!is.null(timed) | !(length(timed)==1 && !is.na(timed))){ 
+  timed <- get.network.attribute(x, attrname,unlist=FALSE) 
+  if (!is.null(timed) | !(length(timed)==1 && !any(is.na(timed)))){ 
     timed <- 
       deactive.spell.attribute(onset=onset,terminus=terminus,spell.mat=timed[[2]],val.list=timed[[1]])
   }

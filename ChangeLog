@@ -3,6 +3,7 @@ v0.10
   - update to test failing on cran after network 1.14 release
   - updates to network.edgecount.active, network.dyadcount.active and similar to be compatible
   with S3 generics introduced in network 1.14
+  - corrections to some internals for rdevel changes to is.na with multiple args
 v0.9
   - vignette updates
   - fixed issue where network.collpase would incorrectly nest dynamic network-level attributes if there was only one of them
