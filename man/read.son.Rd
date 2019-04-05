@@ -14,7 +14,7 @@
 Read .son-formatted (SoNIA) input files containing longitudinal network data and  create a corresponding networkDynamic object
 }
 \description{
-A .son file is a tab-separated text file with two sections, the first describing node attribute events and the second arc attribute events. Each section has a set of defined column names as a header. See the SoNIA file specification for more information: \url{http://sourceforge.net/apps/mediawiki/sonia/index.php?title=Son_format}.
+A .son file is a tab-separated text file with two sections, the first describing node attribute events and the second arc attribute events. Each section has a set of defined column names as a header. See the SoNIA file specification for more information: \url{https://sourceforge.net/p/sonia/wiki/Son_format/}.
 }
 \usage{
 read.son(file, guess.TEA=TRUE)
@@ -31,7 +31,7 @@ read.son(file, guess.TEA=TRUE)
 A network dynamic object with vertex and edge durations and attributes corresponding the the spells defined in the input file. 
 }
 \references{
-\url{http://sourceforge.net/apps/mediawiki/sonia/index.php?title=Son_format}.
+\url{https://sourceforge.net/p/sonia/wiki/Son_format/}.
 }
 \author{
 Skye Bender-deMoll
