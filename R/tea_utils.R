@@ -538,7 +538,7 @@ activate.edge.attribute <-function(x, prefix, value, onset=NULL, terminus=NULL,l
 }
 
 
-get.vertex.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), na.omit = FALSE, null.na = TRUE, active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
+get.vertex.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), na.omit = FALSE, null.na = TRUE, active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE,...){
   
   # validate inputs
   if(!is.network(x)) 
@@ -1346,7 +1346,7 @@ deactivate.network.attribute <- function (x, prefix, onset=NULL, terminus=NULL, 
 #list.vertex.attributes.active
 ##########################################################################
 
-list.vertex.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL, at=NULL, na.omit=FALSE, rule = c("any", "all"), v=seq_len(network.size(x)), require.active=FALSE, active.default = TRUE, dynamic.only=FALSE){
+list.vertex.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL, at=NULL, na.omit=FALSE, rule = c("any", "all"), v=seq_len(network.size(x)), require.active=FALSE, active.default = TRUE, dynamic.only=FALSE,...){
   
   if(!is.network(x)){
     stop("list.vertex.attributes.active requires that the first argument be a network object")
