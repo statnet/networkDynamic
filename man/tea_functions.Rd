@@ -43,11 +43,11 @@ activate.edge.value(x, prefix, value, onset = NULL, terminus = NULL,
 activate.network.attribute(x, prefix, value, onset = NULL, terminus = NULL, 
     length = NULL, at = NULL, dynamic.only = FALSE)    
     
-get.vertex.attribute.active(x, prefix, onset = NULL, terminus = NULL, 
+\method{get.vertex.attribute}{active}(x, prefix, onset = NULL, terminus = NULL, 
           length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
           na.omit = FALSE, null.na = TRUE, active.default = TRUE,
           dynamic.only = FALSE, require.active = FALSE,
-          return.tea = FALSE, unlist = TRUE)   
+          return.tea = FALSE, unlist = TRUE,...)   
  
 get.edge.value.active(x, prefix, onset = NULL, terminus = NULL,
           length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
@@ -67,10 +67,10 @@ deactivate.edge.attribute (x, prefix, onset = NULL, terminus = NULL,
 deactivate.network.attribute(x, prefix, onset = NULL, terminus = NULL, 
           length = NULL, at = NULL, dynamic.only = FALSE)
                 
-list.vertex.attributes.active(x, onset = NULL, terminus = NULL,length = NULL, 
+\method{list.vertex.attributes}{active}(x, onset = NULL, terminus = NULL,length = NULL, 
                 at = NULL, na.omit = FALSE, rule = c("any", "all"), 
                 v = seq_len(network.size(x)), require.active = FALSE, 
-                active.default = TRUE, dynamic.only = FALSE)
+                active.default = TRUE, dynamic.only = FALSE,...)
                 
 list.edge.attributes.active(x, onset = NULL, terminus = NULL,length = NULL, 
                 at = NULL, na.omit = FALSE, rule = c("any", "all"), 
@@ -152,7 +152,10 @@ optional, one or more IDs indicating which vertices should have the TEA attribut
  \item{unlist}{
    logical; should retrieved attributes be unlisted prior to being returned? Setting to FALSE is necessary to correctly fetch list objects stored as attributes.
  }
-
+ 
+ \item{\dots}{
+   possible additional arguments
+ }
 
 }
 \details{
