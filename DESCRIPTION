@@ -3,7 +3,7 @@ Version: 0.10.1
 Date: 2019-10-11
 Title: Dynamic Extensions for Network Objects
 Type: Package
-Depends: R (>= 3.0.0), network (>= 1.16.378)
+Depends: R (>= 3.0.0), network (>= 1.16.0)
 Imports: statnet.common, methods
 Suggests: testthat
 LinkingTo: network
