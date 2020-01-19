@@ -76,9 +76,9 @@ Each of the above return \code{NA} values where no match is found.
 }
 
 }
-\references{
-A specification document: \url{https://statnet.csde.washington.edu/trac/wiki/PersistentIdProposal}
-}
+%\references{
+%A specification document: \url{https://statnet.csde.washington.edu/trac/wiki/PersistentIdProposal}
+%}
 \author{
 lxwang, skyebend, the statnet team
 }

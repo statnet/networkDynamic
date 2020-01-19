@@ -200,9 +200,9 @@ When the attribute query has a non-zero duration (i.e. \code{length} > 0, or \co
 \value{
 The set methods modify their network argument internally and also invisibly return a reference to the modified network. The get methods return the attribute object appropriate for the time range specified query spell parameters.  If query results in multiple values and \code{return.tea=FALSE} only the first (earliest) is returned along with a warning. Note that \code{get.edge.value.active} returns \code{NULL} if no attributes names match, where \code{get.vertex.attribute.active} returns \code{NA}s.  Also of \code{null.na=FALSE} and \code{unlist=TRUE}, the index position for returned values may not correspond to the vertex.id because NULL values will be omited.
 }
-\references{
-See statnet internal TEA spec documents \url{https://statnet.csde.washington.edu/trac/wiki/TemporallyExtendedAttributes}
-}
+%\references{
+%See statnet internal TEA spec documents \url{https://statnet.csde.washington.edu/trac/wiki/TemporallyExtendedAttributes}
+%}
 \author{
 skyebend, ayn, carter, pavel, martina, steve
 }

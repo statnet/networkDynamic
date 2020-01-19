@@ -100,7 +100,7 @@ This function provides ways to convert multiple forms of timing information for 
   Curently, dynamic attributes (TEAs, see \code{\link{attribute.activity.functions}}) for edges or vertices (with onset and termination times matching those of the edge or vertex spell) can be loaded in by by setting \code{create.TEAs=TRUE} and including additional columns in the \code{edge.spells} or \code{vertex.spells} argument and specifying a vector of names for the attributes with \code{edge.TEA.names} or \code{vertex.TEA.names}. Note that when using a \code{\link{data.frame}} to pass in non-numeric attributes, the default behavior of converting strings to factors should be avoided.
 }
 
-Specification is located at \url{https://statnet.csde.washington.edu/trac/wiki/NetworkDynamicConverterFunctions}
+%Specification was located at \url{https://statnet.csde.washington.edu/trac/wiki/NetworkDynamicConverterFunctions} now on github repo?
 
 
 }

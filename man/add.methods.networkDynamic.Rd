@@ -45,9 +45,9 @@ The networkDynamic versions of these methods call the network versions internall
   \item{\code{add.edge} and \code{add.edges} (invisibly) return a reference to the network with the new edges added. Pids will be added/created if a \code{vertex.pid} attribute is set.}
 }
 }
-\references{
-A specification document: \url{https://statnet.csde.washington.edu/trac/wiki/PersistentIdProposal}
-}
+%\references{
+%A specification document: \url{https://statnet.csde.washington.edu/trac/wiki/PersistentIdProposal}
+%}
 \author{
 lxwang, skyebend, the statnet team
 }
