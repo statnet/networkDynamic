@@ -49,7 +49,7 @@ Zack Almquist \email{almquist@uci.edu},
 Jeffrey Horner \email{jeffrey.horner@gmail.com},
 Martina Morris \email{morrism@u.washington.edu"}
 
-With support from the statnet team \url{statnet.org}
+With support from the statnet team \url{https://statnet.org}
 
 
 
