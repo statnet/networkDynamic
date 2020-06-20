@@ -102,7 +102,7 @@ However, there are some behaviors that are specific to each function.
   activate.vertices twice.  It is advisable to remove duplicate edges or
   vertices from the \code{e} or \code{v} input vectors.
   
-Edge/vertex activity is tracked through an attribute called (eponymously) \dQuote{active}, and which is explained in more detail under \link{activity.attribute}.  This may be modified or otherwise accessed using standard class methods (e.g., \code{\link[network]{get.edge.attribute}}), as well as the specialized methods described here.
+Edge/vertex activity is tracked through an attribute called (eponymously) \dQuote{active}, and which is explained in more detail under \link{activity.attribute}.  This may be modified or otherwise accessed using standard class methods (e.g., \code{\link[network:attribute.methods]{get.edge.attribute}}), as well as the specialized methods described here.
   
 
 }

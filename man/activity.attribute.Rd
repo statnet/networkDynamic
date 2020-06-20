@@ -51,7 +51,7 @@
     }
  The special \dQuote{null} spell is used to designate elements that are never active (i.e., have no valid activity spells).  These can only be set by the \code{deactivate} function (see \code{\link{activity.attribute}}) and by convention are stored as \code{c(Inf,Inf)}.  \dQuote{Null} spells are incompatible with other spells, and should be replaced whenever an activation enters the element's event history.
 
-  Although it is possible to access and modify the activity spells using \link[network]{network} attribute methods (e.g., \code{\link[network]{get.edge.attribute}})  it is not recommended, and extreme care should be taken to preserve the structure of the spell matrix. The preferred way to modify the spells of a network element is with the \code{\link{activate}} related methods. Vertices and edges with specific activity ranges can be selected using \code{\link{network.extensions}}.
+  Although it is possible to access and modify the activity spells using \link[network]{network} attribute methods (e.g., \code{\link[network:attribute.methods]{get.edge.attribute}})  it is not recommended, and extreme care should be taken to preserve the structure of the spell matrix. The preferred way to modify the spells of a network element is with the \code{\link{activate}} related methods. Vertices and edges with specific activity ranges can be selected using \code{\link{network.extensions}}.
   
   In addition, a number of special functions are also provided to simplify common tasks related to the \code{active} attribute (noted below). 
   
