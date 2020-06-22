@@ -49,6 +49,11 @@ activate.network.attribute(x, prefix, value, onset = NULL, terminus = NULL,
           dynamic.only = FALSE, require.active = FALSE,
           return.tea = FALSE, unlist = TRUE, ...)   
  
+\method{get.edge.attribute}{active}(x, prefix, onset = NULL, terminus = NULL,
+          length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
+          active.default = TRUE, dynamic.only = FALSE, require.active = FALSE, 
+          return.tea = FALSE, unlist = TRUE, ..., el) 
+
 \method{get.edge.value}{active}(x, prefix, onset = NULL, terminus = NULL,
           length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
           active.default = TRUE, dynamic.only = FALSE, require.active = FALSE, 
@@ -156,7 +161,10 @@ optional, one or more IDs indicating which vertices should have the TEA attribut
  \item{\dots}{
    possible additional arguments
  }
-
+ 
+ \item{el}{
+   unused argument that exists solely for consistency with \code{network}; do not use this argument!
+ }
 }
 \details{
 These functions provide easy ways to work with temporally extended attributes, making it possible to store attributes on a dynamic network that should be represented as changing values and different points in time. Because the serve as wrappers for get.*.attribute and set.*.attribute, many of the arguments are directly passed through. 
