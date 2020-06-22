@@ -189,7 +189,10 @@ get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,le
 }
 
 
-get.edge.attribute.active<-function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE, ...){
+get.edge.attribute.active<-function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE, ..., el){
+  if(!missing(el)) {
+    stop(sQuote("get.edge.attribute.active"), " does not support the ", sQuote("el"), " argument.")
+  }
   if (!is.network(x)){
     stop("The first argument for get.edge.attribute.active must be a network object. (This version does not yet support using a list of edges)")
   }
