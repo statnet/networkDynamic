@@ -35,10 +35,10 @@ activate.vertex.attribute(x, prefix, value, onset = NULL, terminus = NULL,
     length = NULL, at = NULL, v = seq_len(network.size(x)), dynamic.only = FALSE)
 
 activate.edge.attribute(x, prefix, value, onset = NULL, terminus = NULL, 
-    length = NULL, at = NULL, e = seq_along(x$mel),   dynamic.only = FALSE)
+    length = NULL, at = NULL, e = seq_along(x$mel), dynamic.only = FALSE)
     
 activate.edge.value(x, prefix, value, onset = NULL, terminus = NULL, 
-    length = NULL, at = NULL, e = seq_along(x$mel),   dynamic.only = FALSE)
+    length = NULL, at = NULL, e = seq_along(x$mel), dynamic.only = FALSE)
     
 activate.network.attribute(x, prefix, value, onset = NULL, terminus = NULL, 
     length = NULL, at = NULL, dynamic.only = FALSE)    
@@ -47,16 +47,21 @@ activate.network.attribute(x, prefix, value, onset = NULL, terminus = NULL,
           length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
           na.omit = FALSE, null.na = TRUE, active.default = TRUE,
           dynamic.only = FALSE, require.active = FALSE,
-          return.tea = FALSE, unlist = TRUE,...)   
+          return.tea = FALSE, unlist = TRUE, ...)   
  
-get.edge.value.active(x, prefix, onset = NULL, terminus = NULL,
+\method{get.edge.attribute}{active}(x, prefix, onset = NULL, terminus = NULL,
           length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
           active.default = TRUE, dynamic.only = FALSE, require.active = FALSE, 
-          return.tea = FALSE, unlist = TRUE) 
+          return.tea = FALSE, unlist = TRUE, ..., el) 
 
-get.network.attribute.active(x, prefix, onset = NULL, terminus = NULL,length = NULL, 
+\method{get.edge.value}{active}(x, prefix, onset = NULL, terminus = NULL,
+          length = NULL, at = NULL, rule = c("any", "all","earliest","latest"), 
+          active.default = TRUE, dynamic.only = FALSE, require.active = FALSE, 
+          return.tea = FALSE, unlist = TRUE, ...) 
+
+\method{get.network.attribute}{active}(x, prefix, onset = NULL, terminus = NULL,length = NULL, 
                 at = NULL, rule = c("any", "all","earliest","latest"), 
-                dynamic.only = FALSE, return.tea=FALSE,unlist=TRUE) 
+                dynamic.only = FALSE, return.tea=FALSE, unlist=TRUE, ...) 
                 
 deactivate.vertex.attribute (x, prefix, onset=NULL, terminus=NULL,
           length = NULL, at = NULL, v = seq_len(network.size(x)), dynamic.only = FALSE)
@@ -70,16 +75,16 @@ deactivate.network.attribute(x, prefix, onset = NULL, terminus = NULL,
 \method{list.vertex.attributes}{active}(x, onset = NULL, terminus = NULL,length = NULL, 
                 at = NULL, na.omit = FALSE, rule = c("any", "all"), 
                 v = seq_len(network.size(x)), require.active = FALSE, 
-                active.default = TRUE, dynamic.only = FALSE,...)
+                active.default = TRUE, dynamic.only = FALSE, ...)
                 
-list.edge.attributes.active(x, onset = NULL, terminus = NULL,length = NULL, 
+\method{list.edge.attributes}{active}(x, onset = NULL, terminus = NULL,length = NULL, 
                 at = NULL, na.omit = FALSE, rule = c("any", "all"), 
                 e = seq_along(x$mel), require.active = FALSE, 
-                active.default = TRUE, dynamic.only = FALSE)
+                active.default = TRUE, dynamic.only = FALSE, ...)
                 
-list.network.attributes.active(x, onset = NULL, terminus = NULL,length = NULL, 
+\method{list.network.attributes}{active}(x, onset = NULL, terminus = NULL,length = NULL, 
                 at = NULL, na.omit = FALSE, rule = c("any", "all"),
-                dynamic.only = FALSE)
+                dynamic.only = FALSE, ...)
 
 }
 
@@ -156,7 +161,10 @@ optional, one or more IDs indicating which vertices should have the TEA attribut
  \item{\dots}{
    possible additional arguments
  }
-
+ 
+ \item{el}{
+   unused argument that exists solely for consistency with \code{network}; do not use this argument!
+ }
 }
 \details{
 These functions provide easy ways to work with temporally extended attributes, making it possible to store attributes on a dynamic network that should be represented as changing values and different points in time. Because the serve as wrappers for get.*.attribute and set.*.attribute, many of the arguments are directly passed through. 

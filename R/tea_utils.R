@@ -94,7 +94,7 @@ activate.network.attribute <- function (x, prefix, value, onset=NULL, terminus=N
 }
 
 #Only returns first value, since aggregation rules are not specified
-get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), dynamic.only=FALSE, return.tea=FALSE,unlist=TRUE){
+get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), dynamic.only=FALSE, return.tea=FALSE,unlist=TRUE, ...){
   # checks for proper inputs
   if(!is.network(x)) 
     stop("get.network.attribute.active requires an argument of class network.\n")
@@ -189,14 +189,17 @@ get.network.attribute.active <- function(x, prefix, onset=NULL, terminus=NULL,le
 }
 
 
-get.edge.attribute.active<-function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
+get.edge.attribute.active<-function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE, ..., el){
+  if(!missing(el)) {
+    stop(sQuote("get.edge.attribute.active"), " does not support the ", sQuote("el"), " argument.")
+  }
   if (!is.network(x)){
     stop("The first argument for get.edge.attribute.active must be a network object. (This version does not yet support using a list of edges)")
   }
   get.edge.value.active(x,prefix,onset,terminus,length,at,rule,active.default,dynamic.only,require.active,return.tea,unlist)
 }
 
-get.edge.value.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE){
+get.edge.value.active <- function(x, prefix, onset=NULL, terminus=NULL,length=NULL, at=NULL, rule = c("any", "all","earliest","latest"), active.default = TRUE, dynamic.only=FALSE, require.active=FALSE,return.tea=FALSE,unlist=TRUE, ...){
   # validate inputs
   
   #check for common error of calling get.edge.attribute instead of get.edge.value
@@ -1408,7 +1411,7 @@ list.vertex.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NUL
 ##########################################################################
 #list.edge.attributes.active
 ##########################################################################
-list.edge.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL, at=NULL, na.omit = FALSE, rule = c("any", "all"), e=seq_along(x$mel), require.active= FALSE, active.default = TRUE, dynamic.only=FALSE){
+list.edge.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL, at=NULL, na.omit = FALSE, rule = c("any", "all"), e=seq_along(x$mel), require.active= FALSE, active.default = TRUE, dynamic.only=FALSE, ...){
   # validate inputs
   
   if (!is.network(x)){
@@ -1471,7 +1474,7 @@ list.edge.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL,
 #list.network.attribute.active
 ##########################################################################
 
-list.network.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL, at=NULL, na.omit = FALSE, rule = c("any", "all"), dynamic.only=FALSE){
+list.network.attributes.active <-function(x, onset=NULL, terminus=NULL,length=NULL, at=NULL, na.omit = FALSE, rule = c("any", "all"), dynamic.only=FALSE, ...){
   
   # checks for proper inputs
   if(!is.network(x)) 

@@ -80,7 +80,7 @@ For elements (edges and vertices) lacking an activity attribute, the \code{activ
 \references{ Butts, C. T.  (2008).  \dQuote{network: a Package for Managing Relational Data in R.}  \emph{Journal of Statistical Software}, 24(2).  \url{http://www.jstatsoft.org/v24/i02/} }
 \author{ Carter T. Butts \email{buttsc@uci.edu} }
 \note{ The current temporal implementation of these routines will be slower compared to the non-temporal versions.  Do not use them unless you have to. }
-\seealso{ \code{\link{network.extract}}, \code{\link{is.active}}, \code{\link[network]{get.edgeIDs}}, \code{\link[network]{get.edges}}, \code{\link[network]{get.neighborhood}}, \code{\link[network]{is.adjacent}}, \code{\link[network]{network.dyadcount}}, \code{\link[network]{network.edgecount}}, \code{\link[network]{network.naedgecount}}, \code{\link[network]{network.size}}}
+\seealso{ \code{\link{network.extract}}, \code{\link{is.active}}, \code{\link[network:get.edges]{get.edgeIDs}}, \code{\link[network]{get.edges}}, \code{\link[network]{get.neighborhood}}, \code{\link[network]{is.adjacent}}, \code{\link[network]{network.dyadcount}}, \code{\link[network]{network.edgecount}}, \code{\link[network]{network.naedgecount}}, \code{\link[network]{network.size}}}
 \examples{
 
 ## is.adjacent.active

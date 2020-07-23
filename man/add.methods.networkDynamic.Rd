@@ -57,7 +57,7 @@ lxwang, skyebend, the statnet team
 
 
 \seealso{
-See also \code{\link{persistent.ids}}, \code{\link[network:add.vertices]{add.vertices}}, \code{\link[network:add.edge]{add.edge}}, \code{\link[network:add.edges]{add.edges}} in network.
+See also \code{\link{persistent.ids}}, \code{\link[network:add.vertices]{add.vertices}}, \code{\link[network:add.edges]{add.edge}}, \code{\link[network:add.edges]{add.edges}} in network.
 }
 \examples{
 # add vertices while using vertex.names as pids

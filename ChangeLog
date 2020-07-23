@@ -1,4 +1,6 @@
 Change Log:
+v0.10.2
+  - update get.edge.attribute.active, get.edge.value.active, get.network.attribute.active, list.edge.attributes.active, and list.network.attributes.active to be compatible with new network generics
 v0.10.1
   - update get.vertex.attribute.active and list.vertex.attributes.active to be compatible with new network generics (thanks to chad-klumb!)
   - combined spellfunctions.c into Rinit.c to avoid CRAN-flagged problems with -fno-common flag in gcc
