@@ -1,9 +1,9 @@
 Package: networkDynamic
-Version: 0.10.2
-Date: 2020-06-20
+Version: 0.11.0
+Date: 2021-06-12
 Title: Dynamic Extensions for Network Objects
 Type: Package
-Depends: R (>= 3.0.0), network (>= 1.17.0.413)
+Depends: R (>= 3.0.0), network (>= 1.17.0)
 Imports: statnet.common, methods
 Suggests: testthat
 LinkingTo: network
