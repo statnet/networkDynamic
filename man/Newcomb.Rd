@@ -62,7 +62,7 @@ Mark S. Handcock, David Hunter, Carter T. Butts, Steven M. Goodreau,
 and Martina Morris. 2003 
 \emph{statnet: An R package for the Statistical Modeling of Social Networks}
 \cr
-\url{http://statnet.org/}
+\url{https://statnet.org/}
 and the source should be cited as:
 
 Vladimir Batagelj and Andrej Mrvar (2006): \emph{Pajek datasets}

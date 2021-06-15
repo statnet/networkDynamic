@@ -38,7 +38,7 @@ So the network illustrates that teachers are involved in this task engaging thei
 }
 
 \source{
-Dr. Daniel McFarland, Stanford University \url{http://ed.stanford.edu/faculty/mcfarland}
+Dr. Daniel McFarland, Stanford University \url{https://ed.stanford.edu/faculty/mcfarland}
 }
 
 \references{
