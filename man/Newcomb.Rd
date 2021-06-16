@@ -53,7 +53,7 @@ White H., Boorman S. and Breiger R. (1977). Social structure from multiple netwo
 \section{Licenses and Citation}{
 If the source of the data set does not specified otherwise,
 this data set is protected by the Creative Commons License
-\url{http://creativecommons.org/licenses/by-nc-nd/2.5/}.
+\url{https://creativecommons.org/licenses/by-nc-nd/2.5/}.
 
 When publishing results obtained using this data set the original authors
 should be cited.  In addition this package should be cited as:
