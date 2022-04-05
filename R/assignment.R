@@ -26,7 +26,7 @@
 # a valid subset expresssion, and return the name associated with the expression.
 #
 .findNameInSubsetExpr <- function(x){
-  if (class(x)=='call'){
+  if (is(x,'call')){
     # Ensure call is a subset function, one of $, [, or [[
     if(!(deparse(x[[1]]) %in% c('$','[','[['))) return(NA)
 
@@ -37,7 +37,7 @@
     # Possible name found
     return(xns[[1]])
   }
-  else if (class(x)=='name')
+  else if (is(x,'name'))
     return(deparse(x))
  
   NULL 

@@ -2,6 +2,7 @@ useDynLib(networkDynamic, .registration = TRUE)
 
 import(statnet.common, network)
 importFrom("methods", "el")
+importFrom("methods", "is")
 importFrom("stats", "na.omit")
 importFrom("utils", "read.table", "tail")
 

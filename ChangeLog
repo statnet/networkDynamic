@@ -1,4 +1,7 @@
 Change Log:
+v0.11.1
+  - corrected coercion to logical error in tests flagged by CRAN
+  - resolve if() conditions comparing class() to string warning from R devel using is() from methods
 v0.11.0
   - update get.edge.attribute.active, get.edge.value.active, get.network.attribute.active, list.edge.attributes.active, and list.network.attributes.active to be compatible with new network generics
 v0.10.1

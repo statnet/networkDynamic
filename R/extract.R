@@ -610,7 +610,7 @@ network.dynamic.check<-function(x,verbose=TRUE, complete=TRUE){
                 if(flag) {
                   active.try = try(flag <- is.active(x=x,onset=act[j,1],terminus=act[j,2],v=ep[k],
                                    rule="all"), silent=T)
-                  if(class(active.try)=="try-error") {
+                  if(is(active.try,"try-error")) {
                     flag <- FALSE
                     warn.text="This check encountered an error in the is.active function."
                     if(!complete) warn.text=paste(warn.text, "Re-run check with 'complete=T'")
