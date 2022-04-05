@@ -415,9 +415,9 @@ cnet7 <- network.initialize(2)
 cnet7[1,2]<-1
 activate.edges(cnet7,at=1)
 check7<-network.dynamic.check(cnet7)
-c7 <- (check7$vertex.checks==c(T,T) &&
-       check7$edge.checks==T &&
-       check7$dyad.checks==T)
+c7 <- all(check7$vertex.checks==c(T,T),
+          check7$edge.checks==T,
+          check7$dyad.checks==T)
 
 c.tests = paste("c", seq(1,7), sep="")
 c.results= sapply(c.tests, function(x){eval(parse(text=x))})
