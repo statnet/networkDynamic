@@ -1,4 +1,6 @@
 Change Log:
+v0.11.2
+  - corrected trailing quote in maintainer email flagged by CRAN
 v0.11.1
   - corrected coercion to logical error in tests flagged by CRAN
   - resolve if() conditions comparing class() to string warning from R devel using is() from methods
