@@ -89,3 +89,24 @@ test_that("get.dyads.active works",{
   
 })
 
+test_that("conversions between network, networkLite, and networkDynamic behave as expected", {
+  library(networkLite)
+  
+  m <- matrix(rbinom(20*20, 1, 1/10), nrow = 20, ncol = 20)
+  m[lower.tri(m, diag = TRUE)] <- FALSE
+  el <- which(m > 0, arr.ind = TRUE)
+  el <- el[order(el[,1], el[,2]),,drop=FALSE]
+  attr(el, "n") <- 20
+  
+  nw <- network(el, directed = FALSE, bipartite = FALSE, matrix.type = "edgelist")
+  nwL <- as.networkLite(nw)
+  nwLD <- as.networkDynamic(nwL)
+  nwD <- as.networkDynamic(nw)
+  expect_identical(nwD, nwLD)
+  
+  nwL <- networkLite(el)
+  nw <- to_network_networkLite(nwL)
+  nwD <- as.networkDynamic(nw)
+  nwLD <- as.networkDynamic(nwL)
+  expect_identical(nwD, nwLD)
+})
