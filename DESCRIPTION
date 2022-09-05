@@ -23,3 +23,5 @@ Description: Simple interface routines to facilitate the handling of network obj
 License: GPL-3
 LazyLoad: yes
 URL: http://statnet.org
+Remotes:
+    github::EpiModel/networkLite@networkLite
