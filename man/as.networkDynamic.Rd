@@ -73,10 +73,14 @@ Pavel, Zack W Almquist <almquist@uci.edu>
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
-For more general construction of \code{networkDynamic}s, see 
-\code{\link{networkDynamic}}. For the inverse (removing \code{networkDynamic} 
-class) see \code{\link{as.network.networkDynamic}} and 
+For the inverse (removing the \code{networkDynamic} class) see
+\code{\link{as.network.networkDynamic}} and
 \code{\link{as.networkLite.network}} (which applies to \code{networkDynamic}s).
+For extracting cross-sectional information from a \code{networkDynamic} (which
+is often more appropriate than simply removing the \code{networkDynamic}
+class), see \code{\link{network.collapse}} and \code{\link{network.extract}}.
+For more general construction of \code{networkDynamic}s, see
+\code{\link{networkDynamic}}. 
 }
 
 \examples{
