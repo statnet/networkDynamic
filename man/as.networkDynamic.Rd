@@ -16,10 +16,11 @@
 \title{
 as.networkDynamic
 }
+
 \description{
-The \code{as.networkDynamic} generic provides basic conversion to 
-\code{networkDynamic} from other network types. Where possible, it is 
-recommended to use the \code{\link{networkDynamic}} function instead of 
+The \code{as.networkDynamic} generic provides a very basic conversion to 
+\code{networkDynamic} from other network types. It is generally recommended 
+to use the \code{\link{networkDynamic}} function instead of 
 \code{as.networkDynamic}, because \code{\link{networkDynamic}} provides a 
 number of additional features for handling temporal information.
 }
@@ -45,7 +46,9 @@ number of additional features for handling temporal information.
  
  \code{as.networkDynamic.networkLite} converts a \code{networkLite} object into 
  a \code{networkDynamic} object by first converting it to a \code{network} 
- object and then adding a \code{networkDynamic} class.
+ object and then adding a \code{networkDynamic} class. (\code{networkLite}s are
+ a backend data structure used in some \code{EpiModel} and \code{statnet}
+ packages, and are not typically handled directly by the end user.)
 
  Such conversions between network types are used when starting a dynamic 
  simulation from a cross-sectional network and returning the simulation history 
