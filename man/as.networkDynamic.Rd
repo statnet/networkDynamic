@@ -64,10 +64,6 @@ number of additional features for handling temporal information.
   unchanged.
 }
 
-\note{
-The \code{network} method modifies its argument.
-}
-
 \author{
 Pavel, Zack W Almquist <almquist@uci.edu>
 }
