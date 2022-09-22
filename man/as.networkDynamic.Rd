@@ -48,7 +48,11 @@ number of additional features for handling temporal information.
  a \code{networkDynamic} object by first converting it to a \code{network} 
  object and then adding a \code{networkDynamic} class. (\code{networkLite}s are
  a backend data structure used in some \code{EpiModel} and \code{statnet}
- packages, and are not typically handled directly by the end user.)
+ packages, providing improved performance for certain applications, especially
+ when working with vertex and edge attributes that can be stored as atomic
+ vectors. Currently, \code{networkLite}s come with the restriction that the
+ network attributes \code{hyper}, \code{multiple}, and \code{loops} must be
+ \code{FALSE}. See \code{\link{networkLite-package}} for more information.)
 
  Such conversions between network types are used when starting a dynamic 
  simulation from a cross-sectional network and returning the simulation history 
