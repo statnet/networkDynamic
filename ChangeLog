@@ -1,4 +1,6 @@
 Change Log:
+v0.11.3
+  - import networkLite and define as.networkDynamic.networkLite to support tergm applications
 v0.11.2
   - corrected trailing quote in maintainer email flagged by CRAN
 v0.11.1

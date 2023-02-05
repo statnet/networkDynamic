@@ -1042,6 +1042,10 @@ as.networkDynamic.network<- function(object,...){
   return(object)
 }
 
+as.networkDynamic.networkLite <- function(object, ...) {
+  as.networkDynamic(to_network_networkLite(object))
+}
+
 # remove networkDynamic class but leave object unchanged
 as.network.networkDynamic<-function(x,...){
   if(is.networkDynamic(x)){

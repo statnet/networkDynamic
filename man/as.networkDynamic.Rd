@@ -11,15 +11,19 @@
 \alias{as.networkDynamic}
 \alias{as.networkDynamic.network}
 \alias{as.networkDynamic.networkDynamic}
+\alias{as.networkDynamic.networkLite}
 
 \title{
 as.networkDynamic
 }
+
 \description{
-Functions with these names formerly provided S3-dispatched functions for converting between various dynamic network formats which have been DEPRECATED. Use \code{\link{networkDynamic}} instead. Current application only sets the networkDynamic class on objects. 
+The \code{as.networkDynamic} generic provides a very basic conversion to 
+\code{networkDynamic} from other network types. It is generally recommended 
+to use the \code{\link{networkDynamic}} function instead of 
+\code{as.networkDynamic}, because \code{\link{networkDynamic}} provides a 
+number of additional features for handling temporal information.
 }
-
-
 
 \usage{
                  
@@ -27,26 +31,41 @@ Functions with these names formerly provided S3-dispatched functions for convert
 
 \method{as.networkDynamic}{network}(object,...)
 
+\method{as.networkDynamic}{networkLite}(object,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{a \code{network} or \code{networkDynamic} object}
+  \item{object}{a \code{network}, \code{networkLite}, or \code{networkDynamic} object}
 
   \item{\dots}{ignored}
 
 }
 \details{
- \code{as.networkDynamic.network} converts a network object into networkDynamic object by adding a \code{networkDynamic} class.
+ \code{as.networkDynamic.network} converts a \code{network} object into 
+ a \code{networkDynamic} object by adding a \code{networkDynamic} class.
+ 
+ \code{as.networkDynamic.networkLite} converts a \code{networkLite} object into 
+ a \code{networkDynamic} object by first converting it to a \code{network} 
+ object and then adding a \code{networkDynamic} class. (\code{networkLite}s are
+ a backend data structure used in some \code{EpiModel} and \code{statnet}
+ packages, providing improved performance for certain applications, especially
+ when working with vertex and edge attributes that can be stored as atomic
+ vectors. Currently, \code{networkLite}s come with the restriction that the
+ network attributes \code{hyper}, \code{multiple}, and \code{loops} must be
+ \code{FALSE}. See \code{\link{networkLite-package}} for more information.)
+
+ Such conversions between network types are used when starting a dynamic 
+ simulation from a cross-sectional network and returning the simulation history 
+ as a dynamic network, as done in the \code{tergm} package for example.
 }
-
-
 
 \value{
-  For \code{as.networkDynamic.network} the input object is returned with a \code{networkDynamic} class added.  For \code{as.networkDynamic.networkDynamic} the input object is returned. 
-}
-
-\note{
-Function modifies its argument
+  For \code{as.networkDynamic.network} the input object is returned with a 
+  \code{networkDynamic} class added. For \code{as.networkDynamic.networkLite}, 
+  the input object is converted to a \code{network} object and then the 
+  \code{networkDynamic} class is added. For 
+  \code{as.networkDynamic.networkDynamic} the input object is returned 
+  unchanged.
 }
 
 \author{
@@ -54,11 +73,23 @@ Pavel, Zack W Almquist <almquist@uci.edu>
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
-For previous functionality, see  \code{\link{networkDynamic}}. For the inverse (removing networkDynamic class) see \code{\link{as.network.networkDynamic}}.
+For the inverse (removing the \code{networkDynamic} class) see
+\code{\link{as.network.networkDynamic}} and
+\code{\link{as.networkLite.network}} (which applies to \code{networkDynamic}s).
+For extracting cross-sectional information from a \code{networkDynamic} (which
+is often more appropriate than simply removing the \code{networkDynamic}
+class), see \code{\link{network.collapse}} and \code{\link{network.extract}}.
+For more general construction of \code{networkDynamic}s, see
+\code{\link{networkDynamic}}. 
 }
 
 \examples{
- nd<-as.networkDynamic(network.initialize(3))
+ nd <- as.networkDynamic(network.initialize(3))
  class(nd)
  is.networkDynamic(nd)
+ 
+ nwL <- networkLite::networkLite(3)
+ nwD <- as.networkDynamic(nwL)
+ class(nwD)
+ is.networkDynamic(nwD)
 }

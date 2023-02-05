@@ -1,6 +1,6 @@
 useDynLib(networkDynamic, .registration = TRUE)
 
-import(statnet.common, network)
+import(statnet.common, network, networkLite)
 importFrom("methods", "el")
 importFrom("methods", "is")
 importFrom("stats", "na.omit")
@@ -90,6 +90,7 @@ S3method(as.network,networkDynamic)
 S3method(as.networkDynamic,network)
 S3method(as.networkDynamic,networkDynamic)
 S3method(print,networkDynamic)
+S3method(as.networkDynamic,networkLite)
 
 # these are NOT S3 methods, but are included here because its the 
 # only way to quiet the warning
