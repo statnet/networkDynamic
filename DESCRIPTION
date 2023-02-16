@@ -22,4 +22,4 @@ Authors@R: c(
 Description: Simple interface routines to facilitate the handling of network objects with complex intertemporal data. This is a part of the "statnet" suite of packages for network analysis.
 License: GPL-3
 LazyLoad: yes
-URL: https://statnet.org
+URL: https://statnet.org/
