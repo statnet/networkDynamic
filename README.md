@@ -10,7 +10,7 @@
 This package is a part of the [statnet](https://statnet.org) suite of packages for network analysis, so it is designed to work seamlessly with all of the packages in that suite.  `networkDynamic` extends the capability of statnet's `network` package to handle temporal information, and it is the data management foundation used by the higher level packages: 
 * [`tsna`](https://github.com/statnet/tsna) Exploratory data analysis and summary statistics for temporal networks
 * [`ndtv`](https://github.com/statnet/ndtv) Temporal network graphics and animation
-* [`tergm`](https://github.com/statnet/tergm) Statistical analysis of temporal networks with TERGMs
+* [`tergm`](https://github.com/statnet/tergm) Statistical analysis and simulation of temporal networks with TERGMs
 * [`ergmgp`](https://github.com/statnet/ergmgp) Modeling continuous time graph processes with ERGM equilibria
 * [`EpiModel`](https://www.epimodel.org/) Epidemic modeling on dynamic networks
 
