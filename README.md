@@ -1,7 +1,6 @@
 # `networkDynamic`:  Dynamic Extensions for Network Objects
 
-[![Build Status](https://travis-ci.org/statnet/networkDynamic.svg?branch=master)](https://travis-ci.org/statnet/networkDynamic)
-[![Build Status](https://ci.appveyor.com/api/projects/status/rmj7f1xmpikh2243?svg=true)](https://ci.appveyor.com/project/statnet/networkDynamic)
+[![R build status](https://github.com/statnet/networkDynamic/workflows/R-CMD-check/badge.svg)](https://github.com/statnet/networkDynamic/actions)
 [![rstudio mirror downloads](https://cranlogs.r-pkg.org/badges/networkDynamic?color=2ED968)](https://cranlogs.r-pkg.org/)
 [![cran version](https://www.r-pkg.org/badges/version/networkDynamic)](https://cran.r-project.org/package=networkDynamic)
 
