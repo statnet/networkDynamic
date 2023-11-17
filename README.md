@@ -15,7 +15,7 @@ This package is a part of the [Statnet](https://statnet.org) suite of packages f
 
 ## Docs and Examples
 
-`networkDynamic` [package vignette](https://github.com/statnet/networkDynamic/blob/master/vignettes/networkDynamic.pdf)
+`networkDynamic` [package vignette](https://cran.r-project.org/web/packages/networkDynamic/vignettes/networkDynamic.pdf)
 
 Tutorials on using `networkDynamic` in data analysis workflows include the Statnet workshops [Temporal network tools in statnet: networkDynamic, ndtv and tsna](https://statnet.org/workshop-ndtv/ndtv_workshop.html) [Temporal Exponential Random Graph Models (TERGMs) for dynamic networks](https://statnet.org/workshop-tergm/)
 
