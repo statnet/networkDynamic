@@ -1,6 +1,7 @@
 # `networkDynamic`:  Dynamic Extensions for Network Objects
 
 [![R build status](https://github.com/statnet/networkDynamic/workflows/R-CMD-check/badge.svg)](https://github.com/statnet/networkDynamic/actions)
+
 [![rstudio mirror downloads](https://cranlogs.r-pkg.org/badges/networkDynamic?color=2ED968)](https://cranlogs.r-pkg.org/)
 [![cran version](https://www.r-pkg.org/badges/version/networkDynamic)](https://cran.r-project.org/package=networkDynamic)
 
@@ -13,8 +14,28 @@ This package is a part of the [Statnet](https://statnet.org) suite of packages f
 * [`ergmgp`](https://github.com/statnet/ergmgp) Modeling continuous time graph processes with ERGM equilibria
 * [`EpiModel`](https://www.epimodel.org/) Epidemic modeling on dynamic networks
 
-Self-guided training materials can be found on the [statnet workshop page](https://statnet.org/workshops/) -- in particular the [Statnet workshop on `ndtv`](https://statnet.org/workshop-ndtv/) and the [statnet workshop on `tergm`](https://statnet.org/workshop-tergm/).  For `EpiModel` please see the [EpiModel organization site](https://www.epimodel.org/)
+## Docs and Examples
 
+`networkDynamic` [package vignette](https://cran.r-project.org/web/packages/networkDynamic/vignettes/networkDynamic.pdf)
+
+Tutorials on using `networkDynamic` in data analysis workflows include the Statnet workshops [Temporal network tools in statnet: networkDynamic, ndtv and tsna](https://statnet.org/workshop-ndtv/ndtv_workshop.html) [Temporal Exponential Random Graph Models (TERGMs) for dynamic networks](https://statnet.org/workshop-tergm/)
+
+Self-guided training materials for all of the Statnet packages can be found on the [statnet workshop page](https://statnet.org/workshops/) .  For `EpiModel` please see the [EpiModel organization site](https://www.epimodel.org/)
+
+
+
+## Citation and License
+
+This software is distributed under the GPL-3 license.  It is free, open source, and has the attribution requirements (GPL Section 7) at
+http://statnet.org/attribution
+
+To cite the package ‘networkDynamic’ in publications use:
+
+  Butts C, Leslie-Cook A, Krivitsky P, Bender-deMoll S
+  (2023). _networkDynamic: Dynamic Extensions for Network Objects_. R package version 0.11.3,
+  <https://CRAN.R-project.org/package=networkDynamic>
+  
+This work was supported by grant R01HD68395 from the National Institute of Health.
 
 
 ## Code of Conduct
