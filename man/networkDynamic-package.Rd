@@ -36,7 +36,7 @@ Additional example data sets can be found in the \code{networkDynamicData} packa
 \author{
 Originally created by Carter T. Butts \email{buttsc@uci.edu}, 
 
-Current Maintainer: Skye Bender-deMoll {skyebend@uw.edu}
+Current Maintainer: Skye Bender-deMoll \email{skyebend@uw.edu}
 
 Contributions from: 
 Pavel Krivitsky \email{pavel@uow.edu.au},
@@ -47,7 +47,8 @@ Kirk Li \email{kirkli@uw.edu},
 StevenGoodreau \email{goodreau@uw.edu},
 Zack Almquist \email{almquist@uci.edu}, 
 Jeffrey Horner \email{jeffrey.horner@gmail.com},
-Martina Morris \email{morrism@u.washington.edu}
+Martina Morris \email{morrism@u.washington.edu
+Michał Bojanowski \email{michal2992@gmail.com}
 
 With support from the statnet team \url{https://statnet.org}
 
