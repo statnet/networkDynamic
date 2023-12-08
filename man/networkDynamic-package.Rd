@@ -47,7 +47,7 @@ Kirk Li \email{kirkli@uw.edu},
 StevenGoodreau \email{goodreau@uw.edu},
 Zack Almquist \email{almquist@uci.edu}, 
 Jeffrey Horner \email{jeffrey.horner@gmail.com},
-Martina Morris \email{morrism@u.washington.edu
+Martina Morris \email{morrism@u.washington.edu},
 Michał Bojanowski \email{michal2992@gmail.com}
 
 With support from the statnet team \url{https://statnet.org}
