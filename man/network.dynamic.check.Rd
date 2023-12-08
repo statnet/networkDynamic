@@ -51,18 +51,18 @@ is.networkDynamic(x)
   For \code{network.dynamic.check}: A list of logical vectors, one for
   each network component checked: 
   \itemize{
-    \item{\code{$vertex.checks} : }{Whether the spell matrix of each vertex (if any)
+    \item{\code{$vertex.checks} : Whether the spell matrix of each vertex (if any)
       is correctly specified}
-    \item{\code{$edge.checks} : }{Whether the spell matrix of each edge (if any)
+    \item{\code{$edge.checks} : Whether the spell matrix of each edge (if any)
       is correctly specified}
-    \item{\code{$dyad.checks} : }{Corresponding to edges, whether the incident vertices
+    \item{\code{$dyad.checks} : Corresponding to edges, whether the incident vertices
       of each edge are active when the edge is active}
-    \item{\code{$vertex.tea.checks} : }{Corresponding to vertices, whether the vertex has 
+    \item{\code{$vertex.tea.checks} : Corresponding to vertices, whether the vertex has 
       correctly formed TEA attributes}
-    \item{\code{$edge.tea.checks} : }{Corresponding to edges, whether the edge has 
+    \item{\code{$edge.tea.checks} : Corresponding to edges, whether the edge has 
       correctly formed TEA attributes}
-    \item{\code{$network.tea.checks} : }{Single boolean, whether the network TEA attributes are formed correctly}
-    \item{\code{$net.obs.period.check} : } {NULL, if no \code{net.obs.period} network attribute is present, otherwise a single boolean, whether the attribute is formed correctly. }
+    \item{\code{$network.tea.checks} : Single boolean, whether the network TEA attributes are formed correctly}
+    \item{\code{$net.obs.period.check} : NULL, if no \code{net.obs.period} network attribute is present, otherwise a single boolean, whether the attribute is formed correctly. }
       
   }
   For \code{is.networkDynamic}: a boolean which is true if the class matches
