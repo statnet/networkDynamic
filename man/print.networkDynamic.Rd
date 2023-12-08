@@ -25,7 +25,7 @@ Prints out some very basic descriptive stats about the network's dynamics, and t
   \item{x}{ an object of class networkDynamic including dynamic relational information
 }
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
+   additional items to be passed for consideration by other classes
 }
 }
 \details{

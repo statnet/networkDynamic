@@ -40,14 +40,14 @@
     
     To specify a spell as a single time point:
     \itemize{
-    	\item use the \code{at} argument, or
-    	\item use \code{onset=terminus}.
+    	\item{ use the \code{at} argument, or}
+    	\item{ use \code{onset=terminus}. }
     }
     To specify a spell as a particular interval, one of the following combinations of \code{onset}, \code{terminus} and \code{length} is required:
     \itemize{
-  	  \item \code{onset} and \code{terminus} 
-  	  \item \code{onset} and \code{length} 
-  	  \item \code{terminus} and \code{length}  
+  	  \item{ \code{onset} and \code{terminus} }
+  	  \item{ \code{onset} and \code{length} }
+  	  \item{ \code{terminus} and \code{length}  }
     }
  The special \dQuote{null} spell is used to designate elements that are never active (i.e., have no valid activity spells).  These can only be set by the \code{deactivate} function (see \code{\link{activity.attribute}}) and by convention are stored as \code{c(Inf,Inf)}.  \dQuote{Null} spells are incompatible with other spells, and should be replaced whenever an activation enters the element's event history.
 
