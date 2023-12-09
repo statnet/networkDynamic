@@ -91,6 +91,7 @@ S3method(as.networkDynamic,network)
 S3method(as.networkDynamic,networkDynamic)
 S3method(print,networkDynamic)
 S3method(as.networkDynamic,networkLite)
+S3method(as.networkDynamic,siena)
 
 # these are NOT S3 methods, but are included here because its the 
 # only way to quiet the warning
