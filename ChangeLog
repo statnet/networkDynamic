@@ -1,4 +1,6 @@
 Change Log:
+v0.11.4
+  - correct documentation and compiler warnings flagged by CRAN. Some documentation updates.
 v0.11.3
   - import networkLite and define as.networkDynamic.networkLite to support tergm applications
 v0.11.2
