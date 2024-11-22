@@ -51,7 +51,7 @@ logical, if \code{TRUE} edges or vertices with no activity specified will be con
 \details{
 Edges or vertices that are not active at time \code{at} will return \code{NA}. For edges or vertices with multiple activity spells, this function \emph{does not} report the total duration of activity across all spells, only the duration from the start of the spell with which the \code{at} point intersects. 
 
-\code{dyads.age.at} reports the age of edges corresponding to each dyad (tail,head).  It cannot be used with hypergraphic or multiplex networks because a pair of vertex ids may not uniquely correspond to an edge. If \code{tails} and \code{heads} are not specified, they will default to the tails and heads of all existing (but not necessarily active) edges in the network.  Ordering and index position should correspond to \code{\link{valid.eids}}.
+\code{dyads.age.at} reports the age of edges corresponding to each dyad (tail,head).  It cannot be used with hypergraphic or multiplex networks because a pair of vertex ids may not uniquely correspond to an edge. If \code{tails} and \code{heads} are not specified, they will default to the tails and heads of all existing (but not necessarily active) edges in the network.  Ordering and index position should correspond to \code{\link[network]{valid.eids}}.
 }
 \value{
 By default, a numeric vector indicating the age of the network element at the query time point, or NA if the element is not active or (in the case of edges) deleted. Elements of the vector return correspond to the values of \code{e} or \code{v} or \code{(tails,heads)} respectively. 

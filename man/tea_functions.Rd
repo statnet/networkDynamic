@@ -220,7 +220,7 @@ Attribute activity is only checked against vertex and edge activity during fetch
 
 
 \seealso{
-See Also as \code{\link{set.vertex.attribute}}, \code{\link{get.vertex.attribute}},\code{\link{list.vertex.attributes}},\code{\link{activate.vertices}}, \code{\link{activity.attribute}}, \code{\link{activate}}
+See Also as \code{\link[network]{set.vertex.attribute}}, \code{\link[network]{get.vertex.attribute}},\code{\link[network]{list.vertex.attributes}},\code{\link{activate.vertices}}, \code{\link{activity.attribute}}, \code{\link{activate}}
 }
 \examples{
 #initialize network

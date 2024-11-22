@@ -54,7 +54,7 @@ The function \code{initialize.pids} can be used to create a set of pids on all e
 
 The element addition functions (\code{add.vertices}) override their network-package counterparts in order to permit assigning pids to newly-added elements if the pid is defined.  They can be defined by the user with the \code{vertex.pids} argument, or, if not specified, a unique random id will be generated. (Note that any new values added by default to a \code{vertex.names} pid will not be numeric.)
 
-Some of the import/conversion methods may set pids. See \code{\link{network}}.
+Some of the import/conversion methods may set pids. See \code{\link[network]{network}}.
 
 User-specified pids are checked for uniqueness. The the current auto-generated pid implementation produces ids that are unique within the current network.  They are also \emph{almost} certain to be unique within an R session (so that vertices will have a unique id if added and removed) and quite likely across sessions, but we need more details on the \code{tempfile}'s implementation.
 

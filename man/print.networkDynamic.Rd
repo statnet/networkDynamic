@@ -45,7 +45,7 @@ Only prints out the network information without any dynamic data.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
- \code{\link{print.network}}
+ \code{\link[network]{print.network}}
 }
 \examples{
   library(networkDynamic)

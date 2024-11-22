@@ -52,7 +52,7 @@ number of additional features for handling temporal information.
  when working with vertex and edge attributes that can be stored as atomic
  vectors. Currently, \code{networkLite}s come with the restriction that the
  network attributes \code{hyper}, \code{multiple}, and \code{loops} must be
- \code{FALSE}. See \code{\link{networkLite-package}} for more information.)
+ \code{FALSE}. See \code{\link[networkLite]{networkLite-package}} for more information.)
 
  Such conversions between network types are used when starting a dynamic 
  simulation from a cross-sectional network and returning the simulation history 
@@ -75,7 +75,7 @@ Pavel, Zack W Almquist <almquist@uci.edu>
 \seealso{
 For the inverse (removing the \code{networkDynamic} class) see
 \code{\link{as.network.networkDynamic}} and
-\code{\link{as.networkLite.network}} (which applies to \code{networkDynamic}s).
+\code{\link[networkLite]{as.networkLite.network}} (which applies to \code{networkDynamic}s).
 For extracting cross-sectional information from a \code{networkDynamic} (which
 is often more appropriate than simply removing the \code{networkDynamic}
 class), see \code{\link{network.collapse}} and \code{\link{network.extract}}.
