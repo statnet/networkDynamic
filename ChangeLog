@@ -1,4 +1,6 @@
 Change Log:
+v0.11.5
+  - update links to .paj example files and fix some documentation warnings
 v0.11.4
   - correct documentation and compiler warnings flagged by CRAN. Some documentation updates.
 v0.11.3
