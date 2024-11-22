@@ -24,7 +24,7 @@ Convenience functions for adding a set of verticies (or edges) and setting them 
          onset = NULL, terminus = NULL, length = NULL, at = NULL, ...)
 }
 \arguments{
-  \item{x}{ an object of class \code{\link{network}} or \code{\link{networkDynamic}}. }
+  \item{x}{ an object of class \code{\link[network]{network}} or \code{\link{networkDynamic}}. }
   \item{nv}{the number of vertices to add}
   \item{tail}{a vector of vertex IDs corresponding to the tail (source, ego) of each edge to be added}
   \item{head}{a vector of vertex IDs corresponding to the head (target, alter) of each edge to be added}
@@ -33,14 +33,14 @@ Convenience functions for adding a set of verticies (or edges) and setting them 
   \item{terminus}{ an optional vector of time points that specifies the ends of the interval(s). This must be accompanied by one of \code{onset} or \code{length}. }
   \item{length}{ an optional vector of interval lengths for the interval(s). This must be accompanied by one of \code{onset} or \code{terminus}. }
   \item{at}{ optional, one or more time points to be activated. }
-  \item{names.eval}{optional list of length equal to the number of edges, with each element containing a list of names for the attributes of the corresponding edge. not currently interpreted in a dynamic context, but passed directly to \code{\link{add.edges}}}
-  \item{vals.eval}{an optional list of lists of edge attribute values (matching \code{names.eval}). Not currently interpreted in a dynamic context, but passed directly to \code{\link{add.edges}}}
-  \item{vattr}{optionally, a list of attributes with one entry per new vertex. not currently interpreted in a dynamic context, but passed directly to \code{\link{add.vertices}}}
+  \item{names.eval}{optional list of length equal to the number of edges, with each element containing a list of names for the attributes of the corresponding edge. not currently interpreted in a dynamic context, but passed directly to \code{\link[network]{add.edges}}}
+  \item{vals.eval}{an optional list of lists of edge attribute values (matching \code{names.eval}). Not currently interpreted in a dynamic context, but passed directly to \code{\link[network]{add.edges}}}
+  \item{vattr}{optionally, a list of attributes with one entry per new vertex. not currently interpreted in a dynamic context, but passed directly to \code{\link[network]{add.vertices}}}
   \item{last.mode}{logical; should the new vertices be added to the last (rather than the first) mode of a bipartite network?}
   \item{...}{possible future additional arguments}
 }
 \details{
-Essentially a wrapper for a call to \code{\link{add.vertices}} and \code{\link{activate.vertices}}  or \code{\link{add.edges}} and \code{\link{activate.edges}} when setting up a network object. These are not the S3 methods that their name appears to imply, since there is no "active" class.  See \code{\link{add.edges.networkDynamic}}, etc.
+Essentially a wrapper for a call to \code{\link[network]{add.vertices}} and \code{\link{activate.vertices}}  or \code{\link[network]{add.edges}} and \code{\link{activate.edges}} when setting up a network object. These are not the S3 methods that their name appears to imply, since there is no "active" class.  See \code{\link{add.edges.networkDynamic}}, etc.
 }
 \value{
 The passed in network object with class set to \code{\link{networkDynamic}} and the specified number of new vertices or edges added and activated
@@ -53,7 +53,7 @@ Ayn Leslie-Cook \email{aynlc3@uw.edu}}
 
 
 \seealso{
- See Also as \code{\link{activate.vertices}}, \code{\link{activate.edges}},\code{\link{add.vertices}},\code{\link{add.edges}}
+ See Also as \code{\link{activate.vertices}}, \code{\link{activate.edges}},\code{\link[network]{add.vertices}},\code{\link[network]{add.edges}}
 }
 \examples{
 nw <- network.initialize(5)

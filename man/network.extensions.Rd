@@ -20,7 +20,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{ Dynamically Extended Core Network Functions }
 \description{
-  Various core functions from the \link{network} package, with specialized extensions for handling dynamic data.
+  Various core functions from the \link[network]{network} package, with specialized extensions for handling dynamic data.
 }
 \usage{
 get.edgeIDs.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,

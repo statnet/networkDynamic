@@ -60,7 +60,7 @@ Thus [onset, terminus) will be interpreted as [onset, terminus] when terminus = 
 	\item Queries for intervals specified by \code{c(Inf, Inf)} or \code{c(-Inf, -Inf)} are ignored.
 	}
   
- If the \code{e} argument includes edge ids corresponding to deleted edges, a warning will be generated because the length of the output vector will not match the vector of edge ids.  In this case it is a good idea to use \code{\link{valid.eids}} to determine the edge ids.
+ If the \code{e} argument includes edge ids corresponding to deleted edges, a warning will be generated because the length of the output vector will not match the vector of edge ids.  In this case it is a good idea to use \code{\link[network]{valid.eids}} to determine the edge ids.
 }
 \value{
   A logical vector indicating the activity states of vertices or edges.  In the case of vertices, the elements of the vector correspond to the vertex ids provided via the \code{v} paramter.  In the edges case, if the network has deleted edges, they will be omited from the result so the elements of the vector may not correspond to the eids provided via the \code{e} parameter.
@@ -71,7 +71,7 @@ Thus [onset, terminus) will be interpreted as [onset, terminus] when terminus = 
 %
 % ~Make other sections like Warning with \section{Warning }{....} ~
 %}
-\seealso{ \code{\link{activity.attribute}}, \code{\link{activate}}, \code{\link{valid.eids}} }
+\seealso{ \code{\link{activity.attribute}}, \code{\link{activate}}, \code{\link[network]{valid.eids}} }
 \examples{
 triangle <- network.initialize(3)  # create a toy network
 add.edge(triangle,1,2)    # add an edge between vertices 1 and 2
