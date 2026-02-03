@@ -23,17 +23,17 @@
   Various core functions from the \link[network]{network} package, with specialized extensions for handling dynamic data.
 }
 \usage{
-get.edgeIDs.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
+\method{get.edgeIDs}{active}(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
     alter = NULL, neighborhood = c("out", "in", "combined"), 
     rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
-get.edges.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
+\method{get.edges}{active}(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
     alter = NULL, neighborhood = c("out", "in", "combined"), 
     rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
-get.neighborhood.active(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
+\method{get.neighborhood}{active}(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
     type = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"), 
     na.omit = TRUE, active.default = TRUE)
 
-is.adjacent.active(x, vi, vj, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
+\method{is.adjacent}{active}(x, vi, vj, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
     rule = c("any", "all", "earliest", "latest"), na.omit = FALSE, active.default = TRUE)
 
 \method{network.dyadcount}{active}(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
