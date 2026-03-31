@@ -563,7 +563,7 @@ sampData<-read.paj(unz(sampFile,'Sampson.paj'),
 names(sampData)
 @
 
-Because this was a .paj file, it can include multiple networks and some vertex-level data as separate elements in the the list returned.  In this case, we want to grab the first more complete network (for background info, see \url{http://vlado.fmf.uni-lj.si/pub/networks/data/esna/sampson.htm}). We can attach the partition info onto the network as an attribute, and filter out the edges to include only the positive ``like'' ties.
+Because this was a .paj file, it can include multiple networks and some vertex-level data as separate elements in the the list returned.  In this case, we want to grab the first more complete network (for background info, see \url{https://github.com/bavla/Nets/blob/master/data/Pajek/esna/sampson.md}). We can attach the partition info onto the network as an attribute, and filter out the edges to include only the positive ``like'' ties.
 
 <<sampson_format>>=
 sampData$partitions
@@ -986,10 +986,10 @@ We can see that the rumor started at v1, our seed vertex, which has a little loo
 \section{Related packages}
 The statnet team is releasing several packages that work closely with the \verb@networkDynamic@ package to provide additional features. 
 \begin{itemize}
- \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/web/packages/networkDynamicData}
- \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network movies as videos or interactive HTML5 animations, timelines and other visualizations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv}. 
- \item A longer tutorial demonstrating features of \verb@ndtv@ and \verb@networkDynamic@ data import is located at \url{http://statnet.csde.washington.edu/workshops/SUNBELT/current/ndtv/ndtv_workshop.html}
-\item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format \url{http://cran.r-project.org/web/packages/tsna}. 
+ \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/web/packages/networkDynamicData/}
+ \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network movies as videos or interactive HTML5 animations, timelines and other visualizations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv/}. 
+ \item A longer tutorial demonstrating features of \verb@ndtv@ and \verb@networkDynamic@ data import is located at \url{https://statnet.org/workshop-ndtv/ndtv_workshop.html}
+\item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format \url{http://cran.r-project.org/web/packages/tsna/}. 
 \end{itemize}
 
 \section{Citing networkDynamic}
@@ -1038,7 +1038,7 @@ Bender-deMoll, S., Morris, M. and Moody, J. (2008)
 \bibitem[Butts(2008)]{network}
 Butts CT (2008). 
 \newblock network: A Package for Managing Relational Data in R. 
-\newblock \emph{Journal of Statistical Software}, 24(2). \url{http://www.jstatsoft.org/v24/i02/}. 
+\newblock \emph{Journal of Statistical Software}, 24(2). \url{https://www.jstatsoft.org/v24/i02/}. 
 
 \bibitem[Krivitsky P and Handcock M (2013)]{tergm}. 
 \newblock Fit, Simulate and Diagnose Models for Network Evolution based on
@@ -1049,7 +1049,7 @@ Exponential-Family Random Graph Models.
 \bibitem[Hunter et al.(2008b)]{ergm}
 Hunter DR, Handcock MS, Butts CT, Goodreau SM, Morris M (2008b). 
 \newblock ergm: A Package to Fit, Simulate and Diagnose Exponential-Family Models for Networks. 
-\newblock \emph{Journal of Statistical Software}, 24(3). \url{http://www.jstatsoft.org/v24/i03/}. 
+\newblock \emph{Journal of Statistical Software}, 24(3). \url{https://www.jstatsoft.org/v24/i03/}. 
 
 
 \bibitem[Newcomb(1961)]{newcomb} 
