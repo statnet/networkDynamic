@@ -471,9 +471,10 @@ get.change.times <- function (x, vertex.activity=TRUE,edge.activity=TRUE, ignore
 
 
 #Variant of get.edgeIDs with dynamic query support
-get.edgeIDs.active<-function(x,v,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                             alter=NULL,neighborhood=c("out", "in", "combined"),
-                             rule=c("any","all","earliest","latest"),na.omit=TRUE,active.default=TRUE){
+get.edgeIDs.active<-function(x,v,alter=NULL,neighborhood=c("out", "in", "combined"),
+                             rule=c("any","all","earliest","latest"),na.omit=TRUE,
+                             onset=NULL,terminus=NULL,length=NULL, at=NULL,
+                             active.default=TRUE,...){
   
   if(missing(v)){
     stop("'v' parameter must be specified with a vertex id to indicate which vertex to search for incident edges")
@@ -493,9 +494,9 @@ get.edgeIDs.active<-function(x,v,onset=NULL,terminus=NULL,length=NULL, at=NULL,
 
 #Variant of get.edges with dynamic query support.  (Note: not safe in the long
 #run...)
-get.edges.active<-function(x,v,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                           alter=NULL,neighborhood=c("out", "in", "combined"),
-                           rule=c("any","all","earliest","latest"),na.omit=TRUE,active.default=TRUE){
+get.edges.active<-function(x,v,alter=NULL,neighborhood=c("out", "in", "combined"),
+                           onset=NULL,terminus=NULL,length=NULL, at=NULL,
+                           rule=c("any","all","earliest","latest"),na.omit=TRUE,active.default=TRUE,...){
   if(missing(v)){
     stop("'v' parameter must be specified with vertex id to indicate which vertex to search for incident edges")
   }
@@ -513,8 +514,8 @@ get.edges.active<-function(x,v,onset=NULL,terminus=NULL,length=NULL, at=NULL,
 
 
 #Variant of get.neighborhood with dynamic query support.  Slow, most likely.
-get.neighborhood.active<-function(x,v,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                                  type=c("out", "in", "combined"),rule=c("any","all","earliest","latest"),na.omit=TRUE,active.default=TRUE){
+get.neighborhood.active<-function(x,v, type=c("out", "in", "combined"),rule=c("any","all","earliest","latest"),
+                                  na.omit=TRUE,onset=NULL,terminus=NULL,length=NULL, at=NULL,active.default=TRUE,...){
   rule<-match.arg(rule)
   # get active edges and assemble neighborhood in questions
   if(!is.directed(x)){
@@ -664,8 +665,8 @@ is.active<-function(x,onset=NULL,terminus=NULL,length=NULL, at=NULL, e=NULL,v=NU
 
 #Variant of is.adjacent for networks with dynamic extensions.  Slow, but will
 #get the job done.
-is.adjacent.active<-function(x,vi,vj,onset=NULL,terminus=NULL,length=NULL, at=NULL,
-                             rule=c("any","all","earliest","latest"),na.omit=FALSE,active.default=TRUE){
+is.adjacent.active<-function(x,vi,vj,na.omit=FALSE,onset=NULL,terminus=NULL,length=NULL, at=NULL,
+                             rule=c("any","all","earliest","latest"),active.default=TRUE,...){
   rule<-match.arg(rule)
   #Initially, get edge IDs from vi to vj
   eid<-get.edgeIDs(x=x,v=vi,alter=vj,neighborhood="out",na.omit=na.omit)

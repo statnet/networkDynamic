@@ -23,18 +23,22 @@
   Various core functions from the \link[network]{network} package, with specialized extensions for handling dynamic data.
 }
 \usage{
-\method{get.edgeIDs}{active}(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    alter = NULL, neighborhood = c("out", "in", "combined"), 
-    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
-\method{get.edges}{active}(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    alter = NULL, neighborhood = c("out", "in", "combined"), 
-    rule = c("any", "all", "earliest", "latest"), na.omit = TRUE, active.default = TRUE)
-\method{get.neighborhood}{active}(x, v, onset = NULL, terminus = NULL, length = NULL, at = NULL,
-    type = c("out", "in", "combined"), rule = c("any", "all", "earliest", "latest"), 
-    na.omit = TRUE, active.default = TRUE)
+\method{get.edgeIDs}{active}(x, v, alter = NULL, neighborhood = c("out", "in",
+                   "combined"), rule = c("any", "all", "earliest",
+                   "latest"), na.omit = TRUE, onset = NULL, terminus =
+                   NULL, length = NULL, at = NULL, active.default = TRUE, ...)
+\method{get.edges}{active}(x, v, alter = NULL, neighborhood = c("out", "in",
+                   "combined"), onset = NULL, terminus = NULL, length =
+                   NULL, at = NULL, rule = c("any", "all", "earliest",
+                   "latest"), na.omit = TRUE, active.default = TRUE, ...)
+\method{get.neighborhood}{active}(x, v, type = c("out", "in", "combined"), rule =
+                   c("any", "all", "earliest", "latest"), na.omit = TRUE,
+                   onset = NULL, terminus = NULL, length = NULL, at =
+                   NULL, active.default = TRUE, ...)
 
-\method{is.adjacent}{active}(x, vi, vj, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
-    rule = c("any", "all", "earliest", "latest"), na.omit = FALSE, active.default = TRUE)
+\method{is.adjacent}{active}(x, vi, vj, na.omit = FALSE, onset = NULL, terminus =
+                   NULL, length = NULL, at = NULL, rule = c("any", "all",
+                   "earliest", "latest"), active.default = TRUE, ...)
 
 \method{network.dyadcount}{active}(x, onset = NULL, terminus = NULL, length = NULL, at = NULL, 
     rule = c("any", "all", "earliest", "latest"),

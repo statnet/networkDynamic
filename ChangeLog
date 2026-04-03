@@ -1,5 +1,6 @@
 Change Log:
-v0.11.6
+v0.12.0
+  -change order of named arguments to all *.active functions to comply with inheritance semantics
   -changes to the usage statement for the network.extensions.Rd file, which uses the \method{} tag to help R into thinking that the *.active functions are S3 methods.
 v0.11.5
   - update links to .paj example files and fix some documentation warnings

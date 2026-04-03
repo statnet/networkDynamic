@@ -164,27 +164,27 @@ b7 = get.edgeIDs.active(anet, iov[5,1], at=10, active.default=F)==5    # at a
 b8 = get.edgeIDs.active(anet, iov[7,1], at=30, active.default=F)==7    # at b
 
 # interval queries that should return empty vectors
-b9 = length(get.edgeIDs.active(anet, iov[3,1], Inf, Inf, active.default=F))==0   # over (Inf,Inf)
-b10 = length(get.edgeIDs.active(anet, iov[8,1], -Inf, Inf, active.default=F))==0  # over (-Inf,Inf)
-b11 = length(get.edgeIDs.active(anet, iov[3,1], 30, Inf, active.default=F))==0    # over (H,Inf)
-b12 = length(get.edgeIDs.active(anet, iov[4,1], -Inf, 0, active.default=F))==0    # over (-Inf, L)
-b13 = length(get.edgeIDs.active(anet, iov[5,1], 0, 5, active.default=F))==0       # over (L1,L2)
-b14 = length(get.edgeIDs.active(anet, iov[5,1], 0, 15, active.default=F, rule="all"))==0   # over (L,M)  
-b15 = length(get.edgeIDs.active(anet, iov[7,1], 0, 60, active.default=F, rule="all"))==0   # over (L,H)
-b16 = length(get.edgeIDs.active(anet, iov[7,1], 45, 55, active.default=F, rule="all"))==0  # over (M, H)
-b17 = length(get.edgeIDs.active(anet, iov[6,1], 15, 20, active.default=F))==0     # over (H1, H2)      
+b9 = length(get.edgeIDs.active(anet, iov[3,1], onset=Inf, terminus=Inf, active.default=F))==0   # over (Inf,Inf)
+b10 = length(get.edgeIDs.active(anet, iov[8,1], onset=-Inf, terminus=Inf, active.default=F))==0  # over (-Inf,Inf)
+b11 = length(get.edgeIDs.active(anet, iov[3,1], onset=30, terminus=Inf, active.default=F))==0    # over (H,Inf)
+b12 = length(get.edgeIDs.active(anet, iov[4,1], onset=-Inf, terminus=0, active.default=F))==0    # over (-Inf, L)
+b13 = length(get.edgeIDs.active(anet, iov[5,1], onset=0, terminus=5, active.default=F))==0       # over (L1,L2)
+b14 = length(get.edgeIDs.active(anet, iov[5,1], onset=0, terminus=15, active.default=F, rule="all"))==0   # over (L,M)  
+b15 = length(get.edgeIDs.active(anet, iov[7,1], onset=0, terminus=60, active.default=F, rule="all"))==0   # over (L,H)
+b16 = length(get.edgeIDs.active(anet, iov[7,1], onset=45, terminus=55, active.default=F, rule="all"))==0  # over (M, H)
+b17 = length(get.edgeIDs.active(anet, iov[6,1], onset=15, terminus=20, active.default=F))==0     # over (H1, H2)      
 
 # interval queries that should return non-empty vectors
-b18 = min(get.edgeIDs.active(anet, iov[1,1], -Inf, Inf, active.default=T))==1  # over null
-b19 = get.edgeIDs.active(anet, iov[2,1], -Inf, Inf, active.default=F)==2  # over (-Inf,Inf)
-b20 = get.edgeIDs.active(anet, iov[4,1], 10, Inf, active.default=F)==4    # over (a,Inf)
-b21 = get.edgeIDs.active(anet, iov[3,1], -Inf, 20, active.default=F)==3   # over (-Inf, b)
-b22 = get.edgeIDs.active(anet, iov[5,1], 10, 20, active.default=F)==5     # over (a,b)
-b23 = get.edgeIDs.active(anet, iov[6,1], 10, 10, active.default=F)==6     # over (a,a)
-b24 = get.edgeIDs.active(anet, iov[4,1], 0, 15, active.default=F)==4      # over (L,M)  
-b25 = get.edgeIDs.active(anet, iov[7,1], 0, 60, active.default=F)==7      # over (L,H)
-b26 = get.edgeIDs.active(anet, iov[5,1], 15, 18, active.default=F)==5     # over (M1, M2)
-b27 = get.edgeIDs.active(anet, iov[7,1], 45, 60, active.default=F)==7     # over (M, H)
+b18 = min(get.edgeIDs.active(anet, iov[1,1], onset=-Inf, terminus=Inf, active.default=T))==1  # over null
+b19 = get.edgeIDs.active(anet, iov[2,1], onset=-Inf, terminus=Inf, active.default=F)==2  # over (-Inf,Inf)
+b20 = get.edgeIDs.active(anet, iov[4,1], onset=10, terminus=Inf, active.default=F)==4    # over (a,Inf)
+b21 = get.edgeIDs.active(anet, iov[3,1], onset=-Inf, terminus=20, active.default=F)==3   # over (-Inf, b)
+b22 = get.edgeIDs.active(anet, iov[5,1], onset=10, terminus=20, active.default=F)==5     # over (a,b)
+b23 = get.edgeIDs.active(anet, iov[6,1], onset=10, terminus=10, active.default=F)==6     # over (a,a)
+b24 = get.edgeIDs.active(anet, iov[4,1], onset=0, terminus=15, active.default=F)==4      # over (L,M)  
+b25 = get.edgeIDs.active(anet, iov[7,1], onset=0, terminus=60, active.default=F)==7      # over (L,H)
+b26 = get.edgeIDs.active(anet, iov[5,1], onset=15, terminus=18, active.default=F)==5     # over (M1, M2)
+b27 = get.edgeIDs.active(anet, iov[7,1], onset=45, terminus=60, active.default=F)==7     # over (M, H)
 
 b.tests = paste("b", seq(1,27), sep="")
 b.results= sapply(b.tests, function(x){eval(parse(text=x))})
@@ -278,7 +278,7 @@ net1 <- network(flo, directed=FALSE)
 el1 <- as.matrix(net1, matrix.type="edgelist")
 activate.edges(net1, 10, 20, e=seq(2,20,2))
 activate.edges(net1, 10, 10, e=seq(1,19,2))
-n1 = get.neighborhood.active(net1, v=9, 10, 20, rule="all")
+n1 = get.neighborhood.active(net1, v=9, onset=10, terminus=20, rule="all")
 n2 = get.neighborhood.active(net1, v=9, at=10)
 b1 = all(n1==c(2,3,13,16))
 b2 = all(n2==c(1,2,3,13,14,16))
@@ -295,14 +295,14 @@ net2 <- network(flo)
 el2 <- as.matrix(net2, matrix.type="edgelist")
 activate.edges(net2, -Inf, 20, e=seq(2,40,2))
 activate.edges(net2, 20, 20, e=seq(1,39,2))
-n4 = get.neighborhood.active(net2, v=15, 10, 20, type="out")
+n4 = get.neighborhood.active(net2, v=15, onset=10, terminus=20, type="out")
 n5 = get.neighborhood.active(net2, v=15, at=20, type="out")
 b4 = all(n4==c(5,11,13))
 b5 = (n5==4)
 
 # branch 5:  directed network, no out neighborhood
-n6 = get.neighborhood.active(net2, v=1, 10, 20, type="out")
-n7 = get.neighborhood.active(net2, v=15, 30, 40, type="out")
+n6 = get.neighborhood.active(net2, v=1, onset=10, terminus=20, type="out")
+n7 = get.neighborhood.active(net2, v=15, onset=30, terminus=40, type="out")
 b6 = length(n6)==0
 b7 = length(n7)==0
 
@@ -310,14 +310,14 @@ b7 = length(n7)==0
 net3 <- network(flo)
 activate.edges(net3, 10, Inf, e=seq(2,40,2))
 activate.edges(net3, 10, 20, e=seq(1,39,2))
-n8 = get.neighborhood.active(net3, v=9, 10, 20, type="in")
-n9 = get.neighborhood.active(net3, v=9, 10, 30, type="in", rule="all")
+n8 = get.neighborhood.active(net3, v=9, onset=10, terminus=20, type="in")
+n9 = get.neighborhood.active(net3, v=9, onset=10, terminus=30, type="in", rule="all")
 b8 = all(n8==c(1,2,3,13,14,16))
 b9 = all(n9==c(2,13,16))
 
 # branch 7:  directed network, no in neighborhood
-n10 = get.neighborhood.active(net3, v=12, 10, 20, type="in")
-n11 = get.neighborhood.active(net3, v=9, -10, -5, type="in")
+n10 = get.neighborhood.active(net3, v=12, onset=10, terminus=20, type="in")
+n11 = get.neighborhood.active(net3, v=9, onset=-10, terminus=-5, type="in")
 b10 = length(n10)==0
 b11 = length(n11)==0
 
@@ -325,7 +325,7 @@ b11 = length(n11)==0
 net4 <- network(flo)
 activate.edges(net4, at=10, e=seq(2,40,2))
 activate.edges(net4, at=20, e=seq(1,39,2))
-n12 = get.neighborhood.active(net4, v=7, 10, 30, type="combined")
+n12 = get.neighborhood.active(net4, v=7, onset=10, terminus=30, type="combined")
 n13 = get.neighborhood.active(net4, v=7, at=20, type="combined")
 b12 = all(n12==c(2,4,8,16))
 b13 = all(n13==c(2,4,16))
@@ -335,8 +335,8 @@ net5 <- network(flo)
 net5[15,] = 0   # remove all out edges from node 15
 el5 <- as.matrix(net5, matrix.type="edgelist")
 activate.edges(net5, e=seq(2,36,2))
-n14 = get.neighborhood.active(net5, v=15, -Inf, Inf, type="combined")
-n15 = get.neighborhood.active(net5, v=15, -Inf, Inf, type="combined", active.default=F)
+n14 = get.neighborhood.active(net5, v=15, onset=-Inf, terminus=Inf, type="combined")
+n15 = get.neighborhood.active(net5, v=15, onset=-Inf, terminus=Inf, type="combined", active.default=F)
 b14 = all(n14==c(4,5,11,13))
 b15 = all(n15==c(4,11))
 
