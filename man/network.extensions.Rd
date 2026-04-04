@@ -24,17 +24,17 @@
 }
 \usage{
 \method{get.edgeIDs}{active}(x, v, alter = NULL, neighborhood = c("out", "in",
-                   "combined"), rule = c("any", "all", "earliest",
-                   "latest"), na.omit = TRUE, onset = NULL, terminus =
-                   NULL, length = NULL, at = NULL, active.default = TRUE, ...)
+                   "combined"), na.omit = TRUE, onset = NULL, terminus =
+                   NULL, length = NULL, at = NULL, rule = c("any", "all",
+                   "earliest", "latest"), active.default = TRUE, ...)
 \method{get.edges}{active}(x, v, alter = NULL, neighborhood = c("out", "in",
-                   "combined"), onset = NULL, terminus = NULL, length =
-                   NULL, at = NULL, rule = c("any", "all", "earliest",
-                   "latest"), na.omit = TRUE, active.default = TRUE, ...)
-\method{get.neighborhood}{active}(x, v, type = c("out", "in", "combined"), rule =
-                   c("any", "all", "earliest", "latest"), na.omit = TRUE,
-                   onset = NULL, terminus = NULL, length = NULL, at =
-                   NULL, active.default = TRUE, ...)
+                   "combined"), na.omit = TRUE, onset = NULL, terminus =
+                   NULL, length = NULL, at = NULL, rule = c("any", "all",
+                   "earliest", "latest"), active.default = TRUE, ...)
+\method{get.neighborhood}{active}(x, v, type = c("out", "in", "combined"), na.omit =
+                   TRUE, onset = NULL, terminus = NULL, length = NULL, at
+                   = NULL, rule = c("any", "all", "earliest", "latest"),
+                   active.default = TRUE, ...)
 
 \method{is.adjacent}{active}(x, vi, vj, na.omit = FALSE, onset = NULL, terminus =
                    NULL, length = NULL, at = NULL, rule = c("any", "all",
