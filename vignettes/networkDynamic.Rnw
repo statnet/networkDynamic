@@ -986,10 +986,10 @@ We can see that the rumor started at v1, our seed vertex, which has a little loo
 \section{Related packages}
 The statnet team is releasing several packages that work closely with the \verb@networkDynamic@ package to provide additional features. 
 \begin{itemize}
- \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/web/packages/networkDynamicData/}
- \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network movies as videos or interactive HTML5 animations, timelines and other visualizations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/web/packages/ndtv/}. 
+ \item \verb@networkDynamicData@ : A collection of dynamic network datasets from various sources and multiple authors represented networkDynamic format. \url{http://cran.r-project.org/package=networkDynamicData}
+ \item \verb@ndtv@ : Network Dynamic Temporal Visualization package -- like TV for your networks. The \verb@ndtv@ package creates network movies as videos or interactive HTML5 animations, timelines and other visualizations of dynamic networks stored in the \verb@networkDynamic@ format. \url{http://cran.r-project.org/package=ndtv}. 
  \item A longer tutorial demonstrating features of \verb@ndtv@ and \verb@networkDynamic@ data import is located at \url{https://statnet.org/workshop-ndtv/ndtv_workshop.html}
-\item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format \url{http://cran.r-project.org/web/packages/tsna/}. 
+\item  \verb@tsna@ :  Temporal SNA tools for measuring and doing descriptive statistics on dynamic networks stored in the \verb@networkDynamic@ format \url{http://cran.r-project.org/package=tsna}. 
 \end{itemize}
 
 \section{Citing networkDynamic}
