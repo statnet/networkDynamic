@@ -1,4 +1,4 @@
-# NOTE: This script is a modification of the r-lib/actions standard cehcking script and the public-private sync script, on which it piggybacks to detect when it's in a private repo and can therefore skip some or even all tests. It also builds and uploads binaries for Windows and MacOS.
+# NOTE: This script is a modification of the r-lib/actions standard cehcking script and the public-private sync script, on which it piggybacks to detect when it's in a private repo and can therefore skip some or even all tests.
 
 # For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
 # https://community.rstudio.com/new-topic?category=Package%20development&tags=github-actions
@@ -17,8 +17,6 @@
 #   non-forbidden symbol) separated list of flags. Currently
 #   supported:
 #
-#   binaries: build and upload as an artefact a binary version (particularly for MacOS and Windows).
-#
 #   full: run with ENABLE_statnet_TESTS.
 #
 #   vignettes: build vignettes and manuals; otherwise ignore.
@@ -27,7 +25,14 @@
 #
 #   debug: compile package with -DDEBUG and -UNDEBUG
 #
-#   covr: run in covr mode may be used with 'full' but probably not with others.
+#   covr: run in covr mode may be used with 'full' but probably not with others
+#
+#   remote: run with remote tests (e.g., version number) enabled
+#
+#   strict: fail on WARNING, not just ERROR; useful for release branches
+#
+#
+# Typical public, private, and release configurations are provided in the variables below.
 
 on: [push, pull_request]
 
@@ -37,10 +42,47 @@ name: R-CMD-check
 env:
   PUBLIC: ''
   PRIVATE: ''
+  PUBLIC_CONFIG: '{"config":[
+            {"os":"windows-latest", "r":"release", "timeout":360, "flags":""},
+            {"os":"macOS-latest", "r":"release", "timeout":360, "flags":"ubsan"},
+            {"os":"ubuntu-latest", "r":"release", "timeout":360, "flags":"full, ubsan, debug"},
+            {"os":"ubuntu-latest", "r":"devel", "timeout":360, "flags":"vignettes, remote"},
+            {"os":"ubuntu-latest", "r":"release", "timeout":360, "flags":"full, covr"}]}'
+  RELEASE_CONFIG: '{"config":[
+            {"os":"windows-latest", "r":"release", "timeout":360, "flags":"vignettes, remote, strict"},
+            {"os":"macOS-latest", "r":"release", "timeout":360, "flags":"ubsan, vignettes, remote, strict"},
+            {"os":"ubuntu-latest", "r":"release", "timeout":360, "flags":"full, ubsan, debug, strict"},
+            {"os":"ubuntu-latest", "r":"devel", "timeout":360, "flags":"vignettes, remote, strict"},
+            {"os":"ubuntu-latest", "r":"release", "timeout":360, "flags":"full, covr, strict"}]}'
+  PRIVATE_CONFIG: '{"config":[
+            {"os":"ubuntu-latest", "r":"release", "timeout":10, "flags":"none"}
+            ]}'
 
 jobs:
+  Redundancy-Check:
+    runs-on: ubuntu-latest
+    outputs:
+      redundant: ${{ steps.check.outputs.redundant }}
+    steps:
+      - name: Check if this branch is a part of a PR
+        id: check
+        if: github.event_name != 'pull_request'
+        run: |
+          import requests
+          import os
+          import json
+          headers = {'Authorization': 'token ' + '${{ secrets.GITHUB_TOKEN }}'}
+          prs = requests.get("https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${{ github.ref_name }}",
+                             headers = headers)
+          if len(prs.json()) > 0: open(os.getenv("GITHUB_OUTPUT"), 'a').write("redundant=1\n")
+        shell: python
+
   Set-Matrix-Private:
     runs-on: ubuntu-latest
+
+    needs: Redundancy-Check
+    if: needs.Redundancy-Check.outputs.redundant == false
+
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -76,17 +118,10 @@ jobs:
         run: |
           if [[ "${{ env.IAM }}" == 'public' ]] # Public: full set.
           then
-            config='{"config":[
-            {"os":"windows-latest", "r":"release", "timeout":360, "flags":"binaries"},
-            {"os":"macOS-latest", "r":"release", "timeout":360, "flags":"binaries, ubsan"},
-            {"os":"ubuntu-latest", "r":"release", "timeout":360, "flags":"full, ubsan, debug"},
-            {"os":"ubuntu-latest", "r":"devel", "timeout":360, "flags":"vignettes, remote"},
-            {"os":"ubuntu-latest", "r":"release", "timeout":360, "flags":"full, covr"}]}'
+            config='${{ env.PUBLIC_CONFIG }}'
           elif [[ "${{ env.FOUND_PUBLIC }}" != '0' ]] # Private with no public analogue: reduced set.
           then
-            config='{"config":[
-            {"os":"ubuntu-latest", "r":"release", "timeout":10, "flags":"none"}
-            ]}'
+            config='${{ env.PRIVATE_CONFIG }}'
           else # Private with public analogue: no checking.
             config=''
           fi
@@ -97,7 +132,7 @@ jobs:
   R-CMD-check:
     needs: Set-Matrix-Private
 
-    if: needs.Set-Matrix-Private.outputs.matrix != ''
+    if: needs.Set-Matrix-Private.outputs.matrix != false
 
     runs-on: ${{ matrix.config.os }}
 
@@ -123,7 +158,7 @@ jobs:
           fi
         shell: bash
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -148,6 +183,7 @@ jobs:
             any::rcmdcheck
             any::covr
             any::V8
+            any::xml2
           needs: |
             check
             coverage
@@ -159,25 +195,6 @@ jobs:
           tinytex:::install_yihui_pkgs()
           tinytex::tlmgr_install("makeindex")
         shell: Rscript {0}
-
-      - name: Build
-        if: contains(matrix.config.flags, 'binaries')
-        run: |
-          dir.create("binaries", FALSE)
-          pkgbuild::build(binary=TRUE, vignettes=FALSE, dest_path = "binaries")
-        shell: Rscript {0}
-
-      - name: Upload build results
-        if: contains(matrix.config.flags, 'binaries') && !failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-r${{ matrix.config.r }}-binaries
-          path: binaries
-
-      - name: Clean up build results
-        if: contains(matrix.config.flags, 'binaries')
-        run: rm -rf binaries
-        shell: bash
 
       - name: Check
         if: contains(matrix.config.flags, 'covr') == false
@@ -240,7 +257,7 @@ jobs:
             fi
           fi
         shell: bash
-        
+
       - name: Upload check results
         if: contains(matrix.config.flags, 'covr') == false && failure()
         uses: actions/upload-artifact@v4
@@ -257,5 +274,22 @@ jobs:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
           _R_CHECK_FORCE_SUGGESTS_: ${{ runner.os != 'macOS' }} # Rmpi is not available on macOS.
           ENABLE_statnet_TESTS: ${{ contains(matrix.config.flags, 'full') }}
-        run: covr::codecov(type=c("tests","examples"))
+        run: |
+          cov <- covr::package_coverage(
+            type=c("tests", "examples"),
+            quiet = FALSE,
+            clean = FALSE,
+            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
+          )
+          covr::to_cobertura(cov)
         shell: Rscript {0}
+
+      - name: Upload coverage results
+        if: contains(matrix.config.flags, 'covr')
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: ${{ github.event_name != 'pull_request' && true || false }}
+          file: ./cobertura.xml
+          plugin: noop
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
